@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "../../../raylib/src/raylib.h"
 #include "../physic/physic.h"
 
 

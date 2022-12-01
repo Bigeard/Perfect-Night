@@ -1,0 +1,17 @@
+{
+	"files.exclude": {
+		// "**/.git": true,
+		// "**/.gitignore": true,
+		// "emsdk": true,
+		// "raylib": true,
+	},
+	"cSpell.words": [
+		"DARKGRAY",
+		"DARKGREEN",
+		"DARKPURPLE",
+		"GAMEPAD",
+		"Gameplay",
+		"LIGHTGRAY",
+		"SKYBLUE"
+	]
+}

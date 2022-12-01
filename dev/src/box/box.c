@@ -1,5 +1,5 @@
-#include "raylib.h"
-#include "raymath.h"
+#include "../../../raylib/src/raylib.h"
+#include "../../../raylib/src/raymath.h"
 #include "stdio.h"
 
 #include "box.h"

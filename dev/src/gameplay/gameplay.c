@@ -1,5 +1,5 @@
-#include "raylib.h"
-#include "raymath.h"
+#include "../../../raylib/src/raylib.h"
+#include "../../../raylib/src/raymath.h"
 #include "stdio.h"
 
 #include "../physic/physic.h"
@@ -22,7 +22,7 @@ static Player players[] = {
         {
             { 200 - 20, 200 - 20 }, // Position
             { 40, 40 }, // Size
-            { 0, 0 }, // Velocity
+            { 0.0, 0.0 }, // Velocity
             { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
         },
         { 3.5, 3.5 }, // Speed
@@ -108,8 +108,8 @@ void UpdateGameplay(void) {
 
             for (int p = 0; p < playersLength; p++) {
                 Rectangle envPlayer = { players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y };
-                CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
                 CollisionBulletPlayer(&players[i].bullets[j], &players[p], envPlayer);
+                CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
             }
 
             BulletBounce(&players[i].bullets[j]);
@@ -153,7 +153,7 @@ void DrawGameplay(void) {
     // DRAW GAME
     BeginMode2D(camera);
         ClearBackground(WHITE);
-        DrawGamearena();
+        DrawGameArena();
 
         // Draw Boxes
         for (int i = 0; i < boxesLength; i++) {
@@ -171,7 +171,7 @@ void DrawGameplay(void) {
         DrawPauseGame();
     EndMode2D();
 
-    // DROW STAT LOG INFO
+    // DRAW STAT LOG INFO
     BeginDrawing();
         for (int i = 0; i < playersLength; i++) {
             DrawStatsPlayer(players[i]);
@@ -202,7 +202,7 @@ void DrawGameplay(void) {
 
 }
 
-void DrawGamearena(void) {
+void DrawGameArena(void) {
     int arenaSize = 800;
     if (!activeDev) {
         DrawCircleGradient(arenaSize/2 - 20, arenaSize/2 - 20, 2000, BLACK, SKYBLUE);
@@ -236,7 +236,7 @@ void DrawGamearena(void) {
 
 void DrawPauseGame(void) {
     if (pauseGame) {
-        DrawRectangleRec((Rectangle) { camera.target.x - 480 / 2, camera.target.y - 120 / 2, 480, 120 }, Fade(LIGHTGRAY, 0.6));
-        DrawText("PRESS 'P' TO CONTINUE", camera.target.x - 190, camera.target.y - 15, 30, BLACK);
+        DrawRectangleRec((Rectangle) { camera.target.x - 480.0 / 2, camera.target.y - 120.0 / 2, 480, 120 }, Fade(LIGHTGRAY, 0.6));
+        DrawText("PRESS 'P' TO CONTINUE", camera.target.x - 190.0, camera.target.y - 15.0, 30, BLACK);
     }
 }

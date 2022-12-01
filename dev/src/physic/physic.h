@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "../../../raylib/src/raylib.h"
 
 typedef struct Physic {
     Vector2 pos;

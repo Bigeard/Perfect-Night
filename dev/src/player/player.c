@@ -1,5 +1,5 @@
-#include "raylib.h"
-#include "raymath.h"
+#include "../../../raylib/src/raylib.h"
+#include "../../../raylib/src/raymath.h"
 #include "stdio.h"
 
 #include "player.h"
@@ -160,7 +160,7 @@ void UpdatePlayer(Player *player) {
     player->p.pos.y = player->p.pos.y + delta_y;
 
     // Out of area
-    int arenaSize = 800;
+    float arenaSize = 800;
     if ((player->p.pos.x >= (float) arenaSize || 
         player->p.pos.x + player->p.size.x <= 0) ||
         (player->p.pos.y >= (float) arenaSize || 
@@ -176,32 +176,31 @@ void UpdatePlayer(Player *player) {
 
 void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) {
     
-    // if (player->p.vel.x > 0) {
-    //     player->p.vel.x -= 100;
-    // }
-    // if (player->p.vel.y > 0) {
-    //     player->p.vel.y -= 100;
-    // }
-    
     if (bullet->playerId != player->id) {
-        bool collision = CheckCollisionCircleRec((Vector2){bullet->p.pos.x, bullet->p.pos.y}, bullet->p.size.x*2, recPlayer);
+        bool collision = CheckCollisionCircleRec((Vector2){bullet->p.pos.x, bullet->p.pos.y}, bullet->p.size.x + 10, recPlayer);
+        
         if (collision) {
             int bulletDirectionX = 1;
             int bulletDirectionY = 1;
-            if(bullet->speed.x < 0) bulletDirectionX *= 1;
-            if(bullet->speed.y < 0) bulletDirectionY *= 1;
+            if(bullet->speed.x < 0) bulletDirectionX = 1;
+            if(bullet->speed.y < 0) bulletDirectionY = 1;
+            if(bullet->speed.x > 0) bulletDirectionX = bulletDirectionX * -1;
+            if(bullet->speed.y > 0) bulletDirectionY = bulletDirectionY * -1;
 
-            player->damagesTaken += bullet->speed.x;
-            player->p.vel.x = player->damagesTaken * 0.001 * bulletDirectionX;
-            player->p.vel.y = player->damagesTaken * 0.001 * bulletDirectionY;
+            player->damagesTaken += bullet->speed.y;
+            if(bullet->speed.x > 0) player->damagesTaken += bullet->speed.x;
+            player->p.vel.x = (player->damagesTaken * 0.001) * bulletDirectionX;
+            player->p.vel.y = (player->damagesTaken * 0.001) * bulletDirectionY;
+            // player->p.vel.y = 1;
+            // player->p.vel.x = 1;
+            
             // player->speed.x += bullet->speed.x;
             // player->speed.y += bullet->speed.y;
-        }
-    } else {
-        player->p.vel.x = 0;
-        player->p.vel.y = 0;
-    }
 
+            TraceLog(LOG_INFO, "TOUCH y %f", player->p.vel.y);
+            TraceLog(LOG_INFO, "TOUCH x %f", player->p.vel.x);
+        }
+    }
 }
 
 void DrawPlayer(Player player) {

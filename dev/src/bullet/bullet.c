@@ -1,5 +1,5 @@
-#include "raylib.h"
-#include "raymath.h"
+#include "../../../raylib/src/raylib.h"
+#include "../../../raylib/src/raymath.h"
 
 #include "bullet.h"
 
@@ -35,6 +35,8 @@ void BulletBounce(Bullet *bullet) {
 void DrawBullet(Bullet bullet) {
     // Rectangle bulletBox = {bullet.p.pos.x, bullet.p.pos.y, bullet.p.size.x * 2, bullet.p.size.y * 2};
     DrawCircleV((Vector2){bullet.p.pos.x + 5, bullet.p.pos.y + 5}, bullet.p.size.x, bullet.COLOR); 
+    DrawText(TextFormat("X %f/ Y %f", bullet.speed.x, bullet.speed.y), bullet.p.pos.x - 20, bullet.p.pos.y - 14, 12, bullet.COLOR);
+
     // DrawRectangleRec(bulletBox, Fade(BLUE, 0.4));
     // DrawRectangleRec((Rectangle){bullet.p.pos.x, bullet.p.pos.y, bullet.p.size.x, bullet.p.size.y}, Fade(PURPLE, 0.8));
 }

@@ -25,7 +25,7 @@ typedef struct Player {
     bool canShoot;
     int timeShoot;
     float radian; // Determine the position of the cannon
-    Bullet bullets[4]; // Arrey of bullet
+    Bullet bullets[4]; // Array of bullet
     int lastBullet; // Allow the ball to be replaced one after the other
     Color COLORS[3];
     int INPUT_TYPE; // Type of input (mouse, keyboard, gamepad)

@@ -9,7 +9,7 @@ extern "C" {
 void InitGameplay(void);
 void UpdateGameplay(void);
 void DrawGameplay(void);
-void DrawGamearena(void);
+void DrawGameArena(void);
 void DrawPauseGame(void);
 
 #ifdef __cplusplus
