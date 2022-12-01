@@ -1,0 +1,28 @@
+Exemple of no error and warrning : 
+
+make index
+make[1]: Entering directory '/home/bigeard/Desktop/perfect-night/dev'
+emcc -o index.html main.c src/gameplay/gameplay.c src/player/player.c -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces -s -O1 -Os -s USE_GLFW=3 -s TOTAL_MEMORY=16777216 -s FORCE_FILESYSTEM=1 --preload-file resources --shell-file ../raylib/src/shell.html -I. -I../raylib/src -I../raylib/src/external -L. -L../raylib/src -L../raylib/src ../raylib/src/libraylib.a -DPLATFORM_WEB
+make[1]: Leaving directory '/home/bigeard/Desktop/perfect-night/dev'
+
+--
+
+1. Error if function is not declred correctly
+
+error: undefined symbol: DrowGamearea (referenced by top-level compiled C/C++ code)
+warning: Link with `-sLLD_REPORT_UNDEFINED` to get more information on undefined symbols
+warning: To disable errors for undefined symbols use `-sERROR_ON_UNDEFINED_SYMBOLS=0`
+warning: _DrowGamearea may need to be added to EXPORTED_FUNCTIONS if it arrives from a system library
+Error: Aborting compilation due to previous errors
+emcc: error: '/usr/bin/node /usr/lib/emscripten/src/compiler.js /tmp/tmptz6y5514.json' failed (returned 1)
+
+--
+
+2. Error you don't have files in your resources folder (add it)
+
+emcc: error: '/usr/lib/emscripten/tools/file_packager index.data --from-emcc --export-name=Module --preload resources' failed (returned 1)
+make[1]: *** [Makefile:377: index] Error 1
+
+--
+
+3.
