@@ -51,6 +51,7 @@ void UpdatePlayer(Player *player) {
         // Charge / Shoot Bullet
         if ((IsGestureDetected(GESTURE_DRAG) || IsKeyDown(player->KEY[4])) && player->ammunition > 0) { 
             player->timeShoot += 2;
+            player->speed = (Vector2){ 1.5, 1.5 };
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
                 player->charge = player->charge + 0.5;
                 player->timeShoot = 0;
@@ -88,11 +89,13 @@ void UpdatePlayer(Player *player) {
                     player->radian,
                     false,
                     false,
+                    true,
                     player->COLORS[0]
                 };
                 // Remove ammunition
                 player->ammunition--;
                 player->canShoot = false;
+                player->speed = (Vector2){ 3.5, 3.5 };
             }
             player->charge = 2;
         }
@@ -114,6 +117,7 @@ void UpdatePlayer(Player *player) {
         // Charge / Shoot Bullet
         if (IsGamepadButtonDown(player->gamepadId, 12) && player->ammunition > 0) {
             player->timeShoot += 2;
+            player->speed = (Vector2){ 1.5, 1.5 };
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
                 player->charge = player->charge + 0.5;
                 player->timeShoot = 0;
@@ -151,6 +155,7 @@ void UpdatePlayer(Player *player) {
                     player->radian,
                     false,
                     false,
+                    true,
                     player->COLORS[0]
                 };
                 // player->bullets[player->lastBullet] = (Bullet) { 
@@ -170,6 +175,7 @@ void UpdatePlayer(Player *player) {
                 // Remove ammunition
                 player->ammunition--;
                 player->canShoot = false;
+                player->speed = (Vector2){ 3.5, 3.5 };
             }
             player->charge = 2;
         }
@@ -190,6 +196,7 @@ void UpdatePlayer(Player *player) {
         player->p.vel = (Vector2) { 0, 0 };
         player->speed = (Vector2) { 3.5, 3.5 };
         player->damagesTaken = 0;
+        player->invincible = 300;
     }
 }
 
@@ -197,7 +204,7 @@ void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) 
     if (bullet->inactive) return;
     if (player->life <= 0) return;
     if (bullet->playerId != player->id) {
-        bool collision = CheckCollisionCircleRec((Vector2){bullet->p.pos.x, bullet->p.pos.y}, bullet->p.size.x + 10, recPlayer);
+        bool collision = CheckCollisionCircleRec((Vector2){bullet->p.pos.x + 4, bullet->p.pos.y + 4}, bullet->p.size.x-1, recPlayer);
         if (collision && player->invincible == 0) {
             player->life--;
             player->invincible = 300;
@@ -225,13 +232,16 @@ void DrawPlayer(Player player) {
     DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 13, player.COLORS[1]);
 
     // Draw life of the tank
-    DrawText(TextFormat("%d", player.life), player.p.pos.x - 4 + 20, player.p.pos.y - 28.5 + 40, 20, WHITE);
+    float posX = player.p.pos.x - 5 + 20;
+    if (player.life == 1) {
+        posX = player.p.pos.x - 2 + 20;
+    }
+    DrawText(TextFormat("%d", player.life), posX, player.p.pos.y - 28.5 + 40, 20, WHITE);
     // DrawText(TextFormat("%f %f", cos(player.radian), sin(+ player.radian)), player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
     // DrawText(TextFormat("%f %f", , , player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
 
     // Draw load of the shoot
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.4));
-
 }
 
 void DrawStatsPlayer(Player player) {
