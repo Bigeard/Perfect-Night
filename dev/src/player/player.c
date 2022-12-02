@@ -18,6 +18,20 @@ void UpdatePlayer(Player *player) {
         return;
     }
 
+    if (player->invincible > 1) {
+        player->invincible = player->invincible - delta;
+    } else {
+        player->invincible = 0;
+    }
+
+    if (player->ammunition != 5) {
+        player->ammunitionLoad = player->ammunitionLoad - delta;
+    }
+    if (player->ammunitionLoad <= 0) {
+        player->ammunition++;
+        player->ammunitionLoad = 300;
+    }
+
     player->p.collision[0] = false;
     player->p.collision[1] = false;
     player->p.collision[2] = false;
@@ -35,9 +49,8 @@ void UpdatePlayer(Player *player) {
         if (IsKeyDown(player->KEY[3])) delta_x += player->speed.x; // Right
 
         // Charge / Shoot Bullet
-        if (IsGestureDetected(GESTURE_DRAG) || IsKeyDown(player->KEY[4])) { 
+        if ((IsGestureDetected(GESTURE_DRAG) || IsKeyDown(player->KEY[4])) && player->ammunition > 0) { 
             player->timeShoot += 2;
-            float delta = GetFrameTime();
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
                 player->charge = player->charge + 0.5;
                 player->timeShoot = 0;
@@ -74,8 +87,11 @@ void UpdatePlayer(Player *player) {
                     { player->charge, player->charge }, 
                     player->radian,
                     false,
+                    false,
                     player->COLORS[0]
                 };
+                // Remove ammunition
+                player->ammunition--;
                 player->canShoot = false;
             }
             player->charge = 2;
@@ -96,7 +112,7 @@ void UpdatePlayer(Player *player) {
         }
 
         // Charge / Shoot Bullet
-        if (IsGamepadButtonDown(player->gamepadId, 12)) {
+        if (IsGamepadButtonDown(player->gamepadId, 12) && player->ammunition > 0) {
             player->timeShoot += 2;
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
                 player->charge = player->charge + 0.5;
@@ -134,9 +150,9 @@ void UpdatePlayer(Player *player) {
                     { player->charge, player->charge }, 
                     player->radian,
                     false,
+                    false,
                     player->COLORS[0]
                 };
-
                 // player->bullets[player->lastBullet] = (Bullet) { 
                 //     player->id,
                 //     (Physic) {
@@ -150,6 +166,9 @@ void UpdatePlayer(Player *player) {
                 //     false,
                 //     player->COLORS[0]
                 // };
+
+                // Remove ammunition
+                player->ammunition--;
                 player->canShoot = false;
             }
             player->charge = 2;
@@ -175,30 +194,13 @@ void UpdatePlayer(Player *player) {
 }
 
 void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) {
-    
+    if (bullet->inactive) return;
+    if (player->life <= 0) return;
     if (bullet->playerId != player->id) {
         bool collision = CheckCollisionCircleRec((Vector2){bullet->p.pos.x, bullet->p.pos.y}, bullet->p.size.x + 10, recPlayer);
-        
-        if (collision) {
-            int bulletDirectionX = 1;
-            int bulletDirectionY = 1;
-            if(bullet->speed.x < 0) bulletDirectionX = 1;
-            if(bullet->speed.y < 0) bulletDirectionY = 1;
-            if(bullet->speed.x > 0) bulletDirectionX = bulletDirectionX * -1;
-            if(bullet->speed.y > 0) bulletDirectionY = bulletDirectionY * -1;
-
-            player->damagesTaken += bullet->speed.y;
-            if(bullet->speed.x > 0) player->damagesTaken += bullet->speed.x;
-            player->p.vel.x = (player->damagesTaken * 0.001) * bulletDirectionX;
-            player->p.vel.y = (player->damagesTaken * 0.001) * bulletDirectionY;
-            // player->p.vel.y = 1;
-            // player->p.vel.x = 1;
-            
-            // player->speed.x += bullet->speed.x;
-            // player->speed.y += bullet->speed.y;
-
-            TraceLog(LOG_INFO, "TOUCH y %f", player->p.vel.y);
-            TraceLog(LOG_INFO, "TOUCH x %f", player->p.vel.x);
+        if (collision && player->invincible == 0) {
+            player->life--;
+            player->invincible = 300;
         }
     }
 }
@@ -206,8 +208,13 @@ void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) 
 void DrawPlayer(Player player) {
     if (player.life <= 0) return;
 
-    // Draw body of the tank
-    DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, player.COLORS[2]);
+    if (player.invincible != 0) {
+        DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, Fade(player.COLORS[2], 0.5));
+    }
+    else {
+        // Draw body of the tank
+        DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, player.COLORS[2]);
+    }
 
     // Draw cannon of the tank
     Rectangle playerCanon = { player.p.pos.x + 20, player.p.pos.y + 20, 30, 10 };
@@ -224,38 +231,47 @@ void DrawPlayer(Player player) {
 
     // Draw load of the shoot
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.4));
+
 }
 
 void DrawStatsPlayer(Player player) {
+    Color colorDisplay0 = player.COLORS[0];
+    Color colorDisplay1 = player.COLORS[1];
+    if (player.life < 1) {
+        colorDisplay0 = Fade(player.COLORS[0], 0.2);
+        colorDisplay1 = Fade(player.COLORS[1], 0.2);
+    }
     if (player.id % 2) {
         DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 64, 72 }, (Vector2){ 66, 6 }, -270, WHITE);
         DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 210, 110 }, (Vector2){ 205, 5 }, 20, WHITE);
         DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 210, 110 }, (Vector2){ 205, 5 }, 25, WHITE);
 
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 60, 60 }, (Vector2){ 60, 0 }, -270, player.COLORS[1]);
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 20, player.COLORS[1]);
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 25, player.COLORS[1]);
+        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 60, 60 }, (Vector2){ 60, 0 }, -270, colorDisplay1);
+        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 20, colorDisplay1);
+        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 25, colorDisplay1);
 
         if (player.id == 1) DrawText(TextFormat("P%d", player.id), 256, 30 + 120 * player.id, 30, WHITE);
         else DrawText(TextFormat("P%d", player.id), 253, 30 + 120 * player.id, 30, WHITE);
         
         DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 190, 90 }, (Vector2){ 195, -5 }, 20, WHITE);
 
-        DrawTextPro(GetFontDefault(), TextFormat("%d%%", player.damagesTaken), (Vector2){ 180, 185 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 60, 10, player.COLORS[0]);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ 180, 185 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 60, 10, colorDisplay0);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ 250, 190 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
     }
     else {
         DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 64, 72 }, (Vector2){ -2, 6 }, 270, WHITE);
         DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 210, 110 }, (Vector2){ 5, 5 }, -20, WHITE);
         DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 210, 110 }, (Vector2){ 5, 5 }, -25, WHITE);
 
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 60, 60 }, (Vector2){ 0, 0 }, 270, player.COLORS[1]);
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -20, player.COLORS[1]);
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -25, player.COLORS[1]);
+        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 60, 60 }, (Vector2){ 0, 0 }, 270, colorDisplay1);
+        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -20, colorDisplay1);
+        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -25, colorDisplay1);
 
         DrawText(TextFormat("P%d", player.id), GetScreenWidth() - 288, 30 + 120 * (player.id - 1), 30, WHITE);
         
         DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 190, 90 }, (Vector2){ -5, -5 }, -20, WHITE);
 
-        DrawTextPro(GetFontDefault(), TextFormat("%d%%", player.damagesTaken), (Vector2){ GetScreenWidth() - 200, 70 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 60, 10, player.COLORS[0]);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ GetScreenWidth() - 130, 45 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 60, 10, colorDisplay0);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ GetScreenWidth() - 250, 70 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
     }
 }

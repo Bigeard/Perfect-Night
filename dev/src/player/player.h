@@ -18,7 +18,10 @@ typedef struct Player {
     int id; // Identifier
     int gamepadId; // Gamepad identifier
     int life; // Number of life (by default: 3)
+    int invincible; // Time of invincibility
     int damagesTaken; // Percentage of damages token
+    int ammunition; // Ammunition
+    int ammunitionLoad; // Ammunition loading
     Physic p; // Physic (position, velocity...)
     Vector2 speed;
     float charge;

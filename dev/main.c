@@ -8,8 +8,9 @@ int main(void)
 {
     // const int screenWidth = 1280;
     // const int screenHeight = 720;
-    const int screenWidth = 1920 * 0.9;
-    const int screenHeight = 1060 * 0.9;
+    int screenWidth = 1920 * 0.9;
+    int screenHeight = 1060 * 0.9;
+    // SetWindowState(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "Perfect Night");
     InitAudioDevice();
     InitGameplay();

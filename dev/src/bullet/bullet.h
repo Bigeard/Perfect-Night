@@ -15,6 +15,7 @@ typedef struct Bullet {
     Vector2 speed;
     float radian;
     bool direction;
+    bool inactive;
     Color COLOR;
 } Bullet;
 

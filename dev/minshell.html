@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Perfect Night</title>
+    <meta name="title" content="Perfect Night">
+    <meta name="description" content="Multi Player Video Game | Perfect Night">
+    <meta name="keywords" content="perfectnight, multiplayer, videogame">
+    <meta name="viewport" content="width=device-width">
+    <link rel="shortcut icon" href="https://www.raylib.com/favicon.ico">
+
+    <style>
+        html {
+            background: black
+        }
+
+        body {
+            margin: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        canvas {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
+    <script>
+        var Module = { canvas: document.getElementById('canvas') }
+    </script>
+    {{{ SCRIPT }}}
+</body>
+
+</html>

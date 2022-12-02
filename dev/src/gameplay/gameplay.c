@@ -18,7 +18,10 @@ static Player players[] = {
         1, // ID
         0, // Gamepad Id
         3, // Life
+        0, // Invincible
         155, // Damages Taken
+        1, // Ammunition
+        300, // Ammunition loading
         {
             { 200 - 20, 200 - 20 }, // Position
             { 40, 40 }, // Size
@@ -37,15 +40,15 @@ static Player players[] = {
         { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
     },
     {   
-        2, 0, 3, 0, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
+        2, 0, 3, 0, 0, 1, 300, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
         {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     },
     {   
-        3, 1, 3, 0, {{200 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { SKYBLUE, BLUE, DARKBLUE }, GAMEPAD,
+        3, 1, 3, 0, 0, 1, 300, {{200 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { SKYBLUE, BLUE, DARKBLUE }, GAMEPAD,
         {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     },
     {   
-        4, 2, 3, 155, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, GAMEPAD,
+        4, 2, 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, GAMEPAD,
         {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     },
 };
@@ -107,6 +110,7 @@ void UpdateGameplay(void) {
             }
 
             for (int p = 0; p < playersLength; p++) {
+                if(players[p].life <= 0) continue;
                 Rectangle envPlayer = { players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y };
                 CollisionBulletPlayer(&players[i].bullets[j], &players[p], envPlayer);
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
@@ -120,6 +124,7 @@ void UpdateGameplay(void) {
         // Collision
         Rectangle newPlayerRec = { players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y };
         for (int j = 0; j < playersLength; j++) {
+            if(players[j].life <= 0) continue;
             if (players[i].id != players[j].id) {
                 Rectangle envPlayer = { players[j].p.pos.x, players[j].p.pos.y, players[j].p.size.x, players[j].p.size.y };
                 CollisionPhysic(&players[i].p, newPlayerRec, envPlayer);

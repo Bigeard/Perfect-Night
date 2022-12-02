@@ -240,10 +240,11 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     CFLAGS += -Os -s USE_GLFW=3 -s TOTAL_MEMORY=16777216 -s FORCE_FILESYSTEM=1 --preload-file resources
     ifeq ($(BUILD_MODE), DEBUG)
         CFLAGS += -s ASSERTIONS=1 --profiling
+        # Define a custom shell .html and output extension
+        CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
+    else
+        CFLAGS += --shell-file ./minshell.html
     endif
-
-    # Define a custom shell .html and output extension
-    CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
     EXT = .html
 endif
 
