@@ -89,7 +89,16 @@ void UpdateGameplay(void) {
 
     // Pause
     if (IsKeyPressed(KEY_P)) pauseGame = !pauseGame;
-    if (pauseGame) return;
+    if (pauseGame) {
+        if (IsKeyPressed(KEY_C)) {
+            // Controller display
+        }
+        if (IsKeyPressed(KEY_E)) {
+            // Edit map display
+        }
+        return;
+    }
+    
 
     // Reset
     if (IsKeyPressed(KEY_R)) {
@@ -98,16 +107,25 @@ void UpdateGameplay(void) {
 
     // Update Players / Bullets
     for (int i = 0; i < playersLength; i++) {
+        UpdatePlayer(&players[i]);
+
         // Bullets
         for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
             UpdateBullet(&players[i].bullets[j]);
 
-            Rectangle newBulletRec = { players[i].bullets[j].p.pos.x, players[i].bullets[j].p.pos.y, players[i].bullets[j].p.size.x * 2, players[i].bullets[j].p.size.y * 2 };
+            Rectangle newBulletRec = { players[i].bullets[j].p.pos.x, players[i].bullets[j].p.pos.y, players[i].bullets[j].p.size.x * 2 - 2, players[i].bullets[j].p.size.y * 2 - 2 };
 
             for (int b = 0; b < boxesLength; b++) {
                 Rectangle envBox = { boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y };
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
+                
+
             }
+            // Stops the ball if it hits the wall when it is created
+            if (players[i].bullets[j].isNew && players[i].bullets[j].p.collision[0]) {
+                players[i].bullets[j].inactive = true;
+            }
+            players[i].bullets[j].isNew = false;
 
             for (int p = 0; p < playersLength; p++) {
                 if(players[p].life <= 0) continue;
@@ -119,8 +137,6 @@ void UpdateGameplay(void) {
             BulletBounce(&players[i].bullets[j]);
         }
         
-        UpdatePlayer(&players[i]);
-
         // Collision
         Rectangle newPlayerRec = { players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y };
         for (int j = 0; j < playersLength; j++) {
@@ -241,7 +257,10 @@ void DrawGameArena(void) {
 
 void DrawPauseGame(void) {
     if (pauseGame) {
-        DrawRectangleRec((Rectangle) { camera.target.x - 480.0 / 2, camera.target.y - 120.0 / 2, 480, 120 }, Fade(LIGHTGRAY, 0.6));
-        DrawText("PRESS 'P' TO CONTINUE", camera.target.x - 190.0, camera.target.y - 15.0, 30, BLACK);
+        DrawRectangleRec((Rectangle) { camera.target.x - 480.0 / 2, camera.target.y - 240, 480, 400 }, Fade(LIGHTGRAY, 0.6));
+        DrawText("RESTART (R)", camera.target.x - 8 * 11, camera.target.y - 200.0, 30, BLACK);
+        DrawText("CONTROLLER (C)", camera.target.x - 8 * 14, camera.target.y - 100.0, 30, BLACK);
+        DrawText("EDIT THE MAP (E)", camera.target.x - 8 * 16, camera.target.y - 0.0, 30, BLACK);
+        DrawText("CONTINUE (P)", camera.target.x - 8 * 12, camera.target.y + 100.0, 30, BLACK);
     }
 }

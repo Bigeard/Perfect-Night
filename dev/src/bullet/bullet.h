@@ -16,6 +16,7 @@ typedef struct Bullet {
     float radian;
     bool direction;
     bool inactive;
+    bool isNew;
     Color COLOR;
 } Bullet;
 
