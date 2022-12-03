@@ -1,5 +1,6 @@
 #include "../../../raylib/src/raylib.h"
 #include "../../../raylib/src/raymath.h"
+#include <emscripten/emscripten.h>
 #include "stdio.h"
 
 #include "../physic/physic.h"
@@ -8,9 +9,11 @@
 #include "../box/box.h"
 #include "gameplay.h"
 
+EM_JS(int, getCanvasWidth, (), { return window.innerWidth; });
+EM_JS(int, getCanvasHeight, (), { return window.innerHeight; });
 
 static bool activeDev = true;
-
+double lastSecond = 0;
 static Camera2D camera = { 0 };
 static bool pauseGame = 0;
 static Player players[] = {
@@ -81,6 +84,13 @@ void UpdateGameplay(void) {
     int centerPositionX = 0;
     int centerPositionY = 0;
     // int centerDistance = 0;
+
+    double time = GetTime();
+    if ((int)time == lastSecond) {
+        SetWindowSize(getCanvasWidth(), getCanvasHeight());
+        camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
+        lastSecond += 1;
+    }
 
     camera.zoom += ((float)GetMouseWheelMove()*0.01f);
 
