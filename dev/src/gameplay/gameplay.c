@@ -11,6 +11,7 @@
 
 EM_JS(int, getCanvasWidth, (), { return window.innerWidth; });
 EM_JS(int, getCanvasHeight, (), { return window.innerHeight; });
+EM_JS(int, toggleInfoPeerJs, (), { return togglePeerJs(); });
 
 static bool activeDev = true;
 double lastSecond = 0;
@@ -97,6 +98,10 @@ void UpdateGameplay(void) {
     // Pause
     if (IsKeyPressed(KEY_O)) activeDev = !activeDev;
 
+    if (IsKeyPressed(KEY_U)) {
+        toggleInfoPeerJs();
+    }
+
     // Pause
     if (IsKeyPressed(KEY_P)) pauseGame = !pauseGame;
     if (pauseGame) {
@@ -108,7 +113,6 @@ void UpdateGameplay(void) {
         }
         return;
     }
-    
 
     // Reset
     if (IsKeyPressed(KEY_R)) {
