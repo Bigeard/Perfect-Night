@@ -4,126 +4,147 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Perfect Night - Mobile Gamepad</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <script src="js/peerjs.min.js"></script>
+    <style>
+        #peerjs {
+            display: flex;
+            background: #CDCDCD;
+            padding: 15px;
+            border-radius: 10px;
+            border: double 3px #000;
+            width: 60%;
+            height: 60%;
+            justify-content: space-around;
+        }
+        
+        .message-container {
+            width: 100%;
+        }
+
+        .info-container {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
-    <table class="control">
-        <tr>
-            <td>Status: <span id="status"></span></td>
-            <td>Messages: <span id="message"></span></td>
-        </tr>
-        <tr>
-            <td>
-                <span id="peerId">ID: ...</span>
-            </td>
-            <td>
-                <input type="text" id="sendMessageBox" placeholder="Enter a message..." autofocus="true" />
-            </td>
-        </tr>
-    </table>
+    <div id="peerjs">
+        <div class="message-container">
+            <span>Messages: <span id="message"></span></span>
+            <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
+        </div>
+        <div class="info-container">
+            <span>Status: <span id="status"></span></span>
+            <span id="peerId">ID: ...</span>
+        </div>
+    </div>
 
-    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <script type="text/javascript">
-        (function () {
-
+        // PeerJS
+        (() => {
             var lastPeerId = null;
-            var peer = null; // own peer object
+            var peer = null;
             var conn = null;
-            var peerId = document.getElementById("peerId");
             var status = document.getElementById("status");
             var message = document.getElementById("message");
             var sendMessageBox = document.getElementById("sendMessageBox");
-            var cueString = "<span class=\"cueMsg\">Cue: </span>";
 
-            function initialize() {
-                // Create own peer object with connection to shared PeerJS server
+            var peerId = document.getElementById("peerId");
+
+            const init = () => {
                 peer = new Peer(null, { debug: 2 });
 
-                peer.on('open', function (id) {
-                    // Workaround for peer.reconnect deleting previous id
+                peer.on('open', (id) => {
                     if (peer.id === null) {
                         console.log('Received null id from peer open');
                         peer.id = lastPeerId;
                     } else {
                         lastPeerId = peer.id;
                     }
+                    // ICI
                     peerId.innerText = "ID: " + peer.id;
                     const params = new URLSearchParams(document.location.search);
-                    const conn_id = params.get("id");
+                    const conn_id = params.get("i");
                     if(conn_id) {
                         join(conn_id);
                     } else {
                         console.error("No ID", id);
                     }
                 });
-                peer.on('connection', function (c) {
-                    // Disallow incoming connections
-                    c.on('open', function () {
+
+                // ICI
+                peer.on('connection', (c) => {
+                    c.on('open', () => {
                         c.send("Sender does not accept incoming connections");
-                        setTimeout(function () { c.close(); }, 500);
+                        setTimeout(() => c.close(), 500);
                     });
                 });
-                peer.on('disconnected', function () {
+
+                peer.on('disconnected', () => {
                     status.innerText = "Connection lost. Please reconnect";
-                    // Workaround for peer.reconnect deleting previous id
                     peer.id = lastPeerId;
                     peer._lastServerId = lastPeerId;
                     peer.reconnect();
                 });
-                peer.on('close', function () {
+
+                peer.on('close', () => {
                     conn = null;
                     status.innerText = "Connection destroyed. Please refresh";
                 });
-                peer.on('error', function (err) {
+
+                peer.on('error', (err) => {
                     console.error(err);
                     alert('' + err);
                 });
             };
 
-            function join(conn_id) {
+            const join = (conn_id) => {
                 if (conn) {
                     conn.close();
                 }
                 conn = peer.connect(conn_id, {
                     reliable: true
                 });
-                conn.on('open', function () {
+                conn.on('open', () => {
                     status.innerText = "Connected to: " + conn.peer;
                 });
-                conn.on('data', function (data) {
+                conn.on('data', (data) => {
                     addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
                 });
-                conn.on('close', function () {
+                conn.on('close', () => {
                     status.innerText = "Connection closed";
                 });
             };
 
-            function signal(sigName) {
+            const signal = (sigName) => {
                 if (conn && conn.open) {
                     conn.send(sigName);
-                    addMessage(cueString + sigName + " signal sent");
+                    addMessage(sigName + " signal sent");
                 } else {
                     console.log('Connection is closed');
                 }
             }
 
-            function addMessage(msg) {
+            const addMessage = (msg) => {
                 var now = new Date();
                 var h = now.getHours();
+                const addZero = (t) => {
+                    if (t < 10) t = "0" + t;
+                    return t;
+                };
                 var m = addZero(now.getMinutes());
                 var s = addZero(now.getSeconds());
                 if (h > 12) h -= 12;
                 else if (h === 0) h = 12;
-                function addZero(t) {
-                    if (t < 10) t = "0" + t;
-                    return t;
-                };
+
                 message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
             };
 
             // Send Message
-            sendMessageBox.addEventListener('keypress', function (e) {
+            sendMessageBox.addEventListener('keypress', (e) => {
                 if (e.keyCode == '13') {
                     if (conn && conn.open) {
                         var msg = sendMessageBox.value;
@@ -135,11 +156,11 @@
                     }
                 }
             });
-            initialize();
+            init();
         })();
     </script>
     <div id="zone_joystick"></div>
-    <script src="./nipplejs.js"></script>
+    <script src="js/nipplejs.min.js"></script>
     <script>
         var manager = nipplejs.create({
             zone: document.getElementById('zone_joystick'),
