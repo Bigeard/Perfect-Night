@@ -12,6 +12,7 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <script src="js/peerjs.min.js"></script>
     <script src="js/qrenc3.min.js"></script>
+    <script src="js/virtualgamepad.js"></script>
     <style>
         html {
             background: black;
@@ -101,7 +102,7 @@
             var status = document.getElementById("status");
             var message = document.getElementById("message");
             var sendMessageBox = document.getElementById("sendMessageBox");
-            
+
             var recvId = document.getElementById("receiverId");
 
             const init = () => {
@@ -131,6 +132,8 @@
                     }
                     conn = c;
                     status.innerHTML = "Connected to: " + conn.peer;
+                    // ICI
+                    virtualGamepad.connect(conn.peer);
                     ready();
                 });
 
@@ -138,6 +141,8 @@
                     status.innerHTML = "Connection lost. Please reconnect";
                     peer.id = lastPeerId;
                     peer._lastServerId = lastPeerId;
+                    // ICI
+                    virtualGamepad.disconnect();
                     peer.reconnect();
                 });
 
@@ -150,7 +155,22 @@
             };
 
             const ready = () => {
-                conn.on('data', (data) => addMessage("<span class=\"peerMsg\">Peer: </span>" + data));
+                conn.on('data', (data) => {
+                    if (data != null && (typeof data === 'object' || typeof data === 'function')) {
+                        console.log(data);
+                        if (data.j === "l") {
+                            virtualGamepad.Gamepad.axes[0] = data.x;
+                            virtualGamepad.Gamepad.axes[1] = data.y;
+                        }
+                        else {
+                            virtualGamepad.Gamepad.axes[2] = data.x;
+                            virtualGamepad.Gamepad.axes[3] = data.y;
+                        }
+                    }
+                    else {
+                        addMessage("<span class=\"peerMsg\">Peer: </span>" + data)
+                    }
+                });
                 conn.on('close', () => {
                     status.innerHTML = "Connection reset<br>Awaiting connection...";
                     conn = null;

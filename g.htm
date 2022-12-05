@@ -8,6 +8,7 @@
     <title>Perfect Night - Mobile Gamepad</title>
     <link rel="shortcut icon" href="/favicon.ico">
     <script src="js/peerjs.min.js"></script>
+    <script src="js/nipplejs.min.js"></script>
     <style>
         #peerjs {
             display: flex;
@@ -19,7 +20,7 @@
             height: 60%;
             justify-content: space-around;
         }
-        
+
         .message-container {
             width: 100%;
         }
@@ -41,8 +42,25 @@
             <span id="peerId">ID: ...</span>
         </div>
     </div>
+    <div id="joystickLeft"></div>
+    <div id="joystickRight"></div>
 
     <script type="text/javascript">
+        // NippleJS
+        var joystickLeft = nipplejs.create({
+            zone: document.getElementById('joystickLeft'),
+            mode: 'static',
+            position: { left: '20%', top: '50%' },
+            color: 'red'
+        });
+
+        var joystickRight = nipplejs.create({
+            zone: document.getElementById('joystickRight'),
+            mode: 'static',
+            position: { left: '80%', top: '50%' },
+            color: 'red'
+        });
+
         // PeerJS
         (() => {
             var lastPeerId = null;
@@ -68,7 +86,7 @@
                     peerId.innerText = "ID: " + peer.id;
                     const params = new URLSearchParams(document.location.search);
                     const conn_id = params.get("i");
-                    if(conn_id) {
+                    if (conn_id) {
                         join(conn_id);
                     } else {
                         console.error("No ID", id);
@@ -156,18 +174,43 @@
                     }
                 }
             });
+
+            joystickLeft.on('start end', function (evt, data) {
+                // console.log('start end', data);
+                conn.send({
+                    j: "l",
+                    x: 0,
+                    y: 0,
+                });
+            }).on('move', function (evt, data) {
+                conn.send({
+                    j: "l",
+                    x: (Math.round(data.instance.frontPosition.x) / 50),
+                    y: (Math.round(data.instance.frontPosition.y) / 50)
+                })
+            }).on('pressure', function (evt, data) {
+                // console.log('pressure', data);
+            });
+
+            joystickRight.on('start end', function (evt, data) {
+                // console.log('start end', data);
+                conn.send({
+                    j: "r",
+                    x: 0,
+                    y: 0,
+                });
+            }).on('move', function (evt, data) {
+                conn.send({
+                    j: "r",
+                    x: (Math.round(data.instance.frontPosition.x) / 50),
+                    y: (Math.round(data.instance.frontPosition.y) / 50)
+                })
+            }).on('pressure', function (evt, data) {
+                // console.log('pressure', data);
+            });
+
             init();
         })();
-    </script>
-    <div id="zone_joystick"></div>
-    <script src="js/nipplejs.min.js"></script>
-    <script>
-        var manager = nipplejs.create({
-            zone: document.getElementById('zone_joystick'),
-            mode: 'static',
-            position: { left: '50%', top: '50%' },
-            color: 'red'
-        });
     </script>
 </body>
 

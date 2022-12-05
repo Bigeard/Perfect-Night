@@ -13,6 +13,7 @@ extern "C" {
 #define MOUSE 0
 #define KEYBOARD 1
 #define GAMEPAD 2
+#define MOBILE 3
 
 typedef struct Player {
     int id; // Identifier

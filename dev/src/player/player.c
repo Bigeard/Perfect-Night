@@ -1,9 +1,15 @@
 #include "../../../raylib/src/raylib.h"
 #include "../../../raylib/src/raymath.h"
+#include <emscripten/emscripten.h>
 #include "stdio.h"
 
 #include "player.h"
 #include "../bullet/bullet.h"
+
+EM_JS(float, GetJoystickMobileLeftX, (), { return virtualGamepad.Gamepad.axes[0] });
+EM_JS(float, GetJoystickMobileLeftY, (), { return virtualGamepad.Gamepad.axes[1] });
+EM_JS(float, GetJoystickMobileRightX, (), { return virtualGamepad.Gamepad.axes[2] });
+EM_JS(float, GetJoystickMobileRightY, (), { return virtualGamepad.Gamepad.axes[3] });
 
 
 void InitPlayer(void) {
@@ -171,6 +177,71 @@ void UpdatePlayer(Player *player) {
                 //     false,
                 //     player->COLORS[0]
                 // };
+
+                // Remove ammunition
+                player->ammunition--;
+                player->canShoot = false;
+                player->speed = (Vector2){ 3.5, 3.5 };
+            }
+            player->charge = 2;
+        }
+    }
+
+    if (player->INPUT_TYPE == MOBILE) {
+        // Move Player
+        delta_x = player->speed.x * GetJoystickMobileLeftX();
+        delta_y = player->speed.y * GetJoystickMobileLeftY();
+
+        // Move Cannon
+        if (GetJoystickMobileRightY() != 0.0f || GetJoystickMobileRightX() != 0.0f) {
+            player->radian = atan2f(GetJoystickMobileRightY(), GetJoystickMobileRightX());
+        }
+
+        // Charge / Shoot Bullet
+        float distance = sqrt(pow(GetJoystickMobileRightX(), 2) + pow(GetJoystickMobileRightY(), 2));
+        if (distance > 0.9 && player->ammunition > 0) {
+            player->timeShoot += 2;
+            player->speed = (Vector2){ 1.5, 1.5 };
+            if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
+                player->charge = player->charge + 0.5;
+                player->timeShoot = 0;
+            }
+        }
+        else {
+            if (player->charge > 2) {
+                // Loop bullet (Allow the ball to be replaced one after the other)
+                player->lastBullet += 1;
+                if (player->lastBullet >= sizeof(player->bullets)/sizeof(player->bullets[0])) {
+                    player->lastBullet = 0;
+                }
+
+                float calcPosRadianX = cos(player->radian);
+                float calcPosRadianY = sin(player->radian);
+
+                if ((calcPosRadianX > 0.6 && calcPosRadianX < 0.8) ||
+                    (calcPosRadianX < -0.6 && calcPosRadianX > -0.8)) {
+                    calcPosRadianX = lround(cos(player->radian));
+                }
+                if ((calcPosRadianY > 0.6 && calcPosRadianY < 0.8) ||
+                    (calcPosRadianY < -0.6 && calcPosRadianY > -0.8)) {
+                    calcPosRadianY = lround(sin(player->radian));
+                }
+
+                player->bullets[player->lastBullet] = (Bullet) { 
+                    player->id,
+                    (Physic) {
+                        {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
+                        {5, 5},
+                        {0, 0},
+                        {0, 0, 0, 0, 0}
+                    }, 
+                    { player->charge, player->charge }, 
+                    player->radian,
+                    false,
+                    false,
+                    true,
+                    player->COLORS[0]
+                };
 
                 // Remove ammunition
                 player->ammunition--;

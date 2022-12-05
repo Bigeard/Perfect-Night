@@ -9,9 +9,9 @@
 #include "../box/box.h"
 #include "gameplay.h"
 
-EM_JS(int, getCanvasWidth, (), { return window.innerWidth; });
-EM_JS(int, getCanvasHeight, (), { return window.innerHeight; });
-EM_JS(int, toggleInfoPeerJs, (), { return togglePeerJs(); });
+EM_JS(int, GetCanvasWidthCustom, (), { return window.innerWidth; });
+EM_JS(int, GetCanvasHeightCustom, (), { return window.innerHeight; });
+EM_JS(int, ToggleInfoPeerJs, (), { return togglePeerJs(); });
 
 static bool activeDev = true;
 double lastSecond = 0;
@@ -52,7 +52,7 @@ static Player players[] = {
         {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     },
     {   
-        4, 2, 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, GAMEPAD,
+        4, 2, 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
         {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     },
 };
@@ -88,7 +88,7 @@ void UpdateGameplay(void) {
 
     double time = GetTime();
     if ((int)time == lastSecond) {
-        SetWindowSize(getCanvasWidth(), getCanvasHeight());
+        SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
         camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
         lastSecond += 1;
     }
@@ -99,7 +99,7 @@ void UpdateGameplay(void) {
     if (IsKeyPressed(KEY_O)) activeDev = !activeDev;
 
     if (IsKeyPressed(KEY_U)) {
-        toggleInfoPeerJs();
+        ToggleInfoPeerJs();
     }
 
     // Pause
