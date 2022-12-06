@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+extern float arenaSize;
 
 void InitGameplay(void);
 void UpdateGameplay(void);

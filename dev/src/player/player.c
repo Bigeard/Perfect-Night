@@ -1,15 +1,17 @@
 #include "../../../raylib/src/raylib.h"
 #include "../../../raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
+#include <math.h>
 #include "stdio.h"
 
 #include "player.h"
+#include "../gameplay/gameplay.h"
 #include "../bullet/bullet.h"
 
-EM_JS(float, GetJoystickMobileLeftX, (), { return virtualGamepad.Gamepad.axes[0] });
-EM_JS(float, GetJoystickMobileLeftY, (), { return virtualGamepad.Gamepad.axes[1] });
-EM_JS(float, GetJoystickMobileRightX, (), { return virtualGamepad.Gamepad.axes[2] });
-EM_JS(float, GetJoystickMobileRightY, (), { return virtualGamepad.Gamepad.axes[3] });
+EM_JS(float, GetJoystickMobileLeftX, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[0] });
+EM_JS(float, GetJoystickMobileLeftY, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[1] });
+EM_JS(float, GetJoystickMobileRightX, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[2] });
+EM_JS(float, GetJoystickMobileRightY, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[3] });
 
 
 void InitPlayer(void) {
@@ -110,18 +112,40 @@ void UpdatePlayer(Player *player) {
         if (IsKeyDown(player->KEY[6])) player->radian += 3.2 * delta;
     }
 
-    if (player->INPUT_TYPE == GAMEPAD) {
+    else if (player->INPUT_TYPE == GAMEPAD) {
+        int gamepadId;
+        sscanf(player->gamepadId, "%d", &gamepadId);
         // Move Player
-        delta_x = player->speed.x * GetGamepadAxisMovement(player->gamepadId, 0);
-        delta_y = player->speed.y * GetGamepadAxisMovement(player->gamepadId, 1);
+        float joystickLeftRectX = GetGamepadAxisMovement(gamepadId, 0);
+        float joystickLeftRectY = GetGamepadAxisMovement(gamepadId, 1);
+        float joystickLeftX = joystickLeftRectX / sqrt(1 + pow(joystickLeftRectX, 2) * pow(joystickLeftRectY, 2));
+        float joystickLeftY = joystickLeftRectY / sqrt(1 + pow(joystickLeftRectX, 2) * pow(joystickLeftRectY, 2));
+
+        // delta_x = player->speed.x * GetGamepadAxisMovement(gamepadId, 0);
+        // delta_y = player->speed.y * GetGamepadAxisMovement(gamepadId, 1);
+        delta_x = player->speed.x * joystickLeftX;
+        delta_y = player->speed.y * joystickLeftY;
 
         // Move Cannon
-        if (GetGamepadAxisMovement(player->gamepadId, 3) != 0.0f || GetGamepadAxisMovement(player->gamepadId, 2) != 0.0f) {
-            player->radian = atan2f(GetGamepadAxisMovement(player->gamepadId, 3), GetGamepadAxisMovement(player->gamepadId, 2));
+        float joystickRightRectX = GetGamepadAxisMovement(gamepadId, 2);
+        float joystickRightRectY = GetGamepadAxisMovement(gamepadId, 3);
+        
+        float joystickRightX = joystickRightRectX / sqrt(1 + pow(joystickRightRectX, 2) * pow(joystickRightRectY, 2));
+        float joystickRightY = joystickRightRectY / sqrt(1 + pow(joystickRightRectX, 2) * pow(joystickRightRectY, 2));
+        
+        // float joystickRightX = joystickRightRectX * sqrt(pow(pow(joystickRightRectX, 2), pow(joystickRightRectY, 2)));
+        // float joystickRightY = joystickRightRectY * sqrt(pow(pow(joystickRightRectX, 2), pow(joystickRightRectY, 2)));
+        
+
+        if (joystickRightY != 0.0f || joystickRightY != 0.0f) {
+            player->radian = atan2f(joystickRightY, joystickRightX);
         }
 
         // Charge / Shoot Bullet
-        if (IsGamepadButtonDown(player->gamepadId, 12) && player->ammunition > 0) {
+        // float distance = sqrt(pow(joystickRightX, 2) + pow(joystickRightY, 2));
+        // TraceLog(LOG_INFO, "Distance: %f", distance);
+        // if (distance >= 1.0f && player->ammunition > 0) {
+        if (IsGamepadButtonDown(gamepadId, 12) && player->ammunition > 0) {
             player->timeShoot += 2;
             player->speed = (Vector2){ 1.5, 1.5 };
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
@@ -187,19 +211,21 @@ void UpdatePlayer(Player *player) {
         }
     }
 
-    if (player->INPUT_TYPE == MOBILE) {
+    else if (player->INPUT_TYPE == MOBILE) {
         // Move Player
-        delta_x = player->speed.x * GetJoystickMobileLeftX();
-        delta_y = player->speed.y * GetJoystickMobileLeftY();
+        delta_x = player->speed.x * GetJoystickMobileLeftX(player->gamepadId);
+        delta_y = player->speed.y * GetJoystickMobileLeftY(player->gamepadId);
 
         // Move Cannon
-        if (GetJoystickMobileRightY() != 0.0f || GetJoystickMobileRightX() != 0.0f) {
-            player->radian = atan2f(GetJoystickMobileRightY(), GetJoystickMobileRightX());
+        float joystickRightX = GetJoystickMobileRightX(player->gamepadId);
+        float joystickRightY = GetJoystickMobileRightY(player->gamepadId);
+        if (joystickRightY != 0.0f || joystickRightX != 0.0f) {
+            player->radian = atan2f(joystickRightY, joystickRightX);
         }
 
         // Charge / Shoot Bullet
-        float distance = sqrt(pow(GetJoystickMobileRightX(), 2) + pow(GetJoystickMobileRightY(), 2));
-        if (distance > 0.9 && player->ammunition > 0) {
+        float distance = sqrt(pow(joystickRightY, 2) + pow(joystickRightX, 2));
+        if (distance > 0.98 && player->ammunition > 0) {
             player->timeShoot += 2;
             player->speed = (Vector2){ 1.5, 1.5 };
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
@@ -256,10 +282,10 @@ void UpdatePlayer(Player *player) {
     player->p.pos.y = player->p.pos.y + delta_y;
 
     // Out of area
-    float arenaSize = 800;
-    if ((player->p.pos.x >= (float) arenaSize || 
+    // float arenaSize = 800;
+    if ((player->p.pos.x >= arenaSize || 
         player->p.pos.x + player->p.size.x <= 0) ||
-        (player->p.pos.y >= (float) arenaSize || 
+        (player->p.pos.y >= arenaSize || 
         player->p.pos.y + player->p.size.y <= 0)) {
 
         if (player->life > 0) player->life--;

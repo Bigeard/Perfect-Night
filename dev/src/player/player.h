@@ -17,7 +17,7 @@ extern "C" {
 
 typedef struct Player {
     int id; // Identifier
-    int gamepadId; // Gamepad identifier
+    char* gamepadId; // Gamepad identifier
     int life; // Number of life (by default: 3)
     int invincible; // Time of invincibility
     int damagesTaken; // Percentage of damages token

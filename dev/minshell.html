@@ -118,23 +118,28 @@
 
                     recvId.value = peer.id;
                     // Generate QrCode
+                    console.log(window.location.href + "g.htm?i=" + peer.id);
                     doqr(window.location.href + "g.htm?i=" + peer.id)
                     status.innerHTML = "Awaiting connection...";
                 });
 
                 peer.on('connection', (c) => {
-                    if (conn && conn.open) {
+                    if (listGamepad.size >= 4) {
                         c.on('open', () => {
-                            c.send("Already connected to another client");
+                            c.send("Error: To many players");
                             setTimeout(() => c.close(), 500);
                         });
                         return;
                     }
                     conn = c;
-                    status.innerHTML = "Connected to: " + conn.peer;
-                    // ICI
-                    virtualGamepad.connect(conn.peer);
-                    ready();
+                    const gamepad = new VirtualGamepad(
+                        conn,
+                        conn.peer,
+                        listGamepad.size
+                    );
+                    listGamepad.set(gamepad.id, gamepad);
+                    const names = listGamepad.forEach(g => g.name + " | ");
+                    status.innerHTML = "Connected to: " + names;
                 });
 
                 peer.on('disconnected', () => {
@@ -142,54 +147,18 @@
                     peer.id = lastPeerId;
                     peer._lastServerId = lastPeerId;
                     // ICI
-                    virtualGamepad.disconnect();
+                    const gamepad = listGamepad.get(peer.id);
+                    gamepad.disconnect();
                     peer.reconnect();
                 });
 
                 peer.on('close', () => {
-                    conn = null;
+                    listGamepad.forEach(g => g.disconnect());
                     status.innerHTML = "Connection destroyed. Please refresh";
                 });
 
                 peer.on('error', (err) => alert('' + err));
             };
-
-            const ready = () => {
-                conn.on('data', (data) => {
-                    if (data != null && (typeof data === 'object' || typeof data === 'function')) {
-                        console.log(data);
-                        if (data.j === "l") {
-                            virtualGamepad.Gamepad.axes[0] = data.x;
-                            virtualGamepad.Gamepad.axes[1] = data.y;
-                        }
-                        else {
-                            virtualGamepad.Gamepad.axes[2] = data.x;
-                            virtualGamepad.Gamepad.axes[3] = data.y;
-                        }
-                    }
-                    else {
-                        addMessage("<span class=\"peerMsg\">Peer: </span>" + data)
-                    }
-                });
-                conn.on('close', () => {
-                    status.innerHTML = "Connection reset<br>Awaiting connection...";
-                    conn = null;
-                });
-            }
-
-            const addMessage = (msg) => {
-                var now = new Date();
-                var h = now.getHours();
-                const addZero = (t) => {
-                    if (t < 10) t = "0" + t;
-                    return t;
-                };
-                var m = addZero(now.getMinutes());
-                var s = addZero(now.getSeconds());
-                if (h > 12) h -= 12;
-                else if (h === 0) h = 12;
-                message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
-            }
 
             // Send Message
             sendMessageBox.addEventListener('keypress', (e) => {
@@ -206,6 +175,20 @@
             });
             init();
         })();
+
+        const addMessage = (msg) => {
+            var now = new Date();
+            var h = now.getHours();
+            const addZero = (t) => {
+                if (t < 10) t = "0" + t;
+                return t;
+            };
+            var m = addZero(now.getMinutes());
+            var s = addZero(now.getSeconds());
+            if (h > 12) h -= 12;
+            else if (h === 0) h = 12;
+            message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
+        }
     </script>
     {{{ SCRIPT }}}
 </body>
