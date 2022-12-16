@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+extern bool activeDev;
 extern float arenaSize;
 
 void InitGameplay(void);

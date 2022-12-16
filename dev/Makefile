@@ -193,7 +193,7 @@ endif
 #  -std=gnu99           defines C language mode (GNU C from 1999 revision)
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS += -Wall -std=gnu99 -D_DEFAULT_SOURCE -Wno-missing-braces -s EXPORTED_RUNTIME_METHODS=['lengthBytesUTF8','stringToUTF8','UTF8ToString']
+CFLAGS += -Wall -std=gnu99 -D_DEFAULT_SOURCE -Wno-missing-braces -s EXPORTED_RUNTIME_METHODS=['lengthBytesUTF8','stringToUTF8','UTF8ToString','ccall']
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -O0
@@ -342,7 +342,7 @@ ifeq ($(PLATFORM),PLATFORM_RPI)
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # Libraries for web (HTML5) compiling
-    LDLIBS = $(RAYLIB_RELEASE_PATH)/libraylib.a
+    LDLIBS = $(RAYLIB_RELEASE_PATH)/libraylib.a ../build/.libs/libxml2.a -I/usr/include/libxml2
 endif
 
 # Define a recursive wildcard function
@@ -356,11 +356,20 @@ OBJ_DIR = obj
 SRC = $(call rwildcard, *.c, *.h)
 # OBJS = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 OBJS ?= main.c \
+        src/tmx_raylib/tmx_raylib.c \
         src/gameplay/gameplay.c \
         src/physic/physic.c \
         src/player/player.c \
         src/bullet/bullet.c \
         src/box/box.c
+
+# TMX LIB
+OBJS += ../tmx/src/tmx_err.c \
+        ../tmx/src/tmx_hash.c \
+        ../tmx/src/tmx_mem.c \
+        ../tmx/src/tmx_utils.c \
+        ../tmx/src/tmx_xml.c \
+        ../tmx/src/tmx.c
 
 # For Android platform we call a custom Makefile.Android
 ifeq ($(PLATFORM),PLATFORM_ANDROID)

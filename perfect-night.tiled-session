@@ -1,0 +1,28 @@
+{
+    "activeFile": "dev/resources/map1.tmx",
+    "expandedProjectPaths": [
+        "dev/resources",
+        "dev",
+        "."
+    ],
+    "fileStates": {
+        "dev/resources/Grass.tsx": {
+            "scaleInDock": 1
+        },
+        "dev/resources/map1.tmx": {
+            "scale": 0.8872,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 512.849413886384,
+                "y": 511.722272317403
+            }
+        }
+    },
+    "openFiles": [
+        "dev/resources/map1.tmx"
+    ],
+    "project": "perfect-night.tiled-project",
+    "recentFiles": [
+        "dev/resources/map1.tmx"
+    ]
+}

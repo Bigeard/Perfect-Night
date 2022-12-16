@@ -13,9 +13,19 @@ EM_JS(float, GetJoystickMobileLeftY, (const char* id), { return listGamepad.get(
 EM_JS(float, GetJoystickMobileRightX, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[2] });
 EM_JS(float, GetJoystickMobileRightY, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[3] });
 
+Texture2D playerBodyTexture;
+Texture2D playerFaceTexture;
+Texture2D playerTemplateTexture;
 
 void InitPlayer(void) {
+    Image playerBodyImage = LoadImage("resources/player-body.png");
+    playerBodyTexture = LoadTextureFromImage(playerBodyImage);
 
+    Image playerFaceImage = LoadImage("resources/player-face.png");
+    playerFaceTexture = LoadTextureFromImage(playerFaceImage);
+
+    Image playerFaceTemplate = LoadImage("resources/player-template.png");
+    playerTemplateTexture = LoadTextureFromImage(playerFaceTemplate);
 }
 
 void UpdatePlayer(Player *player) {
@@ -289,7 +299,7 @@ void UpdatePlayer(Player *player) {
         player->p.pos.y + player->p.size.y <= 0)) {
 
         if (player->life > 0) player->life--;
-        player->p.pos = (Vector2) { arenaSize / 2 - player->p.size.x / 2, arenaSize / 2 - player->p.size.y / 2 };
+        player->p.pos = (Vector2) { player->spawn.x, player->spawn.y };
         player->p.vel = (Vector2) { 0, 0 };
         player->speed = (Vector2) { 3.5, 3.5 };
         player->damagesTaken = 0;
@@ -312,33 +322,57 @@ void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) 
 void DrawPlayer(Player player) {
     if (player.life <= 0) return;
 
-    if (player.invincible != 0) {
-        DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, Fade(player.COLORS[2], 0.5));
-    }
-    else {
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 16, player.p.pos.y + 16, 29, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , BLACK);
+    // if (player.invincible != 0) {
+    //     // DrawRectangleRounded((Rectangle) { player.p.pos.x+1, player.p.pos.y+1, 30, 30 }, 0.3, 1, Fade(player.COLORS[2], 0.5));
+    //     DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, WHITE);
+    // }
+    // else {
         // Draw body of the tank
-        DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, player.COLORS[2]);
-    }
+        // DrawRectangleRounded((Rectangle) { player.p.pos.x+1, player.p.pos.y+1, 30, 30 }, 0.3, 1, player.COLORS[2]);
+        DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, WHITE);
+    // }
 
-    // Draw cannon of the tank
-    Rectangle playerCanon = { player.p.pos.x + 20, player.p.pos.y + 20, 30, 10 };
-    Vector2 originCanon = { 0, 5 };
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , WHITE);
-    DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 14, WHITE);
+    Rectangle playerCanon = { player.p.pos.x + 16, player.p.pos.y + 16, 26, 6 };
+    Vector2 originCanon = { 0, 3 };
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 16, player.p.pos.y + 16, 28, 10 }, (Vector2){ 0, 5 }, player.radian * (180 / PI) , WHITE);
     DrawRectanglePro(playerCanon, originCanon, player.radian * (180 / PI), player.COLORS[1]);
-    DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 13, player.COLORS[1]);
 
-    // Draw life of the tank
-    float posX = player.p.pos.x - 5 + 20;
-    if (player.life == 1) {
-        posX = player.p.pos.x - 2 + 20;
-    }
-    DrawText(TextFormat("%d", player.life), posX, player.p.pos.y - 28.5 + 40, 20, WHITE);
-    // DrawText(TextFormat("%f %f", cos(player.radian), sin(+ player.radian)), player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
-    // DrawText(TextFormat("%f %f", , , player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
+    DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, player.COLORS[2]);
+    DrawTexturePro(playerTemplateTexture, (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+16, player.p.pos.y+16,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
-    // Draw load of the shoot
-    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.4));
+    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
+    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
+
+    // if (player.invincible != 0) {
+    //     DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, Fade(player.COLORS[2], 0.5));
+    // }
+    // else {
+    //     // Draw body of the tank
+    //     DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, player.COLORS[2]);
+    // }
+
+
+
+    // // Draw cannon of the tank
+    // Rectangle playerCanon = { player.p.pos.x + 20, player.p.pos.y + 20, 30, 10 };
+    // Vector2 originCanon = { 0, 5 };
+    // DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , WHITE);
+    // DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 14, WHITE);
+    // DrawRectanglePro(playerCanon, originCanon, player.radian * (180 / PI), player.COLORS[1]);
+    // DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 13, player.COLORS[1]);
+
+    // // Draw life of the tank
+    // float posX = player.p.pos.x - 5 + 20;
+    // if (player.life == 1) {
+    //     posX = player.p.pos.x - 2 + 20;
+    // }
+    // DrawText(TextFormat("%d", player.life), posX, player.p.pos.y - 28.5 + 40, 20, WHITE);
+    // // DrawText(TextFormat("%f %f", cos(player.radian), sin(+ player.radian)), player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
+    // // DrawText(TextFormat("%f %f", , , player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
+
+    // // Draw load of the shoot
+    // DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.4));
 }
 
 void DrawStatsPlayer(Player player) {

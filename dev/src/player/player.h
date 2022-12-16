@@ -24,6 +24,7 @@ typedef struct Player {
     int ammunition; // Ammunition
     int ammunitionLoad; // Ammunition loading
     Physic p; // Physic (position, velocity...)
+    Vector2 spawn;
     Vector2 speed;
     float charge;
     bool canShoot;
