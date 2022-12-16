@@ -1,9 +1,9 @@
 {
     "activeFile": "dev/resources/map1.tmx",
     "expandedProjectPaths": [
-        "dev/resources",
+        ".",
         "dev",
-        "."
+        "dev/resources"
     ],
     "fileStates": {
         "dev/resources/Grass.tsx": {
