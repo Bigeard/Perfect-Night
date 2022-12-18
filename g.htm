@@ -3,30 +3,46 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width">
-    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <!-- <meta http-equiv="ScreenOrientation" content="autoRotate:disabled"> -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Perfect Night - Mobile Gamepad</title>
     <link rel="shortcut icon" href="/favicon.ico">
+
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"> -->
+
     <script src="js/peerjs.min.js"></script>
     <script src="js/nipplejs.min.js"></script>
     <style>
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
         body {
             margin: 0px;
+            padding: 0;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             display: block;
+            /* background: #CDCDCD; */
         }
 
         #peerjs {
             display: block;
-            background: #CDCDCD;
+            background: #eee;
             padding: 15px;
-            border-radius: 10px;
-            border: double 3px #000;
-            width: 80%;
-            height: 60%;
-            margin: auto;
+            border-radius: 15px;
+            /* border: double 3px #000; */
+            width: auto;
+            /* height: 60%; */
+            margin: 15px auto 0 auto;
             justify-content: space-around;
         }
 
@@ -38,50 +54,92 @@
             width: 100%;
         }
 
+        #joysticks {
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+        }
+
         #joystickLeft {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            left: 0;
+            bottom: -50;
+            width: 50%;
+            height: 100vh;
+            border-right: dashed #ddd 1px;
         }
 
         #joystickRight {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: -40;
+            width: 50%;
+            height: 100vh;
+            border-left: dashed #ddd 1px;
+        }
+
+        /* .infoTop {
+            text-align: center;
+        } */
+
+        #infoBottom {
+            position: absolute;
+            left: 0;
+            right: 0;
+            font-weight: bold;
+            padding: 10px;
+            margin: auto;
+            background: #eee;
+            width: fit-content;
+            border-radius: 0px 0px 15px 15px;
         }
     </style>
 </head>
 
-<body>
+<body id="body">
     <div id="peerjs">
         <div class="message-container">
-            <span>Messages: <span id="message"></span></span>
+            <span>Messages: <span id="message"></span></span><br>
             <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
         </div>
         <div class="info-container">
             <span>Status: <span id="status"></span></span><br>
-            <span id="peerId">ID: ...</span>
+            <span id="peerId">ID: ...</span><br>
+            <span id="ping">Ping: X</span>
         </div>
     </div>
-    <div>
+    <div id="joysticks">
         <div id="joystickLeft"></div>
         <div id="joystickRight"></div>
     </div>
+    <!-- <div class="infoTop">
+        <span>Life X</span>
+        <span>Ammo. X</span>
+    </div> -->
+    <div id="infoBottom">
+        <span id="playerId">PLAYER X</span>
+    </div>
 
     <script type="text/javascript">
+        // document.addEventListener('touchmove', function (event) {
+        //     if (event.scale !== 1) { event.preventDefault(); }
+        // }, { passive: false });
+
         // NippleJS
         var joystickLeft = nipplejs.create({
             zone: document.getElementById('joystickLeft'),
             mode: 'static',
-            position: { left: '25%', top: '30%' },
-            color: 'purple'
+            position: { left: '50%', top: '50%' },
+            color: 'grey',
+            size: 150
         });
 
         var joystickRight = nipplejs.create({
             zone: document.getElementById('joystickRight'),
             mode: 'static',
-            position: { right: '25%', top: '30%' },
-            color: 'purple'
+            position: { right: '50%', top: '50%' },
+            color: 'grey',
+            size: 150
         });
 
         // PeerJS
@@ -92,6 +150,10 @@
             var status = document.getElementById("status");
             var message = document.getElementById("message");
             var sendMessageBox = document.getElementById("sendMessageBox");
+            var ping = document.getElementById("ping");
+            var peerjs = document.getElementById("peerjs");
+            var infoBottom = document.getElementById("infoBottom");
+            var playerId = document.getElementById("playerId");
 
             var peerId = document.getElementById("peerId");
 
@@ -154,7 +216,27 @@
                     status.innerText = "Connected to: " + conn.peer;
                 });
                 conn.on('data', (data) => {
-                    addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
+                    if (data != null && (typeof data === 'object' || typeof data === 'function')) {
+                        if (data.color != null) {
+                            joystickLeft[0].options.color = data.color;
+                            joystickLeft[0].ui.front.style.background = data.color;
+                            joystickLeft[0].ui.back.style.background = data.color;
+
+                            joystickRight[0].options.color = data.color;
+                            joystickRight[0].ui.front.style.background = data.color;
+                            joystickRight[0].ui.back.style.background = data.color;
+
+                            peerjs.style.background = data.color;
+                            infoBottom.style.background = data.color;
+                        }
+                        if (data.index != null) {
+                            playerId.innerText = "PLAYER " + data.index;
+                        }
+                        ping.innerText = "Ping: " + (new Date().getTime() - data.t);
+                    }
+                    else {
+                        addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
+                    }
                 });
                 conn.on('close', () => {
                     status.innerText = "Connection closed";
@@ -200,18 +282,19 @@
             });
 
             joystickLeft.on('start end', function (evt, data) {
-                // console.log('start end', data);
                 if (conn) {
                     conn.send({
-                        j: "l",
-                        x: 0,
-                        y: 0,
+                        t: new Date().getTime(), // Time
+                        j: "l", // Joystick Left / Right
+                        x: 0, // Position Joystick X
+                        y: 0, // Position Joystick Y
                     });
                 }
 
             }).on('move', function (evt, data) {
                 if (conn) {
                     conn.send({
+                        t: new Date().getTime(), // Time
                         j: "l",
                         x: (Math.round(data.instance.frontPosition.x) / 50),
                         y: (Math.round(data.instance.frontPosition.y) / 50)
@@ -222,17 +305,18 @@
             });
 
             joystickRight.on('start end', function (evt, data) {
-                // console.log('start end', data);
                 if (conn) {
                     conn.send({
-                        j: "r",
-                        x: 0,
-                        y: 0,
+                        t: new Date().getTime(), // Time
+                        j: "r", // Joystick Left / Right
+                        x: 0, // Position Joystick X
+                        y: 0, // Position Joystick Y
                     });
                 }
             }).on('move', function (evt, data) {
                 if (conn) {
                     conn.send({
+                        t: new Date().getTime(), // Time
                         j: "r",
                         x: (Math.round(data.instance.frontPosition.x) / 50),
                         y: (Math.round(data.instance.frontPosition.y) / 50)

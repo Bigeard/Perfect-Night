@@ -241,7 +241,8 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     ifeq ($(BUILD_MODE), DEBUG)
         CFLAGS += -s ASSERTIONS=1 --profiling
         # Define a custom shell .html and output extension
-        CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
+        # CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
+        CFLAGS += --shell-file ./minshell.html
     else
         CFLAGS += --shell-file ./minshell.html
     endif
@@ -370,6 +371,10 @@ OBJS += ../tmx/src/tmx_err.c \
         ../tmx/src/tmx_utils.c \
         ../tmx/src/tmx_xml.c \
         ../tmx/src/tmx.c
+
+# QR CODE LIB
+OBJS += ../QR-Code-generator/c/qrcodegen.c
+
 
 # For Android platform we call a custom Makefile.Android
 ifeq ($(PLATFORM),PLATFORM_ANDROID)

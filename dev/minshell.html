@@ -13,7 +13,7 @@
     <script src="js/peerjs.min.js"></script>
     <script src="js/qrenc3.min.js"></script>
     <script src="js/virtualgamepad.js"></script>
-    <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
+    <script src="js/filesaver.min.js"> </script>
     <script type='text/javascript'>
         function saveFileFromMEMFSToDisk(memoryFSname, localFSname)     // This can be called by C/C++ code
         {
@@ -78,13 +78,14 @@
     <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
     <div id="peerjs">
         <div class="message-container">
-            <span>Messages: <span id="message"></span></span>
+            <span>Messages: <span id="message"></span></span><br>
             <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
+            <button id="sendMessageButton" onclick="sendMessage()">></button>
         </div>
         <div class="info-container">
             <span>Status: <span id="status"></span></span>
             <div style="font-weight: bold;" title="Copy this ID to the input on send.html.">ID:
-                <input type="text" id="receiverId" disabled>
+                <input type="text" id="receiverId">
                 <button onclick="copyToClipboard()">Copy ID</button>
                 <canvas id="qrcanv"></canvas>
             </div>
@@ -106,23 +107,23 @@
             return 1;
         }
 
+        var gamepadUrl = "n";
+        var lastPeerId = null;
+        var peer = null;
+        var status = document.getElementById("status");
+        var message = document.getElementById("message");
+        var sendMessageBox = document.getElementById("sendMessageBox");
+
+        var recvId = document.getElementById("receiverId");
+
         (() => {
             // Setup QrCode
             setupqr();
 
             copyToClipboard = () => {
                 recvId.select();
-                navigator.clipboard.writeText(recvId.value);
+                navigator.clipboard.writeText();
             }
-
-            var lastPeerId = null;
-            var peer = null;
-            var conn = null;
-            var status = document.getElementById("status");
-            var message = document.getElementById("message");
-            var sendMessageBox = document.getElementById("sendMessageBox");
-
-            var recvId = document.getElementById("receiverId");
 
             const init = () => {
                 peer = new Peer(null, { debug: 2 });
@@ -137,20 +138,20 @@
 
                     recvId.value = peer.id;
                     // Generate QrCode
-                    console.log(window.location.href + "g.htm?i=" + peer.id);
-                    doqr(window.location.href + "g.htm?i=" + peer.id)
+                    gamepadUrl = window.location.href + "g.htm?i=" + peer.id;
+                    doqr(gamepadUrl)
+                    console.log(gamepadUrl);
                     status.innerHTML = "Awaiting connection...";
                 });
 
-                peer.on('connection', (c) => {
-                    if (listGamepad.size >= 4) {
-                        c.on('open', () => {
-                            c.send("Error: To many players");
-                            setTimeout(() => c.close(), 500);
+                peer.on('connection', (conn) => {
+                    if (listGamepad.size >= 8) {
+                        conn.on('open', () => {
+                            conn.send("Error: To many players");
+                            setTimeout(() => conn.close(), 500);
                         });
                         return;
                     }
-                    conn = c;
                     const gamepad = new VirtualGamepad(
                         conn,
                         conn.peer,
@@ -180,20 +181,28 @@
             };
 
             // Send Message
-            sendMessageBox.addEventListener('keypress', (e) => {
+            sendMessageBox.addEventListener('keypress', function (e) {
                 if (e.keyCode === '13') {
-                    if (conn && conn.open) {
-                        var msg = sendMessageBox.value;
-                        sendMessageBox.value = "";
-                        conn.send(msg);
-                        addMessage("<span class=\"selfMsg\">Self: </span>" + msg);
-                    } else {
-                        console.error('Connection is closed');
-                    }
+                    sendMessage();
                 }
             });
+
             init();
         })();
+
+        const sendMessage = () => {
+            console.log('press code');
+            listGamepad.forEach((gamepad) => {
+                if (gamepad.conn && gamepad.conn.open) {
+                    var msg = sendMessageBox.value;
+                    gamepad.conn.send(msg);
+                    addMessage("<span class=\"selfMsg\">Self: </span>" + msg);
+                } else {
+                    console.error('Connection is closed');
+                }
+            })
+            sendMessageBox.value = "";
+        }
 
         const addMessage = (msg) => {
             var now = new Date();

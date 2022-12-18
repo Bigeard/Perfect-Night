@@ -38,7 +38,7 @@ IDEA :
 - Improve the design
     - Add design for the collision boxes
     - Change graphic of the player info (life / amm.)
-    - (optional) customisation of the player (color, appearance)
+    - (optional) customization of the player (color, appearance)
     - Change UI/UX of the phone gamepad (add info game play / p2p button)
     - Create the design of the pages
     - Design the background limit

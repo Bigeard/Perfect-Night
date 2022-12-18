@@ -1,6 +1,8 @@
 #include "../../../raylib/src/raylib.h"
 #include "../../../raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
+#include <stdbool.h>
+#include <string.h>
 #include "stdio.h"
 
 #include "../../../tmx/src/tmx.h"
@@ -11,8 +13,14 @@
 #include "../bullet/bullet.h"
 #include "../box/box.h"
 #include "gameplay.h"
+#include "../../../QR-Code-generator/c/qrcodegen.h"
 
-
+EM_JS(char*, GetGamepadUrl, (), { 
+    const byteCount = Module.lengthBytesUTF8(gamepadUrl)+1;
+    const idPointer = Module._malloc(byteCount);
+    Module.stringToUTF8(gamepadUrl, idPointer, byteCount);
+    return idPointer;
+});
 EM_JS(int, GetCanvasWidthCustom, (), { return window.innerWidth });
 EM_JS(int, GetCanvasHeightCustom, (), { return window.innerHeight });
 EM_JS(int, ToggleInfoPeerJs, (), { return togglePeerJs() });
@@ -26,6 +34,17 @@ EM_JS(char*, GetIdGamepad, (const int index), {
     Module.stringToUTF8(res, idPointer, byteCount);
     return idPointer;
 });
+EM_JS(int, InitColorGamepad, (const char *p_id, const char r, const char g, const char b), { 
+    const id = Module.UTF8ToString(p_id);
+    const gamepad = listGamepad.get(id);
+    gamepad.color = `rgb(${r}, ${g}, ${b})`; // I don't understand why it's negative
+    gamepad.edit = true;
+    listGamepad.set(id, gamepad);
+    // I can't send data (socket, WebRTC)
+    // gamepad.initColorGamepad();
+    return 1;
+});
+
 
 tmx_map *map;
 
@@ -36,8 +55,20 @@ static Camera2D camera = { 0 };
 static bool pauseGame = 0;
 int lastPlayer = 0;
 bool playerSpace[8] = { 0 };
+Color themeColor[8] = {
+    { 35, 235, 141, 255}, // GREEN
+    { 241, 82, 91, 255}, // RED
+    { 64, 230, 230, 255}, // BLUE
+    { 127, 102, 242, 255}, // PURPLE
+    { 241, 209, 37, 255}, // YELLOW
+    { 255, 130, 47, 255}, // ORANGE
+    { 255, 149, 229, 255}, // PINK
+    { 101, 126, 255, 255} // DISCORD COLOR x)
+};
 
-// static Player players[4] = { 0 };
+uint8_t qrCode[qrcodegen_BUFFER_LEN_MAX];
+bool qrCodeOk = false;
+
 static Player players[8] = {
     {},{},{},{},{},{},{},
     { 
@@ -54,8 +85,8 @@ static Player players[8] = {
             { 0.0, 0.0 }, // Velocity
             { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
         },
+        { 0, 0 }, // Spawn
         { 3.5, 3.5 }, // Speed
-        { 0, 0 },
         2, // Charge 
         true, // Can Shoot 
         0, // Time Shoot
@@ -79,22 +110,9 @@ static Player players[8] = {
     //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     // },
 };
-
-static Box boxes[40] = {
-    // {{{400, 150}, {100, 100}, {0, 0}}, GRAY },
-    // {{{100, 300}, {100, 100}, {0, 0}}, GRAY },
-    // {{{250, 350}, {100, 100}, {0, 0}}, GRAY },
-    // {{{200, 300}, {100, 25}, {0, 0}}, GRAY },
-    // {{{450, 450}, {100, 100}, {0, 0}}, GRAY },
-    // {{{550, 250}, {100, 100}, {0, 0}}, GRAY },
-    // {{{550, 350}, {100, 100}, {0, 0}}, GRAY },
-    // {{{450, 650}, {100, 100}, {0, 0}}, GRAY },
-    // {{{450, 550}, {100, 100}, {0, 0}}, GRAY },
-    // {{{550, 450}, {100, 100}, {0, 0}}, GRAY },
-    // {{{650, 450}, {100, 100}, {0, 0}}, GRAY },
-};
-
 static int playersLength = sizeof(players)/sizeof(players[0]);
+
+static Box boxes[40] = {};
 static int boxesLength = sizeof(boxes)/sizeof(boxes[0]);
 
 
@@ -113,7 +131,7 @@ void InitGameplay(void) {
     camera.target = (Vector2){ 0, 0 };
     camera.offset = (Vector2){ 0, 0 };
     camera.rotation = 0.0f;
-    camera.zoom = 1.3f;
+    camera.zoom = 1.0f;
 }
 
 void UpdateGameplay(void) {
@@ -135,18 +153,30 @@ void UpdateGameplay(void) {
             if(!playerSpace[i]) {
                 playerSpace[i] = true;
                 players[i] = (Player) {
-                    i+1, GetIdGamepad(i), 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, { 0, 0 }, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
+                    i+1, GetIdGamepad(i), 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
                 };
+                tmx_init_object(map->ly_head, players, boxes);
+                InitColorGamepad(players[i].gamepadId, themeColor[i].r, themeColor[i].g, themeColor[i].b);
                 i = playersLength;
                 lastPlayer++;
-                tmx_init_object(map->ly_head, players, boxes);
             }
         }
     }
 
     if(lastPlayer > numberPlayer) {
+        // Todo remove player / disconnect
+    }
 
+    if(!qrCodeOk) {
+        // Generate QrCode
+        const char *url = GetGamepadUrl();                // User-supplied text
+        if(url[0] != 'n') {
+            enum qrcodegen_Ecc errCorLvl = qrcodegen_Ecc_LOW;  // Error correction level
+            uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
+            qrCodeOk = qrcodegen_encodeText(url, tempBuffer, qrCode, errCorLvl,
+                qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+        }
     }
 
     camera.zoom += ((float)GetMouseWheelMove()*0.01f);
@@ -173,6 +203,13 @@ void UpdateGameplay(void) {
     // Reset
     if (IsKeyPressed(KEY_R)) {
         // Press R to reset
+        tmx_init_object(map->ly_head, players, boxes);
+        for (int i = 0; i < playersLength; i++) {
+            if(playerSpace[i]) {
+                players[i].life = 3;
+                players[i].id = i+1;
+            }
+        }
     }
 
     // Update Players / Bullets
@@ -265,13 +302,13 @@ void DrawGameplay(void) {
             }
             DrawPlayer(players[i]);
         }
-
+        DrawQrCode();
         DrawPauseGame();
     EndMode2D();
 
     // DRAW STAT LOG INFO
     BeginDrawing();
-        for (int i = 0; i < lastPlayer; i++) {
+        for (int i = 0; i < 8; i++) {
             DrawStatsPlayer(players[i]);
         }
 
@@ -310,7 +347,7 @@ void DrawGameArena(void) {
         //     DrawLine(-1000, i * 5 - 4000, 4000, i * 5 + 1000, BLACK); 
         //     DrawLine(i * 5 - 1000, -1000, i * 5 - 4000 - 1000, 4000 - 1000, BLACK); 
         // } 
-            // DrawRectangleRec((Rectangle) { 0, 0, arenaSize, arenaSize }, WHITE);
+        // DrawRectangleRec((Rectangle) { 0, 0, arenaSize, arenaSize }, WHITE);
         for (int i=0; i<=arenaSize*0.01; i++) {
             if (i < arenaSize*0.01) {
                 DrawText(TextFormat("%d", i+1), i * 100 + 6, 4, 20, LIGHTGRAY);
@@ -342,5 +379,33 @@ void DrawPauseGame(void) {
         DrawText("CONTROLLER (C)", camera.target.x - 8 * 14, camera.target.y - 100.0, 30, BLACK);
         DrawText("EDIT THE MAP (E)", camera.target.x - 8 * 16, camera.target.y - 0.0, 30, BLACK);
         DrawText("CONTINUE (P)", camera.target.x - 8 * 12, camera.target.y + 100.0, 30, BLACK);
+    }
+}
+
+
+void DrawQrCode(void) {
+	if (qrCodeOk) {
+        float sizeRec = 256.f;
+        int posRec = 384;
+        sizeRec -= 16;
+        posRec += 8;
+        int size = qrcodegen_getSize(qrCode);
+        float t = sizeRec / size;
+        int c = 0;
+        DrawRectangleRec((Rectangle) { posRec, posRec, sizeRec, sizeRec }, WHITE);
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if (qrcodegen_getModule(qrCode, x, y)) {
+                    if (c>7) c=0;
+                    if (((y<7 && x>size-8)) || (y>size-8 && y<size && x<7) || (x<7 && y<7) || ((x>size-10 && y>size-10) && (x<size-4 && y<size-4))) {
+                        DrawRectangleRec((Rectangle) { x*t + posRec, y*t + posRec, t, t }, GRAY);
+                    }
+                    else {
+                        DrawRectangleRounded((Rectangle) { x*t + posRec, y*t + posRec, t, t }, 1.f, 0, themeColor[c]);
+                    }
+                }
+                c++;
+            }
+        }
     }
 }

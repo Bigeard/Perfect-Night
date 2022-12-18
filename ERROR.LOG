@@ -25,4 +25,16 @@ make[1]: *** [Makefile:377: index] Error 1
 
 --
 
-3.
+3. 
+emsdk/upstream/emscripten/tools/acorn-optimizer.js:86
+    if (!(node.type in cs)) {
+               ^
+
+TypeError: Cannot read property 'type' of undefined
+
+```js
+listGamepad.set(
+    id,
+    {...listGamepad.get(id), "color": "rgb("+r+", "+g+", "+b+")"},
+);
+```

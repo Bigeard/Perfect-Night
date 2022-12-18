@@ -235,7 +235,7 @@ void UpdatePlayer(Player *player) {
 
         // Charge / Shoot Bullet
         float distance = sqrt(pow(joystickRightY, 2) + pow(joystickRightX, 2));
-        if (distance > 0.98 && player->ammunition > 0) {
+        if (distance > 0.1 && player->ammunition > 0) {
             player->timeShoot += 2;
             player->speed = (Vector2){ 1.5, 1.5 };
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10)%2) == 1 && player->life > 0) {
@@ -398,6 +398,7 @@ void DrawStatsPlayer(Player player) {
 
         DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ 180, 185 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 60, 10, colorDisplay0);
         DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ 250, 190 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){ 180, 100 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
     }
     else {
         DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 64, 72 }, (Vector2){ -2, 6 }, 270, WHITE);
@@ -414,5 +415,6 @@ void DrawStatsPlayer(Player player) {
 
         DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ GetScreenWidth() - 130, 45 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 60, 10, colorDisplay0);
         DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ GetScreenWidth() - 250, 70 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){ GetScreenWidth() - 130, -40 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
     }
 }
