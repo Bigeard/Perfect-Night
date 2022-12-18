@@ -26,7 +26,7 @@
 # Define required raylib variables
 PROJECT_NAME       ?= index
 RAYLIB_VERSION     ?= 4.2.0
-RAYLIB_PATH        ?= ../raylib
+RAYLIB_PATH        ?= ../lib/raylib
 
 # Define compiler path on Windows
 COMPILER_PATH      ?= C:/raylib/w64devkit/bin
@@ -117,7 +117,7 @@ endif
 
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # Emscripten required variables
-    EMSDK_PATH         ?= /home/bigeard/Desktop/perfect-night/emsdk
+    EMSDK_PATH         ?= ../lib/emsdk
     EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
     CLANG_PATH          = $(EMSDK_PATH)/upstream/bin
     PYTHON_PATH         = /usr/lib/python3.9
@@ -365,15 +365,15 @@ OBJS ?= main.c \
         src/box/box.c
 
 # TMX LIB
-OBJS += ../tmx/src/tmx_err.c \
-        ../tmx/src/tmx_hash.c \
-        ../tmx/src/tmx_mem.c \
-        ../tmx/src/tmx_utils.c \
-        ../tmx/src/tmx_xml.c \
-        ../tmx/src/tmx.c
+OBJS += ../lib/tmx/src/tmx_err.c \
+        ../lib/tmx/src/tmx_hash.c \
+        ../lib/tmx/src/tmx_mem.c \
+        ../lib/tmx/src/tmx_utils.c \
+        ../lib/tmx/src/tmx_xml.c \
+        ../lib/tmx/src/tmx.c
 
 # QR CODE LIB
-OBJS += ../QR-Code-generator/c/qrcodegen.c
+OBJS += ../lib/qrcode/c/qrcodegen.c
 
 
 # For Android platform we call a custom Makefile.Android

@@ -1,5 +1,5 @@
-#include "../../../raylib/src/raylib.h"
-#include "../../../raylib/src/raymath.h"
+#include "../../../lib/raylib/src/raylib.h"
+#include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
 #include <stdbool.h>
 #include <string.h>
@@ -13,7 +13,7 @@
 #include "../bullet/bullet.h"
 #include "../box/box.h"
 #include "gameplay.h"
-#include "../../../QR-Code-generator/c/qrcodegen.h"
+#include "../../../lib/qrcode/c/qrcodegen.h"
 
 EM_JS(char*, GetGamepadUrl, (), { 
     const byteCount = Module.lengthBytesUTF8(gamepadUrl)+1;
@@ -66,8 +66,8 @@ Color themeColor[8] = {
     { 101, 126, 255, 255} // DISCORD COLOR x)
 };
 
-uint8_t qrCode[qrcodegen_BUFFER_LEN_MAX];
 bool qrCodeOk = false;
+Texture2D qrCodeTexture;
 
 static Player players[8] = {
     {},{},{},{},{},{},{},
@@ -168,14 +168,45 @@ void UpdateGameplay(void) {
         // Todo remove player / disconnect
     }
 
+    // Generate Image QrCode
     if(!qrCodeOk) {
         // Generate QrCode
         const char *url = GetGamepadUrl();                // User-supplied text
         if(url[0] != 'n') {
             enum qrcodegen_Ecc errCorLvl = qrcodegen_Ecc_LOW;  // Error correction level
+            uint8_t qrCode[qrcodegen_BUFFER_LEN_MAX];
             uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
             qrCodeOk = qrcodegen_encodeText(url, tempBuffer, qrCode, errCorLvl,
                 qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+            if(qrCodeOk) {
+                int qrCodeSize = qrcodegen_getSize(qrCode);
+                int border = 8;
+                int sizeRec = 256.f;
+                sizeRec -= border*2;
+                int t = sizeRec / qrCodeSize;
+                int c = 0;
+                Image qrCodeImage = GenImageColor(t*qrCodeSize+border*2, t*qrCodeSize+border*2, WHITE);
+                for (int x = 0; x < qrCodeSize; x++) {
+                    for (int y = 0; y < qrCodeSize; y++) {
+                        if (qrcodegen_getModule(qrCode, x, y)) {
+                            if (c>7) c=0;
+                            if (((y<7 && x>qrCodeSize-8)) || 
+                                (y>qrCodeSize-8 && y<qrCodeSize && x<7) || 
+                                (x<7 && y<7) || 
+                                ((x>qrCodeSize-10 && y>qrCodeSize-10) && (x<qrCodeSize-4 && y<qrCodeSize-4))) {
+                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
+                            }
+                            else {
+                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
+                            }
+                        }
+                        c++;
+                    }
+                }
+                ImageResize(&qrCodeImage, sizeRec, sizeRec);
+                qrCodeTexture = LoadTextureFromImage(qrCodeImage);
+                TraceLog(LOG_INFO, "Generate QrCode Ok.");
+            }
         }
     }
 
@@ -302,7 +333,11 @@ void DrawGameplay(void) {
             }
             DrawPlayer(players[i]);
         }
-        DrawQrCode();
+
+        // Draw QrCode
+        if (qrCodeOk) {
+            DrawTexture(qrCodeTexture, 392, 392, WHITE);
+        }
         DrawPauseGame();
     EndMode2D();
 
@@ -315,6 +350,7 @@ void DrawGameplay(void) {
         if (activeDev) {
             // DISPLAY FPS
             DrawFPS(10, 10);
+
             // DISPLAY ZOOM
             DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, BLACK);
             DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, BLACK);
@@ -339,7 +375,6 @@ void DrawGameplay(void) {
 }
 
 void DrawGameArena(void) {
-    // int arenaSize = 800;
     if (activeDev) {
         // DrawRectangleRec((Rectangle) { camera.target.x - GetScreenWidth() / 2, camera.target.y - GetScreenHeight() / 2, GetScreenWidth(), GetScreenHeight() }, BLACK);
         // // DrawCircleGradient(arenaSize/2 - 20, arenaSize/2 - 20, 2000, BLACK, SKYBLUE);
@@ -360,7 +395,6 @@ void DrawGameArena(void) {
         }
     }
 
-
     DrawRectangleRec((Rectangle) { -2, -2, 5, 5 }, BLACK); // 0,0
     DrawRectangleRec((Rectangle) { arenaSize - 1, arenaSize - 1, 5, 5 }, BLACK); // 1000, 1000
     DrawRectangleRec((Rectangle) { arenaSize - 1, -2, 5, 5 }, BLACK); // 1000, 0
@@ -379,33 +413,5 @@ void DrawPauseGame(void) {
         DrawText("CONTROLLER (C)", camera.target.x - 8 * 14, camera.target.y - 100.0, 30, BLACK);
         DrawText("EDIT THE MAP (E)", camera.target.x - 8 * 16, camera.target.y - 0.0, 30, BLACK);
         DrawText("CONTINUE (P)", camera.target.x - 8 * 12, camera.target.y + 100.0, 30, BLACK);
-    }
-}
-
-
-void DrawQrCode(void) {
-	if (qrCodeOk) {
-        float sizeRec = 256.f;
-        int posRec = 384;
-        sizeRec -= 16;
-        posRec += 8;
-        int size = qrcodegen_getSize(qrCode);
-        float t = sizeRec / size;
-        int c = 0;
-        DrawRectangleRec((Rectangle) { posRec, posRec, sizeRec, sizeRec }, WHITE);
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
-                if (qrcodegen_getModule(qrCode, x, y)) {
-                    if (c>7) c=0;
-                    if (((y<7 && x>size-8)) || (y>size-8 && y<size && x<7) || (x<7 && y<7) || ((x>size-10 && y>size-10) && (x<size-4 && y<size-4))) {
-                        DrawRectangleRec((Rectangle) { x*t + posRec, y*t + posRec, t, t }, GRAY);
-                    }
-                    else {
-                        DrawRectangleRounded((Rectangle) { x*t + posRec, y*t + posRec, t, t }, 1.f, 0, themeColor[c]);
-                    }
-                }
-                c++;
-            }
-        }
     }
 }

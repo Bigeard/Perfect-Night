@@ -1,12 +1,29 @@
+# Copyright © 2018 Emscripten authors (see AUTHORS in Emscripten) - MIT Licence
 [submodule "emsdk"]
-	path = emsdk
+	path = lib/emsdk
 	url = https://github.com/emscripten-core/emsdk.git
+
+# Copyright © 2013-2022 Ramon Santamaria - zlib License
 [submodule "raylib"]
-	path = raylib
+	path = lib/raylib
 	url = https://github.com/raysan5/raylib.git
+
+# Copyright © 1998-2012 Daniel Veillard - MIT Licence
 [submodule "libxml2"]
-	path = libxml2
+	path = lib/libxml2
 	url = https://github.com/GNOME/libxml2.git
+
+# Copyright © 2013, Bayle Jonathan - BSD 2-Clause "Simplified" License
 [submodule "tmx"]
-	path = tmx
+	path = lib/tmx
 	url = https://github.com/baylej/tmx.git
+
+# Copyright © 2022 Project Nayuki - MIT License
+[submodule "QR-Code-generator"]
+	path = lib/qrcode
+	url = https://github.com/nayuki/QR-Code-generator
+
+# nipplejs - Copyright © 2014 Yoann Moinet - MIT License - https://github.com/yoannmoinet/nipplejs
+# FileSaver.js  - Copyright © 2016 Eli Grey - MIT License - https://github.com/eligrey/FileSaver.js
+# peerjs - Copyright © 2015 Michelle Bu and Eric Zhang - MIT License - https://github.com/peers/peerjs
+# qrcodejs - Copyright © 2012 davidshimjs - MIT License - https://github.com/davidshimjs/qrcodejs

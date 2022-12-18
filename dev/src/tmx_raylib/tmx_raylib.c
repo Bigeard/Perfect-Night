@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "../../../raylib/src/raylib.h"
-#include "../../../tmx/src/tmx.h"
+#include "../../../lib/raylib/src/raylib.h"
+#include "../../../lib/tmx/src/tmx.h"
 
 #include "../player/player.h"
 #include "../box/box.h"

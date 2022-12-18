@@ -1,4 +1,4 @@
-#include "../raylib/src/raylib.h"
+#include "../lib/raylib/src/raylib.h"
 #include "src/gameplay/gameplay.h"
 #include <emscripten/emscripten.h>
 

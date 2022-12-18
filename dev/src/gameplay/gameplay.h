@@ -13,7 +13,6 @@ void UpdateGameplay(void);
 void DrawGameplay(void);
 void DrawGameArena(void);
 void DrawPauseGame(void);
-void DrawQrCode(void);
 
 #ifdef __cplusplus
 }
