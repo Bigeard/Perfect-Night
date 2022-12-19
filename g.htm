@@ -17,6 +17,8 @@
     <style>
         html {
             font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            color: white;
             margin: 0;
             padding: 0;
             -webkit-user-select: none;
@@ -36,7 +38,7 @@
 
         #peerjs {
             display: block;
-            background: #eee;
+            background: #aaa;
             padding: 15px;
             border-radius: 15px;
             /* border: double 3px #000; */
@@ -47,6 +49,7 @@
         }
 
         .message-container {
+            display: none;
             width: 100%;
         }
 
@@ -86,10 +89,9 @@
             position: absolute;
             left: 0;
             right: 0;
-            font-weight: bold;
             padding: 10px;
             margin: auto;
-            background: #eee;
+            background: #aaa;
             width: fit-content;
             border-radius: 0px 0px 15px 15px;
         }
@@ -98,10 +100,10 @@
 
 <body id="body">
     <div id="peerjs">
-        <div class="message-container">
+        <!-- <div class="message-container">
             <span>Messages: <span id="message"></span></span><br>
             <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
-        </div>
+        </div> -->
         <div class="info-container">
             <span>Status: <span id="status"></span></span><br>
             <span id="peerId">ID: ...</span><br>
@@ -158,7 +160,7 @@
             var peerId = document.getElementById("peerId");
 
             const init = () => {
-                status.innerText = "No Connection";
+                status.innerText = "No connection";
                 peer = new Peer(null, { debug: 2 });
 
                 peer.on('open', (id) => {
@@ -168,7 +170,6 @@
                     } else {
                         lastPeerId = peer.id;
                     }
-                    // ICI
                     peerId.innerText = "ID: " + peer.id;
                     const params = new URLSearchParams(document.location.search);
                     const conn_id = params.get("i");
@@ -179,7 +180,6 @@
                     }
                 });
 
-                // ICI
                 peer.on('connection', (c) => {
                     c.on('open', () => {
                         c.send("Sender does not accept incoming connections");
@@ -213,7 +213,7 @@
                     reliable: true
                 });
                 conn.on('open', () => {
-                    status.innerText = "Connected to: " + conn.peer;
+                    status.innerText = "Connected to " + conn.peer;
                 });
                 conn.on('data', (data) => {
                     if (data != null && (typeof data === 'object' || typeof data === 'function')) {
@@ -268,22 +268,26 @@
             };
 
             // Send Message
-            sendMessageBox.addEventListener('keypress', (e) => {
-                if (e.keyCode == '13') {
-                    if (conn && conn.open) {
-                        var msg = sendMessageBox.value;
-                        sendMessageBox.value = "";
-                        conn.send(msg);
-                        addMessage("<span class=\"selfMsg\">Self: </span> " + msg);
-                    } else {
-                        console.log('Connection is closed');
+            if (sendMessageBox) {
+                sendMessageBox.addEventListener('keypress', (e) => {
+                    if (e.keyCode == '13') {
+                        if (conn && conn.open) {
+                            var msg = sendMessageBox.value;
+                            sendMessageBox.value = "";
+                            conn.send(msg);
+                            addMessage("<span class=\"selfMsg\">Self: </span> " + msg);
+                        } else {
+                            console.log('Connection is closed');
+                        }
                     }
-                }
-            });
+                });
+            }
+
 
             joystickLeft.on('start end', function (evt, data) {
                 if (conn) {
                     conn.send({
+                    // ICI
                         t: new Date().getTime(), // Time
                         j: "l", // Joystick Left / Right
                         x: 0, // Position Joystick X

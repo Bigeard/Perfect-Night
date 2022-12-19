@@ -15,6 +15,7 @@
 #include "gameplay.h"
 #include "../../../lib/qrcode/c/qrcodegen.h"
 
+
 EM_JS(char*, GetGamepadUrl, (), { 
     const byteCount = Module.lengthBytesUTF8(gamepadUrl)+1;
     const idPointer = Module._malloc(byteCount);
@@ -25,7 +26,7 @@ EM_JS(int, GetCanvasWidthCustom, (), { return window.innerWidth });
 EM_JS(int, GetCanvasHeightCustom, (), { return window.innerHeight });
 EM_JS(int, ToggleInfoPeerJs, (), { return togglePeerJs() });
 EM_JS(int, GetNumberPlayer, (), { return listGamepad.size });
-EM_JS(char*, GetIdGamepad, (const int index), { 
+EM_JS(char*, GetIdGamepad, (int index), { 
     let i = 0;
     let res = "";
     listGamepad.forEach((_,k) => { i === index ? res = k : 0; i++; });
@@ -34,14 +35,12 @@ EM_JS(char*, GetIdGamepad, (const int index), {
     Module.stringToUTF8(res, idPointer, byteCount);
     return idPointer;
 });
-EM_JS(int, InitColorGamepad, (const char *p_id, const char r, const char g, const char b), { 
+EM_JS(int, InitColorGamepad, (char *p_id, int color_r, int color_g, int color_b), { 
     const id = Module.UTF8ToString(p_id);
     const gamepad = listGamepad.get(id);
-    gamepad.color = `rgb(${r}, ${g}, ${b})`; // I don't understand why it's negative
+    gamepad.color = `rgb(${color_r}, ${color_g}, ${color_b})`;
     gamepad.edit = true;
     listGamepad.set(id, gamepad);
-    // I can't send data (socket, WebRTC)
-    // gamepad.initColorGamepad();
     return 1;
 });
 
@@ -165,56 +164,18 @@ void UpdateGameplay(void) {
     }
 
     if(lastPlayer > numberPlayer) {
-        // Todo remove player / disconnect
+        // @Todo remove player / disconnect
     }
 
-    // Generate Image QrCode
-    if(!qrCodeOk) {
-        // Generate QrCode
-        const char *url = GetGamepadUrl();                // User-supplied text
-        if(url[0] != 'n') {
-            enum qrcodegen_Ecc errCorLvl = qrcodegen_Ecc_LOW;  // Error correction level
-            uint8_t qrCode[qrcodegen_BUFFER_LEN_MAX];
-            uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
-            qrCodeOk = qrcodegen_encodeText(url, tempBuffer, qrCode, errCorLvl,
-                qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
-            if(qrCodeOk) {
-                int qrCodeSize = qrcodegen_getSize(qrCode);
-                int border = 8;
-                int sizeRec = 256.f;
-                sizeRec -= border*2;
-                int t = sizeRec / qrCodeSize;
-                int c = 0;
-                Image qrCodeImage = GenImageColor(t*qrCodeSize+border*2, t*qrCodeSize+border*2, WHITE);
-                for (int x = 0; x < qrCodeSize; x++) {
-                    for (int y = 0; y < qrCodeSize; y++) {
-                        if (qrcodegen_getModule(qrCode, x, y)) {
-                            if (c>7) c=0;
-                            if (((y<7 && x>qrCodeSize-8)) || 
-                                (y>qrCodeSize-8 && y<qrCodeSize && x<7) || 
-                                (x<7 && y<7) || 
-                                ((x>qrCodeSize-10 && y>qrCodeSize-10) && (x<qrCodeSize-4 && y<qrCodeSize-4))) {
-                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
-                            }
-                            else {
-                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
-                            }
-                        }
-                        c++;
-                    }
-                }
-                ImageResize(&qrCodeImage, sizeRec, sizeRec);
-                qrCodeTexture = LoadTextureFromImage(qrCodeImage);
-                TraceLog(LOG_INFO, "Generate QrCode Ok.");
-            }
-        }
-    }
+    GenerateQrCode();
 
+    // Zoom out / zoom in with the mouse wheel
     camera.zoom += ((float)GetMouseWheelMove()*0.01f);
 
-    // Pause
+    // Active developer mode
     if (IsKeyPressed(KEY_O)) activeDev = !activeDev;
 
+    // Display info of PeerJS
     if (IsKeyPressed(KEY_U)) {
         ToggleInfoPeerJs();
     }
@@ -382,7 +343,6 @@ void DrawGameArena(void) {
         //     DrawLine(-1000, i * 5 - 4000, 4000, i * 5 + 1000, BLACK); 
         //     DrawLine(i * 5 - 1000, -1000, i * 5 - 4000 - 1000, 4000 - 1000, BLACK); 
         // } 
-        // DrawRectangleRec((Rectangle) { 0, 0, arenaSize, arenaSize }, WHITE);
         for (int i=0; i<=arenaSize*0.01; i++) {
             if (i < arenaSize*0.01) {
                 DrawText(TextFormat("%d", i+1), i * 100 + 6, 4, 20, LIGHTGRAY);
@@ -413,5 +373,48 @@ void DrawPauseGame(void) {
         DrawText("CONTROLLER (C)", camera.target.x - 8 * 14, camera.target.y - 100.0, 30, BLACK);
         DrawText("EDIT THE MAP (E)", camera.target.x - 8 * 16, camera.target.y - 0.0, 30, BLACK);
         DrawText("CONTINUE (P)", camera.target.x - 8 * 12, camera.target.y + 100.0, 30, BLACK);
+    }
+}
+
+void GenerateQrCode(void) {
+    if(!qrCodeOk) {
+        // Generate Image QrCode
+        const char *url = GetGamepadUrl();
+        if(url[0] != 'n') {
+            enum qrcodegen_Ecc errCorLvl = qrcodegen_Ecc_LOW;  // Error correction level
+            uint8_t qrCode[qrcodegen_BUFFER_LEN_MAX];
+            uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
+            qrCodeOk = qrcodegen_encodeText(url, tempBuffer, qrCode, errCorLvl,
+                qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+            if(qrCodeOk) {
+                int qrCodeSize = qrcodegen_getSize(qrCode);
+                int border = 8;
+                int sizeRec = 256.f;
+                sizeRec -= border*2;
+                int t = sizeRec / qrCodeSize;
+                int c = 0;
+                Image qrCodeImage = GenImageColor(t*qrCodeSize+border*2, t*qrCodeSize+border*2, WHITE);
+                for (int x = 0; x < qrCodeSize; x++) {
+                    for (int y = 0; y < qrCodeSize; y++) {
+                        if (qrcodegen_getModule(qrCode, x, y)) {
+                            if (c>7) c=0;
+                            if (((y<7 && x>qrCodeSize-8)) || 
+                                (y>qrCodeSize-8 && y<qrCodeSize && x<7) || 
+                                (x<7 && y<7) || 
+                                ((x>qrCodeSize-10 && y>qrCodeSize-10) && (x<qrCodeSize-4 && y<qrCodeSize-4))) {
+                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
+                            }
+                            else {
+                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
+                            }
+                        }
+                        c++;
+                    }
+                }
+                ImageResize(&qrCodeImage, sizeRec, sizeRec);
+                qrCodeTexture = LoadTextureFromImage(qrCodeImage);
+                TraceLog(LOG_INFO, "Generate QrCode Ok.");
+            }
+        }
     }
 }

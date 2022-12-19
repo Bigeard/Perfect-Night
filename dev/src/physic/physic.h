@@ -7,6 +7,7 @@ extern "C" {
 
 #include "../../../lib/raylib/src/raylib.h"
 
+
 typedef struct Physic {
     Vector2 pos;
     Vector2 size;

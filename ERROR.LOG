@@ -38,3 +38,5 @@ listGamepad.set(
     {...listGamepad.get(id), "color": "rgb("+r+", "+g+", "+b+")"},
 );
 ```
+
+4. If you use a variable r, g or b, you may have a value problem in the EM_JS functions.

@@ -2,8 +2,8 @@
     "activeFile": "dev/resources/map1.tmx",
     "expandedProjectPaths": [
         "dev/resources",
-        "dev",
-        "."
+        ".",
+        "dev"
     ],
     "fileStates": {
         "dev/resources/Grass.tsx": {
@@ -11,7 +11,7 @@
         },
         "dev/resources/map1.tmx": {
             "scale": 0.8872,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
                 "x": 512.849413886384,
                 "y": 511.722272317403

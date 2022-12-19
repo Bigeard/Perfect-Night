@@ -8,14 +8,17 @@
 #include "../gameplay/gameplay.h"
 #include "../bullet/bullet.h"
 
+
 EM_JS(float, GetJoystickMobileLeftX, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[0] });
 EM_JS(float, GetJoystickMobileLeftY, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[1] });
 EM_JS(float, GetJoystickMobileRightX, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[2] });
 EM_JS(float, GetJoystickMobileRightY, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[3] });
 
+
 Texture2D playerBodyTexture;
 Texture2D playerFaceTexture;
 Texture2D playerTemplateTexture;
+
 
 void InitPlayer(void) {
     Image playerBodyImage = LoadImage("resources/player-body.png");

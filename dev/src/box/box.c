@@ -26,7 +26,6 @@ void DrawBox(Box box) {
         DrawText(cellBox1, box.p.pos.x+1, box.p.pos.y+12, 12, BLACK);
     }
 
-
     // Draw Box
     Rectangle envBox = {box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y};
     DrawRectangleRec(envBox, Fade(box.color, 0.4));
