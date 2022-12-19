@@ -156,7 +156,7 @@ void UpdateGameplay(void) {
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
                 };
                 tmx_init_object(map->ly_head, players, boxes);
-                InitColorGamepad(players[i].gamepadId, themeColor[i].r, themeColor[i].g, themeColor[i].b);
+                InitColorGamepad(players[i].gamepadId, players[i].COLORS[0].r, players[i].COLORS[0].g, players[i].COLORS[0].b);
                 i = playersLength;
                 lastPlayer++;
             }

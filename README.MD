@@ -3,6 +3,7 @@
 RUN / COMPILE THE GAME :
 
 > make PLATFORM=PLATFORM_WEB -B
+> make PLATFORM=PLATFORM_WEB BUILD_MODE=DEBUG -B
 
 INSTALL :
 
@@ -30,10 +31,8 @@ emmake make
 cd ..
 ```
 
-IDEA :
+CHECKLIST :
 
-- Change color of joystick according to the player's color
-- Fix joystick detector 
 - Fix bug of collision
 - Improve the design
     - Add design for the collision boxes
@@ -42,13 +41,13 @@ IDEA :
     - Change UI/UX of the phone gamepad (add info game play / p2p button)
     - Create the design of the pages
     - Design the background limit
+    - Add the player's reaction (happy, sad, angry)
 - Add the pages
     - title page (menu)
     - Games Page
     - Versus Page (select player)
     - Map Page
     - Game Page
-- Review QrCode generation (imp. in clang)
+- Add different types of weapons (proximity, explosion)
 - Create new maps
 - A custom map loader/upload
-
