@@ -155,7 +155,7 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes) {
 					players[id->value.integer-1].COLORS[2] = color_player;
                 }
                 if (head->visible && head->obj_type == OT_SQUARE && layer->id == 4) {
-					boxes[box_number] = (Box) {{{head->x, head->y}, {head->width, head->height}, {0, 0}}, GRAY };
+					boxes[box_number] = (Box) {head->id, {{head->x, head->y}, {head->width, head->height}, {0, 0}}, GRAY };
 					box_number++;
 				}
         		head = head->next;

@@ -103,7 +103,7 @@ void UpdatePlayer(Player *player) {
                     (Physic) {
                         {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
                         {5, 5},
-                        {0, 0},
+                        {cos(player->radian) * player->charge, sin(player->radian) * player->charge},
                         {0, 0, 0, 0, 0}
                     }, 
                     { player->charge, player->charge }, 
@@ -191,7 +191,7 @@ void UpdatePlayer(Player *player) {
                     (Physic) {
                         {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
                         {5, 5},
-                        {0, 0},
+                        {cos(player->radian) * player->charge, sin(player->radian) * player->charge},
                         {0, 0, 0, 0, 0}
                     }, 
                     { player->charge, player->charge }, 
@@ -271,7 +271,7 @@ void UpdatePlayer(Player *player) {
                     (Physic) {
                         {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
                         {5, 5},
-                        {0, 0},
+                        {cos(player->radian) * player->charge, sin(player->radian) * player->charge},
                         {0, 0, 0, 0, 0}
                     }, 
                     { player->charge, player->charge }, 
@@ -325,7 +325,7 @@ void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) 
 void DrawPlayer(Player player) {
     if (player.life <= 0) return;
 
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 16, player.p.pos.y + 16, 29, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , BLACK);
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 33, 14 }, (Vector2){ 0, 7 }, player.radian * (180 / PI) , BLACK);
     // if (player.invincible != 0) {
     //     // DrawRectangleRounded((Rectangle) { player.p.pos.x+1, player.p.pos.y+1, 30, 30 }, 0.3, 1, Fade(player.COLORS[2], 0.5));
     //     DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, WHITE);
@@ -336,13 +336,13 @@ void DrawPlayer(Player player) {
         DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, WHITE);
     // }
 
-    Rectangle playerCanon = { player.p.pos.x + 16, player.p.pos.y + 16, 26, 6 };
-    Vector2 originCanon = { 0, 3 };
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 16, player.p.pos.y + 16, 28, 10 }, (Vector2){ 0, 5 }, player.radian * (180 / PI) , WHITE);
+    Rectangle playerCanon = { player.p.pos.x + 20, player.p.pos.y + 20, 30, 8 };
+    Vector2 originCanon = { 0, 4 };
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , WHITE);
     DrawRectanglePro(playerCanon, originCanon, player.radian * (180 / PI), player.COLORS[1]);
 
-    DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, player.COLORS[2]);
-    DrawTexturePro(playerTemplateTexture, (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+16, player.p.pos.y+16,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
+    DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, player.COLORS[2]);
+    DrawTexturePro(playerTemplateTexture, (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));

@@ -70,42 +70,42 @@ Texture2D qrCodeTexture;
 
 static Player players[8] = {
     {},{},{},{},{},{},{},
-    { 
-        8, // ID
-        "0", // Gamepad Id
-        3, // Life
-        0, // Invincible
-        155, // Damages Taken
-        1, // Ammunition
-        300, // Ammunition loading
-        {
-            { 200 - 20, 200 - 20 }, // Position
-            { 40, 40 }, // Size
-            { 0.0, 0.0 }, // Velocity
-            { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
-        },
-        { 0, 0 }, // Spawn
-        { 3.5, 3.5 }, // Speed
-        2, // Charge 
-        true, // Can Shoot 
-        0, // Time Shoot
-        0, // Radian
-        { 0 }, // Bullets
-        0, // Last Bullet
-        { GREEN, LIME, DARKGREEN },
-        MOUSE, // Input Type
-        { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
+    // { 
+    //     8, // ID
+    //     "0", // Gamepad Id
+    //     3, // Life
+    //     0, // Invincible
+    //     155, // Damages Taken
+    //     1, // Ammunition
+    //     300, // Ammunition loading
+    //     {
+    //         { 200 - 20, 200 - 20 }, // Position
+    //         { 40, 40 }, // Size
+    //         { 0.0, 0.0 }, // Velocity
+    //         { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
+    //     },
+    //     { 0, 0 }, // Spawn
+    //     { 3.5, 3.5 }, // Speed
+    //     2, // Charge 
+    //     true, // Can Shoot 
+    //     0, // Time Shoot
+    //     0, // Radian
+    //     { 0 }, // Bullets
+    //     0, // Last Bullet
+    //     { GREEN, LIME, DARKGREEN },
+    //     MOUSE, // Input Type
+    //     { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
+    // },
+    {   
+        2, "0", 3, 0, 0, 1, 300, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
+        {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     },
     // {   
-    //     2, "0", 3, 0, 0, 1000000, 300, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, { 0, 0 }, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
+    //     3, "1", 3, 0, 0, 1, 300, {{200 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { SKYBLUE, BLUE, DARKBLUE }, GAMEPAD,
     //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     // },
     // {   
-    //     3, "1", 3, 0, 0, 1, 300, {{200 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, { 0, 0 }, 2, true, 0, 0, { 0 }, 0, { SKYBLUE, BLUE, DARKBLUE }, GAMEPAD,
-    //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
-    // },
-    // {   
-    //     4, "4", 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, {3.5, 3.5}, { 0, 0 }, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
+    //     4, "4", 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
     //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     // },
 };
@@ -211,14 +211,13 @@ void UpdateGameplay(void) {
         // Bullets
         for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
             UpdateBullet(&players[i].bullets[j]);
+            if(!players[i].bullets[j].playerId) continue;
 
             Rectangle newBulletRec = { players[i].bullets[j].p.pos.x, players[i].bullets[j].p.pos.y, players[i].bullets[j].p.size.x * 2 - 2, players[i].bullets[j].p.size.y * 2 - 2 };
-
+            // Collision Bullet and Box
             for (int b = 0; b < boxesLength; b++) {
                 Rectangle envBox = { boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y };
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
-                
-
             }
             // Stops the ball if it hits the wall when it is created
             if (players[i].bullets[j].isNew && players[i].bullets[j].p.collision[0]) {
@@ -226,6 +225,7 @@ void UpdateGameplay(void) {
             }
             players[i].bullets[j].isNew = false;
 
+            // Collision Player and Bullet
             for (int p = 0; p < playersLength; p++) {
                 if(players[p].life <= 0) continue;
                 Rectangle envPlayer = { players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y };
@@ -236,17 +236,19 @@ void UpdateGameplay(void) {
             BulletBounce(&players[i].bullets[j]);
         }
         
-        // Collision
+        // Collision Player and Player
         Rectangle newPlayerRec = { players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y };
         for (int j = 0; j < playersLength; j++) {
-            if(players[j].life <= 0) continue;
+            if(players[j].life <= 0 || !players[i].id || !players[j].id) continue;
             if (players[i].id != players[j].id) {
                 Rectangle envPlayer = { players[j].p.pos.x, players[j].p.pos.y, players[j].p.size.x, players[j].p.size.y };
                 CollisionPhysic(&players[i].p, newPlayerRec, envPlayer);
             }
         }
 
+        // Collision Player and Box
         for (int j = 0; j < boxesLength; j++) {
+            if(!boxes[j].id) continue;
             Rectangle envBox = { boxes[j].p.pos.x, boxes[j].p.pos.y, boxes[j].p.size.x, boxes[j].p.size.y };
             CollisionPhysic(&players[i].p, newPlayerRec, envBox);
         }
@@ -255,6 +257,20 @@ void UpdateGameplay(void) {
         centerPositionY += players[i].p.pos.y;
         // centerDistance += sqrtf(powf(camera.target.x - player.p.pos.x, 2) + powf(camera.target.x - player.p.pos.y, 2));
     }
+
+    // // Reset Collision Player
+    // for (int i = 0; i < playersLength; i++) {
+    //     ResetCollision(&players[i].p);
+    //     for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
+    //         ResetCollision(&players[i].bullets[j].p);
+    //     }
+    // }
+
+    // // Reset Collision Box
+    // for (int j = 0; j < boxesLength; j++) {
+    //     ResetCollision(&boxes[j].p);
+    // }
+
     if (lastPlayer>=1) {
         camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
         centerPositionX = centerPositionX / playersLength;
@@ -402,10 +418,12 @@ void GenerateQrCode(void) {
                                 (y>qrCodeSize-8 && y<qrCodeSize && x<7) || 
                                 (x<7 && y<7) || 
                                 ((x>qrCodeSize-10 && y>qrCodeSize-10) && (x<qrCodeSize-4 && y<qrCodeSize-4))) {
-                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
+                                // ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
+                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, BLACK);
                             }
                             else {
-                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
+                                // ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
+                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, BLACK);
                             }
                         }
                         c++;
@@ -413,6 +431,7 @@ void GenerateQrCode(void) {
                 }
                 ImageResize(&qrCodeImage, sizeRec, sizeRec);
                 qrCodeTexture = LoadTextureFromImage(qrCodeImage);
+                UnloadImage(qrCodeImage);
                 TraceLog(LOG_INFO, "Generate QrCode Ok.");
             }
         }

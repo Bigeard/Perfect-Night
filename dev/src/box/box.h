@@ -10,6 +10,7 @@ extern "C" {
 
 
 typedef struct Box {
+    int id;
     Physic p;
     Color color;
 } Box;

@@ -9,13 +9,14 @@ extern "C" {
 
 
 typedef struct Physic {
-    Vector2 pos;
-    Vector2 size;
-    Vector2 vel;
-    bool collision[5];
+    Vector2 pos; // Position
+    Vector2 size; // Size
+    Vector2 vel; // Velocity
+    bool collision[5]; // Collision: IsCollision, Up, Down, Left, Right
 } Physic;
 
 void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB);
+void ResetCollision(Physic *phy);
 
 
 #ifdef __cplusplus
