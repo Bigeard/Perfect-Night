@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#f5f5f5" nextlayerid="5" nextobjectid="86">
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#f5f5f5" nextlayerid="5" nextobjectid="90">
  <tileset firstgid="1" source="Grass.tsx"/>
  <layer id="1" name="Background" width="32" height="32">
   <data encoding="csv">
@@ -38,56 +38,56 @@
 </data>
  </layer>
  <objectgroup color="#00ffff" id="3" name="Players" class="players">
-  <object id="7" name="Player 1" class="player_1" x="284" y="284" width="40" height="40">
+  <object id="7" name="Player 1" class="player_1" x="245.677" y="214.117" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="1"/>
    </properties>
   </object>
-  <object id="10" name="Player 2" class="player_2" x="699" y="284" width="40" height="40">
+  <object id="10" name="Player 2" class="player_2" x="736.196" y="210.736" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="2"/>
    </properties>
   </object>
-  <object id="11" name="Player 3" class="player_3" x="284" y="699" width="40" height="40">
+  <object id="11" name="Player 3" class="player_3" x="244.55" y="767.756" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff40e6e6"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="3"/>
    </properties>
   </object>
-  <object id="12" name="Player 4" class="player_4" x="699" y="699" width="40" height="40">
+  <object id="12" name="Player 4" class="player_4" x="738.45" y="765.501" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff7f66f2"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="4"/>
    </properties>
   </object>
-  <object id="13" name="Player 5" class="player_5" x="508" y="219" width="40" height="40">
+  <object id="13" name="Player 5" class="player_5" x="501.237" y="179.55" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1d125"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="5"/>
    </properties>
   </object>
-  <object id="14" name="Player 6" class="player_6" x="508" y="763" width="40" height="40">
+  <object id="14" name="Player 6" class="player_6" x="502.364" y="800.196" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ffff822f"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="6"/>
    </properties>
   </object>
-  <object id="15" name="Player 7" class="player_7" x="220" y="476" width="40" height="40">
+  <object id="15" name="Player 7" class="player_7" x="181.677" y="490.653" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ffff95e5"/>
     <property name="obj_type" type="int" value="1"/>
     <property name="player_id" type="int" value="7"/>
    </properties>
   </object>
-  <object id="16" name="Player 8" class="player_8" x="764" y="476" width="40" height="40">
+  <object id="16" name="Player 8" class="player_8" x="802.323" y="489.526" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff657eff"/>
     <property name="obj_type" type="int" value="1"/>
@@ -101,18 +101,18 @@
     <property name="displayQrCode" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="64" x="607.749" y="603.015" width="288.22" height="36.352"/>
-  <object id="65" x="608.934" y="381.696" width="285.966" height="34.2136"/>
-  <object id="66" x="606.223" y="127.232" width="34.2136" height="287.383"/>
-  <object id="67" x="382.765" y="127.232" width="28.8677" height="288.452"/>
-  <object id="68" x="127.232" y="380.627" width="286.024" height="34.2136"/>
-  <object id="69" x="125.094" y="607.292" width="292.612" height="29.9369"/>
-  <object id="70" x="385.972" y="610.003" width="32.0753" height="287.035"/>
-  <object id="71" x="606.223" y="604.309" width="34.2136" height="292.729"/>
-  <object id="73" x="0" y="1.06918" width="160.376" height="159.307"/>
-  <object id="74" x="862.767" y="-0.0579282" width="158.238" height="157.169"/>
-  <object id="75" x="863.894" y="863.894" width="159.307" height="158.238"/>
-  <object id="76" x="0" y="864.963" width="160.376" height="159.307"/>
+  <object id="64" x="721.59" y="603.015" width="174.379" height="36.352"/>
+  <object id="65" x="723.902" y="381.696" width="170.998" height="34.2136"/>
+  <object id="66" x="606.223" y="127.232" width="34.2136" height="169.033"/>
+  <object id="67" x="382.765" y="127.232" width="28.8677" height="171.229"/>
+  <object id="68" x="127.232" y="380.627" width="176.691" height="34.2136"/>
+  <object id="69" x="125.094" y="607.292" width="174.262" height="29.9369"/>
+  <object id="70" x="385.972" y="717.081" width="32.0753" height="179.957"/>
+  <object id="71" x="606.223" y="715.896" width="34.2136" height="181.142"/>
+  <object id="73" x="-31.56" y="-31.6179" width="191.936" height="191.994"/>
+  <object id="74" x="862.767" y="-34.9993" width="193.179" height="192.11"/>
+  <object id="75" x="863.894" y="863.894" width="187.486" height="186.417"/>
+  <object id="76" x="-28.1785" y="864.963" width="188.555" height="187.486"/>
   <object id="77" x="480.06" y="988.987" width="59.8738" height="62.5081"/>
   <object id="78" x="991.126" y="478.991" width="63.5772" height="64.1505"/>
   <object id="80" x="-31.56" y="480.06" width="62.5661" height="63.0814"/>

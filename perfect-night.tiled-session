@@ -1,28 +1,70 @@
 {
-    "activeFile": "dev/resources/map1.tmx",
+    "activeFile": "dev/resources/map3.tmx",
     "expandedProjectPaths": [
-        ".",
         "dev/resources",
-        "dev"
+        "dev",
+        "."
     ],
     "fileStates": {
         "dev/resources/Grass.tsx": {
             "scaleInDock": 1
         },
         "dev/resources/map1.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
             "scale": 0.8872,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 694.3192064923354,
+                "x": 693.7556357078449,
                 "y": 511.722272317403
+            }
+        },
+        "dev/resources/map2.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 0.5587,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 817.0753534991945,
+                "y": 467.15589761947376
+            }
+        },
+        "dev/resources/map3.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 0.8872,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 513.4129846708746,
+                "y": 511.722272317403
+            }
+        },
+        "dev/resources/map4-team.tmx": {
+            "expandedObjectLayers": [
+                4,
+                3
+            ],
+            "scale": 0.5508,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 901.4161220043575,
+                "y": 669.9346405228758
             }
         }
     },
+    "map.lastUsedFormat": "tmx",
     "openFiles": [
-        "dev/resources/map1.tmx"
+        "dev/resources/map3.tmx"
     ],
     "project": "perfect-night.tiled-project",
+    "property.type": "object",
     "recentFiles": [
+        "dev/resources/map3.tmx",
+        "dev/resources/map2.tmx",
         "dev/resources/map1.tmx"
-    ]
+    ],
+    "resizeMap.removeObjects": true
 }

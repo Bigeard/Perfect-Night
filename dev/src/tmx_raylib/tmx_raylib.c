@@ -48,8 +48,8 @@ void draw_objects(tmx_object_group *objgr) {
 
 	while (head) {
 		if (head->visible) {
-			tmx_property *prop = tmx_get_property(head->properties, "color");
-			Color color = int_to_color(prop->value.color);
+			tmx_property *propColor = tmx_get_property(head->properties, "color");
+			Color color = int_to_color(propColor->value.color);
 
 			if (head->obj_type == OT_SQUARE) {
 				DrawRectangleLinesEx((Rectangle){head->x, head->y, head->width, head->height}, LINE_THICKNESS, color);
@@ -118,9 +118,9 @@ void draw_all_layers(tmx_map *map, tmx_layer *layers) {
 			if (layers->type == L_GROUP) {
 				draw_all_layers(map, layers->content.group_head); // recursive call
 			}
-			else if (layers->type == L_OBJGR) {
-				draw_objects(layers->content.objgr);
-			}
+			// else if (layers->type == L_OBJGR) {
+			// 	draw_objects(layers->content.objgr);
+			// }
 			else if (layers->type == L_IMAGE) {
 				draw_image_layer(layers->content.image_layer);
 			}
@@ -144,18 +144,29 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes) {
 	        tmx_object *head = layer->content.objgr->head;
 	        while (head) {
                 if (head->visible && head->obj_type == OT_SQUARE && layer->id == 3) {
-					tmx_property *id = tmx_get_property(head->properties, "player_id");
+					tmx_property *id = tmx_get_property(head->properties, "player_id"); // @Todo change name of the key `playerId`
                     players[id->value.integer-1].spawn = (Vector2){ head->x, head->y };
                     players[id->value.integer-1].p.pos = (Vector2){ head->x, head->y };
 					
 					tmx_property *color = tmx_get_property(head->properties, "color");
-					Color color_player = int_to_color(color->value.color);
-					players[id->value.integer-1].COLORS[0] = color_player;
-					players[id->value.integer-1].COLORS[1] = color_player;
-					players[id->value.integer-1].COLORS[2] = color_player;
+					Color playerColor = int_to_color(color->value.color);
+					players[id->value.integer-1].COLORS[0] = playerColor;
+					players[id->value.integer-1].COLORS[1] = playerColor;
+					players[id->value.integer-1].COLORS[2] = playerColor;
                 }
                 if (head->visible && head->obj_type == OT_SQUARE && layer->id == 4) {
-					boxes[box_number] = (Box) {head->id, {{head->x, head->y}, {head->width, head->height}, {0, 0}}, GRAY };
+					tmx_property *displayQrCode = tmx_get_property(head->properties, "displayQrCode");
+					tmx_property *color = tmx_get_property(head->properties, "color");
+					Color boxColor = (Color) { 124, 124, 124, 255 };
+					if (color) {
+						boxColor = int_to_color(color->value.color);
+					}
+					boxes[box_number] = (Box) {
+						head->id, 
+						{{head->x, head->y}, {head->width, head->height}, {0, 0}}, 
+						boxColor, 
+						displayQrCode->value.boolean 
+					};
 					box_number++;
 				}
         		head = head->next;

@@ -5,8 +5,13 @@
 extern "C" {
 #endif
 
+#include "../../../lib/raylib/src/raylib.h"
+
+
 extern bool activeDev;
-extern float arenaSize;
+extern float arenaSizeX;
+extern float arenaSizeY;
+extern Texture2D qrCodeTexture;
 
 void InitGameplay(void);
 void UpdateGameplay(void);

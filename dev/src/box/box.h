@@ -13,6 +13,7 @@ typedef struct Box {
     int id;
     Physic p;
     Color color;
+    bool displayQrCode;
 } Box;
 
 void InitBox(void);

@@ -296,9 +296,9 @@ void UpdatePlayer(Player *player) {
 
     // Out of area
     // float arenaSize = 800;
-    if ((player->p.pos.x >= arenaSize || 
+    if ((player->p.pos.x >= arenaSizeX || 
         player->p.pos.x + player->p.size.x <= 0) ||
-        (player->p.pos.y >= arenaSize || 
+        (player->p.pos.y >= arenaSizeY || 
         player->p.pos.y + player->p.size.y <= 0)) {
 
         if (player->life > 0) player->life--;
@@ -346,36 +346,10 @@ void DrawPlayer(Player player) {
 
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
+}
 
-    // if (player.invincible != 0) {
-    //     DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, Fade(player.COLORS[2], 0.5));
-    // }
-    // else {
-    //     // Draw body of the tank
-    //     DrawRectangleRounded((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y }, 0.3, 1, player.COLORS[2]);
-    // }
-
-
-
-    // // Draw cannon of the tank
-    // Rectangle playerCanon = { player.p.pos.x + 20, player.p.pos.y + 20, 30, 10 };
-    // Vector2 originCanon = { 0, 5 };
-    // DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , WHITE);
-    // DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 14, WHITE);
-    // DrawRectanglePro(playerCanon, originCanon, player.radian * (180 / PI), player.COLORS[1]);
-    // DrawCircle(player.p.pos.x + 20, player.p.pos.y + 20, 13, player.COLORS[1]);
-
-    // // Draw life of the tank
-    // float posX = player.p.pos.x - 5 + 20;
-    // if (player.life == 1) {
-    //     posX = player.p.pos.x - 2 + 20;
-    // }
-    // DrawText(TextFormat("%d", player.life), posX, player.p.pos.y - 28.5 + 40, 20, WHITE);
-    // // DrawText(TextFormat("%f %f", cos(player.radian), sin(+ player.radian)), player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
-    // // DrawText(TextFormat("%f %f", , , player.p.pos.x + 40, player.p.pos.y + 40, 10, BLACK);
-
-    // // Draw load of the shoot
-    // DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.4));
+void DrawSpawnPlayer(Player player) {
+    DrawRectangleLinesEx((Rectangle){player.spawn.x, player.spawn.y, player.p.size.x, player.p.size.y}, 2.5, player.COLORS[0]);
 }
 
 void DrawStatsPlayer(Player player) {

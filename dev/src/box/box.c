@@ -28,5 +28,15 @@ void DrawBox(Box box) {
 
     // Draw Box
     Rectangle envBox = {box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y};
-    DrawRectangleRec(envBox, Fade(box.color, 0.4));
+    if (activeDev) {
+        DrawRectangleRec(envBox, Fade(box.color, 0.4));
+    }
+    else {
+        DrawRectangleRec(envBox, Fade(box.color, 0.5));
+    }
+
+    // Draw QrCode
+    if (box.displayQrCode) {
+        DrawTexture(qrCodeTexture, box.p.pos.x + 8, box.p.pos.x + 8, WHITE);
+    }
 }

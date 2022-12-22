@@ -47,8 +47,10 @@ EM_JS(int, InitColorGamepad, (char *p_id, int color_r, int color_g, int color_b)
 
 tmx_map *map;
 
-float arenaSize = 32.0f * 32;
-bool activeDev = true;
+// float arenaSize = 32.0f * 32;
+float arenaSizeX = 58.0f * 32;
+float arenaSizeY = 32.0f * 32;
+bool activeDev = false;
 double lastSecond = 0;
 static Camera2D camera = { 0 };
 static bool pauseGame = 0;
@@ -70,36 +72,36 @@ Texture2D qrCodeTexture;
 
 static Player players[8] = {
     {},{},{},{},{},{},{},
-    // { 
-    //     8, // ID
-    //     "0", // Gamepad Id
-    //     3, // Life
-    //     0, // Invincible
-    //     155, // Damages Taken
-    //     1, // Ammunition
-    //     300, // Ammunition loading
-    //     {
-    //         { 200 - 20, 200 - 20 }, // Position
-    //         { 40, 40 }, // Size
-    //         { 0.0, 0.0 }, // Velocity
-    //         { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
-    //     },
-    //     { 0, 0 }, // Spawn
-    //     { 3.5, 3.5 }, // Speed
-    //     2, // Charge 
-    //     true, // Can Shoot 
-    //     0, // Time Shoot
-    //     0, // Radian
-    //     { 0 }, // Bullets
-    //     0, // Last Bullet
-    //     { GREEN, LIME, DARKGREEN },
-    //     MOUSE, // Input Type
-    //     { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
-    // },
-    {   
-        2, "0", 3, 0, 0, 1, 300, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
-        {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
+    { 
+        8, // ID
+        "0", // Gamepad Id
+        3, // Life
+        0, // Invincible
+        155, // Damages Taken
+        1, // Ammunition
+        300, // Ammunition loading
+        {
+            { 200 - 20, 200 - 20 }, // Position
+            { 40, 40 }, // Size
+            { 0.0, 0.0 }, // Velocity
+            { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
+        },
+        { 0, 0 }, // Spawn
+        { 3.5, 3.5 }, // Speed
+        2, // Charge 
+        true, // Can Shoot 
+        0, // Time Shoot
+        0, // Radian
+        { 0 }, // Bullets
+        0, // Last Bullet
+        { GREEN, LIME, DARKGREEN },
+        MOUSE, // Input Type
+        { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
     },
+    // {   
+    //     2, "0", 3, 0, 0, 1, 300, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
+    //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
+    // },
     // {   
     //     3, "1", 3, 0, 0, 1, 300, {{200 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { SKYBLUE, BLUE, DARKBLUE }, GAMEPAD,
     //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
@@ -119,7 +121,7 @@ void InitGameplay(void) {
 	tmx_img_load_func = raylib_tex_loader;
 	tmx_img_free_func = raylib_free_tex;
 
-	map = tmx_load("resources/map1.tmx");
+	map = tmx_load("resources/map4-team.tmx");
 	if (!map) {
 		tmx_perror("Cannot load map");
 	}
@@ -142,7 +144,7 @@ void UpdateGameplay(void) {
     if ((int)time == lastSecond) {
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
         camera.target = (Vector2){ 0, 0 };
-        camera.offset = (Vector2){ GetScreenWidth() - arenaSize/2 - GetScreenWidth()/2, GetScreenHeight() - arenaSize/2 - GetScreenHeight()/2 };
+        camera.offset = (Vector2){ GetScreenWidth() - arenaSizeX/2 - GetScreenWidth()/2, GetScreenHeight() - arenaSizeY/2 - GetScreenHeight()/2 };
         lastSecond += 1;
     }
 
@@ -206,6 +208,7 @@ void UpdateGameplay(void) {
 
     // Update Players / Bullets
     for (int i = 0; i < playersLength; i++) {
+        if(!players[i].id) continue;
         UpdatePlayer(&players[i]);
 
         // Bullets
@@ -305,16 +308,15 @@ void DrawGameplay(void) {
 
         // Draw Players / Bullets
         for (int i = 0; i < playersLength; i++) {
+            if(!players[i].id) continue;
+            DrawSpawnPlayer(players[i]);
             for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
+                if(!players[i].bullets[j].playerId) continue;
                 DrawBullet(players[i].bullets[j]);
             }
             DrawPlayer(players[i]);
         }
 
-        // Draw QrCode
-        if (qrCodeOk) {
-            DrawTexture(qrCodeTexture, 392, 392, WHITE);
-        }
         DrawPauseGame();
     EndMode2D();
 
@@ -352,34 +354,42 @@ void DrawGameplay(void) {
 }
 
 void DrawGameArena(void) {
-    if (activeDev) {
+    // if (activeDev) {
         // DrawRectangleRec((Rectangle) { camera.target.x - GetScreenWidth() / 2, camera.target.y - GetScreenHeight() / 2, GetScreenWidth(), GetScreenHeight() }, BLACK);
         // // DrawCircleGradient(arenaSize/2 - 20, arenaSize/2 - 20, 2000, BLACK, SKYBLUE);
         // for (int i=0; i<=1500; i++) {
         //     DrawLine(-1000, i * 5 - 4000, 4000, i * 5 + 1000, BLACK); 
         //     DrawLine(i * 5 - 1000, -1000, i * 5 - 4000 - 1000, 4000 - 1000, BLACK); 
         // } 
-        for (int i=0; i<=arenaSize*0.01; i++) {
-            if (i < arenaSize*0.01) {
-                DrawText(TextFormat("%d", i+1), i * 100 + 6, 4, 20, LIGHTGRAY);
-                DrawText(TextFormat("%d", i+1), 6,  i * 100 + 4, 20, LIGHTGRAY);
+        for (int x=0; x<=arenaSizeX*0.01; x++) {
+            if (x < arenaSizeX*0.01) {
+                DrawText(TextFormat("%d", x+1), x * 100 + 6, 4, 20, LIGHTGRAY);
             }
-            Rectangle posViewX = { i * 100, 0, 2, arenaSize };
-            Rectangle posViewY = { 0, i * 100, arenaSize, 2 };
+            // Rectangle posViewX = { 0, x * 100, arenaSizeX, 2 };
+            Rectangle posViewX = { x * 100, 0, 2, arenaSizeY };
             DrawRectangleRec(posViewX, LIGHTGRAY);
+
+        }
+
+        for (int y=0; y<=arenaSizeY*0.01; y++) {
+            if (y < arenaSizeY*0.01) {
+                DrawText(TextFormat("%d", y+1), 6,  y * 100 + 4, 20, LIGHTGRAY);
+            }
+            // Rectangle posViewY = { y * 100, 0, 2, arenaSizeY };
+            Rectangle posViewY = { 0, y * 100, arenaSizeX, 2 };
             DrawRectangleRec(posViewY, LIGHTGRAY);
         }
-    }
+    // }
 
     DrawRectangleRec((Rectangle) { -2, -2, 5, 5 }, BLACK); // 0,0
-    DrawRectangleRec((Rectangle) { arenaSize - 1, arenaSize - 1, 5, 5 }, BLACK); // 1000, 1000
-    DrawRectangleRec((Rectangle) { arenaSize - 1, -2, 5, 5 }, BLACK); // 1000, 0
-    DrawRectangleRec((Rectangle) { -2, arenaSize - 1, 5, 5 }, BLACK); // 0, 1000
+    DrawRectangleRec((Rectangle) { arenaSizeX - 1, arenaSizeY - 1, 5, 5 }, BLACK); // 1000, 1000
+    DrawRectangleRec((Rectangle) { arenaSizeX - 1, -2, 5, 5 }, BLACK); // 1000, 0
+    DrawRectangleRec((Rectangle) { -2, arenaSizeY - 1, 5, 5 }, BLACK); // 0, 1000
 
-    DrawRectangleRec((Rectangle) { -2, -2, arenaSize + 1, 1 }, BLACK);
-    DrawRectangleRec((Rectangle) { -2, -2, 1, arenaSize + 1 }, BLACK);
-    DrawRectangleRec((Rectangle) { arenaSize + 3, -2, 1, arenaSize + 1 }, BLACK);
-    DrawRectangleRec((Rectangle) { -2, arenaSize + 3, arenaSize + 1, 1 }, BLACK);
+    DrawRectangleRec((Rectangle) { -2, -2, arenaSizeX + 1, 1 }, BLACK);
+    DrawRectangleRec((Rectangle) { -2, -2, 1, arenaSizeY + 1 }, BLACK);
+    DrawRectangleRec((Rectangle) { arenaSizeX + 3, -2, 1, arenaSizeY + 1 }, BLACK);
+    DrawRectangleRec((Rectangle) { -2, arenaSizeY + 3, arenaSizeX + 1, 1 }, BLACK);
 }
 
 void DrawPauseGame(void) {

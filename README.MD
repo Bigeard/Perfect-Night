@@ -33,7 +33,7 @@ cd ..
 
 CHECKLIST :
 
-- Fix bug of collision
+- Fix bug of collision (need review)
 - Improve the design
     - Add design for the collision boxes
     - Change graphic of the player info (life / amm.)
