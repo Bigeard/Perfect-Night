@@ -54,6 +54,15 @@ bool activeDev = false;
 double lastSecond = 0;
 static Camera2D camera = { 0 };
 static bool pauseGame = 0;
+
+double startTime = 0.0;
+double elapsedTime = 0.0;
+
+int playerAlive = 0;
+int playerAliveId = 0;
+Color ColorAlive;
+bool OtherColorAlive = false;
+
 int lastPlayer = 0;
 bool playerSpace[8] = { 0 };
 Color themeColor[8] = {
@@ -71,37 +80,37 @@ bool qrCodeOk = false;
 Texture2D qrCodeTexture;
 
 static Player players[8] = {
-    {},{},{},{},{},{},{},
-    { 
-        8, // ID
-        "0", // Gamepad Id
-        3, // Life
-        0, // Invincible
-        155, // Damages Taken
-        1, // Ammunition
-        300, // Ammunition loading
-        {
-            { 200 - 20, 200 - 20 }, // Position
-            { 40, 40 }, // Size
-            { 0.0, 0.0 }, // Velocity
-            { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
-        },
-        { 0, 0 }, // Spawn
-        { 3.5, 3.5 }, // Speed
-        2, // Charge 
-        true, // Can Shoot 
-        0, // Time Shoot
-        0, // Radian
-        { 0 }, // Bullets
-        0, // Last Bullet
-        { GREEN, LIME, DARKGREEN },
-        MOUSE, // Input Type
-        { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
-    },
+    // { 
+    //     1, // ID
+    //     "1", // Gamepad Id
+    //     1, // Life
+    //     0, // Invincible
+    //     155, // Damages Taken
+    //     3, // Ammunition
+    //     600, // Ammunition loading
+    //     {
+    //         { 0, 0 }, // Position
+    //         { 40, 40 }, // Size
+    //         { 0.0, 0.0 }, // Velocity
+    //         { 0, 0, 0, 0, 0 } // Collision: IsCollision, Up, Down, Left, Right
+    //     },
+    //     { 0, 0 }, // Spawn
+    //     { 3.5, 3.5 }, // Speed
+    //     2, // Charge 
+    //     true, // Can Shoot 
+    //     0, // Time Shoot
+    //     0, // Radian
+    //     { 0 }, // Bullets
+    //     0, // Last Bullet
+    //     { GREEN, LIME, DARKGREEN },
+    //     MOUSE, // Input Type
+    //     { KEY_Z, KEY_S, KEY_Q, KEY_D, KEY_G, KEY_F, KEY_H }, // KEY: Up, Down, Left, Right, MOVE CANNON, SHOT, MOVE CANNON
+    // },
     // {   
-    //     2, "0", 3, 0, 0, 1, 300, {{600 - 20, 200 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
+    //     2, "2", 1, 0, 0, 3, 600, {{0, 0}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PINK, RED, MAROON }, GAMEPAD,
     //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
     // },
+    {},{},{},{},{},{},{},{}
     // {   
     //     3, "1", 3, 0, 0, 1, 300, {{200 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { SKYBLUE, BLUE, DARKBLUE }, GAMEPAD,
     //     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
@@ -140,6 +149,10 @@ void UpdateGameplay(void) {
     int centerPositionY = 0;
     // int centerDistance = 0;
 
+    playerAlive = 0;
+    playerAliveId = 0;
+    OtherColorAlive = false;
+
     double time = GetTime();
     if ((int)time == lastSecond) {
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
@@ -148,13 +161,13 @@ void UpdateGameplay(void) {
         lastSecond += 1;
     }
 
-    int numberPlayer = GetNumberPlayer();
+    int numberPlayer = GetNumberPlayer(); // +2
     if(lastPlayer < numberPlayer) {
         for (int i = 0; i < playersLength; i++) {
             if(!playerSpace[i]) {
                 playerSpace[i] = true;
                 players[i] = (Player) {
-                    i+1, GetIdGamepad(i), 3, 0, 155, 1, 300, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
+                    i+1, GetIdGamepad(i), 1, 0, 0, 1, 600, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
                 };
                 tmx_init_object(map->ly_head, players, boxes);
@@ -191,7 +204,7 @@ void UpdateGameplay(void) {
         if (IsKeyPressed(KEY_E)) {
             // Edit map display
         }
-        return;
+        // return;
     }
 
     // Reset
@@ -200,7 +213,7 @@ void UpdateGameplay(void) {
         tmx_init_object(map->ly_head, players, boxes);
         for (int i = 0; i < playersLength; i++) {
             if(playerSpace[i]) {
-                players[i].life = 3;
+                players[i].life = 1;
                 players[i].id = i+1;
             }
         }
@@ -209,14 +222,24 @@ void UpdateGameplay(void) {
     // Update Players / Bullets
     for (int i = 0; i < playersLength; i++) {
         if(!players[i].id) continue;
+        if(players[i].life > 0) {
+            playerAlive++;
+            playerAliveId = i;
+            if (ColorToInt(players[i].COLORS[0]) != ColorToInt(ColorAlive)) {
+                OtherColorAlive = true;
+            }
+            ColorAlive = players[i].COLORS[0];
+        }
+
         UpdatePlayer(&players[i]);
 
         // Bullets
+        if (pauseGame) continue;
         for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
             UpdateBullet(&players[i].bullets[j]);
             if(!players[i].bullets[j].playerId) continue;
 
-            Rectangle newBulletRec = { players[i].bullets[j].p.pos.x, players[i].bullets[j].p.pos.y, players[i].bullets[j].p.size.x * 2 - 2, players[i].bullets[j].p.size.y * 2 - 2 };
+            Rectangle newBulletRec = { players[i].bullets[j].p.pos.x + 2, players[i].bullets[j].p.pos.y + 2, players[i].bullets[j].p.size.x * 2 - 5, players[i].bullets[j].p.size.y * 2 - 5 };
             // Collision Bullet and Box
             for (int b = 0; b < boxesLength; b++) {
                 Rectangle envBox = { boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y };
@@ -229,13 +252,11 @@ void UpdateGameplay(void) {
             players[i].bullets[j].isNew = false;
 
             // Collision Player and Bullet
-            for (int p = 0; p < playersLength; p++) {
-                if(players[p].life <= 0) continue;
+            for (int p = 0; p < numberPlayer; p++) {
                 Rectangle envPlayer = { players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y };
-                CollisionBulletPlayer(&players[i].bullets[j], &players[p], envPlayer);
-                CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
+                bool bulletCollision = CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
+                CollisionBulletPlayer(bulletCollision, &players[i].bullets[j], &players[p], envPlayer);
             }
-
             BulletBounce(&players[i].bullets[j]);
         }
         
@@ -261,27 +282,31 @@ void UpdateGameplay(void) {
         // centerDistance += sqrtf(powf(camera.target.x - player.p.pos.x, 2) + powf(camera.target.x - player.p.pos.y, 2));
     }
 
-    // // Reset Collision Player
-    // for (int i = 0; i < playersLength; i++) {
-    //     ResetCollision(&players[i].p);
-    //     for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
-    //         ResetCollision(&players[i].bullets[j].p);
-    //     }
-    // }
-
-    // // Reset Collision Box
-    // for (int j = 0; j < boxesLength; j++) {
-    //     ResetCollision(&boxes[j].p);
-    // }
-
-    if (lastPlayer>=1) {
+    if (lastPlayer>=2) {
         camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
-        centerPositionX = centerPositionX / playersLength;
-        centerPositionY = centerPositionY / playersLength;
-        camera.target = (Vector2){ centerPositionX + 20, centerPositionY + 20 };
+        centerPositionX = centerPositionX / numberPlayer;
+        centerPositionY = centerPositionY / numberPlayer;
+        camera.target = (Vector2){ centerPositionX, centerPositionY };
     } else {
         camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
-        camera.target = (Vector2){ players[7].p.pos.x, players[7].p.pos.y };
+        camera.target = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
+        // camera.target = (Vector2){ players[7].p.pos.x, players[7].p.pos.y };
+    }
+
+    if((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) {
+        if (startTime == 0.0) {
+            startTime = GetTime();
+        }
+        elapsedTime = GetTime() - startTime;
+        if (elapsedTime > 3) {
+            tmx_init_object(map->ly_head, players, boxes);
+            for (int i = 0; i < playersLength; i++) {
+                if(playerSpace[i]) {
+                    players[i].life = 1;
+                    players[i].id = i+1;
+                }
+            }
+        }
     }
 
     // Zoom out or in by distance
@@ -318,6 +343,12 @@ void DrawGameplay(void) {
         }
 
         DrawPauseGame();
+        if((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) {
+            DrawCircle(camera.target.x, camera.target.y-100, 50, BLACK);
+            DrawCircle(camera.target.x, camera.target.y-100, 48, WHITE);
+            DrawCircle(camera.target.x, camera.target.y-100, 40, players[playerAliveId].COLORS[0]);
+            DrawText("WIN THIS GAME", camera.target.x-50*6.5, camera.target.y, 80, players[playerAliveId].COLORS[0]);
+        }
     EndMode2D();
 
     // DRAW STAT LOG INFO

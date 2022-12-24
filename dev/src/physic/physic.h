@@ -15,9 +15,7 @@ typedef struct Physic {
     bool collision[5]; // Collision: IsCollision, Up, Down, Left, Right
 } Physic;
 
-void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB);
-void ResetCollision(Physic *phy);
-
+bool CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB);
 
 #ifdef __cplusplus
 }

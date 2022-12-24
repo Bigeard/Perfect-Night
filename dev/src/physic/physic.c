@@ -7,8 +7,8 @@
 #include <stdbool.h>
 
 
-void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
-    // bool collision = false;
+bool CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
+    bool collision = false;
     // if (phyA->pos.x != recA.x) { // For circle
     //     collision = CheckCollisionCircleRec((Vector2){phyA->pos.x, phyA->pos.y}, phyA->size.x*2, recB);
     // } else {
@@ -77,13 +77,15 @@ void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
     // }
 
     // Check for collisions between the two objects using a line segment
-    Vector2 start = { phyA->pos.x, phyA->pos.y };
-    Vector2 end = { phyA->pos.x + phyA->vel.x, phyA->pos.y + phyA->vel.y };
+    Vector2 start = { recA.x, recA.y };
+    Vector2 end = { recA.x + phyA->vel.x, recA.y + phyA->vel.y };
     LineSegment segment = { start, end };
 
     if (CheckCollisionRecs(recB, recA) || CheckCollisionRecSegment(segment, recB))
+    // if (CheckCollisionRecs(recB, recA))
     {
       phyA->collision[0] = true;
+      collision = true;
 
       // if (phyA->vel.x > 0) phyA->pos.x = recB.x - recA.width;
       // else if (phyA->vel.x < 0) phyA->pos.x = recB.x + recB.width;
@@ -121,12 +123,14 @@ void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
       if(phyA->collision[1]) phyA->vel.y *= -1; // Top
       else if(phyA->collision[2]) {
         phyA->vel.y *= -1; // Bottom
-        phyA->vel.x *= -1; // Bottom
+        phyA->vel.x *= -1;
       }
       else if(phyA->collision[3]) phyA->vel.x *= -1; // Left
       else if(phyA->collision[4]) phyA->vel.x *= -1; // Right
+
       phyA->vel.x *= 0.8;
       phyA->vel.y *= 0.8;
+
       
       // phyA->vel.x = -phyA->vel.x;
       // phyA->vel.y = -phyA->vel.y;
@@ -161,7 +165,7 @@ void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
       //   }
 
     }
-
+    return collision;
     // Rectangle collision = GetCollisionRec(recA, recB);
     // if (collision.width > 0 && collision.height > 0) {
     //   // Handle the collision
@@ -192,12 +196,4 @@ void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
     //   }
     // }
 
-}
-
-void ResetCollision(Physic *phy) {
-  phy->collision[0] = false;
-  phy->collision[1] = false;
-  phy->collision[2] = false;
-  phy->collision[3] = false;
-  phy->collision[4] = false;
 }

@@ -1,7 +1,6 @@
 #include "../../../lib/raylib/src/raylib.h"
 #include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
-#include <math.h>
 #include "stdio.h"
 
 #include "player.h"
@@ -45,12 +44,12 @@ void UpdatePlayer(Player *player) {
         player->invincible = 0;
     }
 
-    if (player->ammunition != 5) {
+    if (player->ammunition < 3) {
         player->ammunitionLoad = player->ammunitionLoad - delta;
     }
     if (player->ammunitionLoad <= 0) {
         player->ammunition++;
-        player->ammunitionLoad = 300;
+        player->ammunitionLoad = 600;
     }
 
     player->p.collision[0] = false;
@@ -303,49 +302,87 @@ void UpdatePlayer(Player *player) {
 
         if (player->life > 0) player->life--;
         player->p.pos = (Vector2) { player->spawn.x, player->spawn.y };
-        player->p.vel = (Vector2) { 0, 0 };
-        player->speed = (Vector2) { 3.5, 3.5 };
-        player->damagesTaken = 0;
-        player->invincible = 300;
+        // player->p.vel = (Vector2) { 0, 0 };
+        // player->speed = (Vector2) { 3.5, 3.5 };
+        // player->damagesTaken = 0;
+        // player->invincible = 300;
     }
 }
 
-void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer) {
+void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player, Rectangle recPlayer) {
     if (bullet->inactive) return;
     if (player->life <= 0) return;
-    if (bullet->playerId != player->id) {
-        bool collision = CheckCollisionCircleRec((Vector2){bullet->p.pos.x + 4, bullet->p.pos.y + 4}, bullet->p.size.x-1, recPlayer);
-        if (collision && player->invincible == 0) {
+    if (player->invincible == 0 && ColorToInt(bullet->COLOR) != ColorToInt(player->COLORS[0])) {
+        if (bulletCollision) {
             player->life--;
             player->invincible = 300;
         }
     }
 }
 
+Color LightenColor(Color color, float percentage) {
+    return (Color) {
+        (255 - color.r) * (1 - percentage) + color.r, 
+        (255 - color.g) * (1 - percentage) + color.g, 
+        (255 - color.b) * (1 - percentage) + color.b, 
+        color.a
+    };
+}
+
 void DrawPlayer(Player player) {
+    if (!player.id) return;
     if (player.life <= 0) return;
 
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 33, 14 }, (Vector2){ 0, 7 }, player.radian * (180 / PI) , BLACK);
-    // if (player.invincible != 0) {
-    //     // DrawRectangleRounded((Rectangle) { player.p.pos.x+1, player.p.pos.y+1, 30, 30 }, 0.3, 1, Fade(player.COLORS[2], 0.5));
-    //     DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, WHITE);
-    // }
-    // else {
-        // Draw body of the tank
-        // DrawRectangleRounded((Rectangle) { player.p.pos.x+1, player.p.pos.y+1, 30, 30 }, 0.3, 1, player.COLORS[2]);
-        DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, WHITE);
-    // }
+    // Init Color
+    Color color = player.COLORS[1];
+    Color whiteColor = WHITE;
+    Color blackColor = BLACK;
 
-    Rectangle playerCanon = { player.p.pos.x + 20, player.p.pos.y + 20, 30, 8 };
-    Vector2 originCanon = { 0, 4 };
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI) , WHITE);
-    DrawRectanglePro(playerCanon, originCanon, player.radian * (180 / PI), player.COLORS[1]);
+    if (player.invincible) {
+        // Lighten color
+        color = LightenColor(color, 0.5);
+        whiteColor = Fade(WHITE, 0.5);
+    }
+    
+    // Draw BLACK 1 Cannon
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 33, 14 }, (Vector2){ 0, 7 }, player.radian * (180 / PI), blackColor);
+    
+    // Draw Body of the Tank
+    DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, whiteColor);
 
-    DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, player.COLORS[2]);
+    // Draw WHITE 2 and COLOR 3 Cannon
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI), WHITE);
+    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 30, 8 }, (Vector2){ 0, 4 }, player.radian * (180 / PI), color);
+
+    // Draw Face / Template of the tank
+    DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, color);
     DrawTexturePro(playerTemplateTexture, (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
+    // Draw the progress bar of the charge
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
+
+    for (int a = 0; a < 3; a++) {
+        int ammunitionDisplay = player.ammunition;
+        if (player.ammunition != 3) ammunitionDisplay++;
+        float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
+        float loadColor = 1;
+        if (a >= player.ammunition) {
+            loadColor = (600.f - player.ammunitionLoad) / 600.f;
+        }
+        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
+        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, Fade(BLACK, loadColor+0.3));
+        DrawCircle(ammunitionPosX, ammunitionPosY, 6.5,WHITE);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 5, LightenColor(player.COLORS[0], loadColor));
+        if (a >= player.ammunition) break;
+    }
+
+
+
+    if (activeDev) {
+        // DrawRectangleRec((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x - 0.1, player.p.size.y - 0.1 }, RED);
+    }
 }
 
 void DrawSpawnPlayer(Player player) {
@@ -353,45 +390,49 @@ void DrawSpawnPlayer(Player player) {
 }
 
 void DrawStatsPlayer(Player player) {
-    Color colorDisplay0 = player.COLORS[0];
-    Color colorDisplay1 = player.COLORS[1];
-    if (player.life < 1) {
-        colorDisplay0 = Fade(player.COLORS[0], 0.2);
-        colorDisplay1 = Fade(player.COLORS[1], 0.2);
-    }
-    if (player.id % 2) {
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 64, 72 }, (Vector2){ 66, 6 }, -270, WHITE);
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 210, 110 }, (Vector2){ 205, 5 }, 20, WHITE);
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 210, 110 }, (Vector2){ 205, 5 }, 25, WHITE);
+    if (activeDev) {
+    
+        Color colorDisplay0 = player.COLORS[0];
+        Color colorDisplay1 = player.COLORS[1];
+        if (player.life < 1) {
+            colorDisplay0 = Fade(player.COLORS[0], 0.2);
+            colorDisplay1 = Fade(player.COLORS[1], 0.2);
+        }
+        if (player.id % 2) {
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 64, 72 }, (Vector2){ 66, 6 }, -270, WHITE);
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 210, 110 }, (Vector2){ 205, 5 }, 20, WHITE);
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 210, 110 }, (Vector2){ 205, 5 }, 25, WHITE);
 
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 60, 60 }, (Vector2){ 60, 0 }, -270, colorDisplay1);
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 20, colorDisplay1);
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 25, colorDisplay1);
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 60, 60 }, (Vector2){ 60, 0 }, -270, colorDisplay1);
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 20, colorDisplay1);
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 200, 100 }, (Vector2){ 200, 0 }, 25, colorDisplay1);
 
-        if (player.id == 1) DrawText(TextFormat("P%d", player.id), 256, 30 + 120 * player.id, 30, WHITE);
-        else DrawText(TextFormat("P%d", player.id), 253, 30 + 120 * player.id, 30, WHITE);
-        
-        DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 190, 90 }, (Vector2){ 195, -5 }, 20, WHITE);
+            if (player.id == 1) DrawText(TextFormat("P%d", player.id), 256, 30 + 120 * player.id, 30, WHITE);
+            else DrawText(TextFormat("P%d", player.id), 253, 30 + 120 * player.id, 30, WHITE);
+            
+            DrawRectanglePro((Rectangle){ 300, 80 + 120 * player.id, 190, 90 }, (Vector2){ 195, -5 }, 20, WHITE);
 
-        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ 180, 185 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 60, 10, colorDisplay0);
-        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ 250, 190 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
-        DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){ 180, 100 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
-    }
-    else {
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 64, 72 }, (Vector2){ -2, 6 }, 270, WHITE);
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 210, 110 }, (Vector2){ 5, 5 }, -20, WHITE);
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 210, 110 }, (Vector2){ 5, 5 }, -25, WHITE);
+            DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ 180, 185 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 60, 10, colorDisplay0);
+            DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ 250, 190 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
+            DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){ 180, 100 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, 20, 40, 10, colorDisplay0);
+        }
+        else {
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 64, 72 }, (Vector2){ -2, 6 }, 270, WHITE);
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 210, 110 }, (Vector2){ 5, 5 }, -20, WHITE);
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 210, 110 }, (Vector2){ 5, 5 }, -25, WHITE);
 
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 60, 60 }, (Vector2){ 0, 0 }, 270, colorDisplay1);
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -20, colorDisplay1);
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -25, colorDisplay1);
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 60, 60 }, (Vector2){ 0, 0 }, 270, colorDisplay1);
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -20, colorDisplay1);
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 200, 100 }, (Vector2){ 0, 0 }, -25, colorDisplay1);
 
-        DrawText(TextFormat("P%d", player.id), GetScreenWidth() - 288, 30 + 120 * (player.id - 1), 30, WHITE);
-        
-        DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 190, 90 }, (Vector2){ -5, -5 }, -20, WHITE);
+            DrawText(TextFormat("P%d", player.id), GetScreenWidth() - 288, 30 + 120 * (player.id - 1), 30, WHITE);
+            
+            DrawRectanglePro((Rectangle){ GetScreenWidth() - 300, 80 + 120 * (player.id - 1), 190, 90 }, (Vector2){ -5, -5 }, -20, WHITE);
 
-        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ GetScreenWidth() - 130, 45 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 60, 10, colorDisplay0);
-        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ GetScreenWidth() - 250, 70 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
-        DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){ GetScreenWidth() - 130, -40 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
+            DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){ GetScreenWidth() - 130, 45 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 60, 10, colorDisplay0);
+            DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunitionLoad), (Vector2){ GetScreenWidth() - 250, 70 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
+            DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){ GetScreenWidth() - 130, -40 + 120 * (player.id - 1) }, (Vector2){ 40, 0 }, -20, 40, 10, colorDisplay0);
+        }
+
     }
 }
