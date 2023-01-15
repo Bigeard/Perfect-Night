@@ -14,6 +14,6 @@ const peerServer = ExpressPeerServer(server, {
   path: '/'
 });
 
-app.use('/peer', peerServer);
+app.use('/', peerServer);
 
 module.exports = app;
