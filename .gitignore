@@ -53,3 +53,5 @@ dkms.conf
 
 idea.md
 build
+
+node_modules

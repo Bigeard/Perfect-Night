@@ -11,6 +11,7 @@ class VirtualGamepad {
     status = "Connect";
     color;
     edit = false;
+    lastUpdate = 0;
     // Optional add life and amm. in the mobile view 
     // life = 0; 
     // ammunition = 0;
@@ -28,15 +29,11 @@ class VirtualGamepad {
     connect() {
         this.conn.on('data', (data) => {
             if (data != null && (typeof data === 'object' || typeof data === 'function')) {
-                if (data.j === "l") {
-                    this.axes[0] = data.x;
-                    this.axes[1] = data.y;
-                }
-                else {
-                    this.axes[2] = data.x;
-                    this.axes[3] = data.y;
-                }
-                const dataSend = {t: data.t};
+                this.axes[0] = data.lx;
+                this.axes[1] = data.ly;
+                this.axes[2] = data.rx;
+                this.axes[3] = data.ry;
+                const dataSend = { t: data.t };
                 if (this.edit) {
                     dataSend.index = this.index;
                     dataSend.color = this.color;

@@ -10,7 +10,8 @@
     <meta name="keywords" content="perfectnight, multiplayer, videogame">
     <meta name="viewport" content="width=device-width">
     <link rel="shortcut icon" href="favicon.ico">
-    <script src="js/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <!-- <script src="js/peerjs.min.js"></script> -->
     <script src="js/qrenc3.min.js"></script>
     <script src="js/virtualgamepad.js"></script>
     <script src="js/filesaver.min.js"> </script>
@@ -126,7 +127,19 @@
             }
 
             const init = () => {
-                peer = new Peer(null, { debug: 2 });
+                const Config = {
+                    secure: true,
+                    port: 443,
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302'  }, 
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ],
+                    host: 'perfect-night-374900.oa.r.appspot.com',
+                    path: '/peer',
+                    debug: 2
+                };
+                // var peer = new Peer(Config); { debug: 2 }
+                peer = new Peer(Config);
 
                 peer.on('open', (id) => {
                     if (peer.id === null) {

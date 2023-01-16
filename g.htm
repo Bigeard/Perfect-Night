@@ -12,7 +12,8 @@
     <!-- <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black"> -->
 
-    <script src="js/peerjs.min.js"></script>
+    <!-- <script src="js/peerjs.min.js"></script> -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="js/nipplejs.min.js"></script>
     <style>
         html {
@@ -144,14 +145,38 @@
             size: 150
         });
 
+        joystickLeft[0].resetDirection = function () {
+            // Fully rebuild the object to let the iteration possible.
+            this.direction = {
+                x: false,
+                y: false,
+                angle: false
+            };
+            this.frontPosition.x = 0;
+            this.frontPosition.y = 0;
+            console.log("test", this);
+        };
+
+        joystickRight[0].resetDirection = function () {
+            // Fully rebuild the object to let the iteration possible.
+            this.direction = {
+                x: false,
+                y: false,
+                angle: false
+            };
+            this.frontPosition.x = 0;
+            this.frontPosition.y = 0;
+            console.log("test", this);
+        };
+
         // PeerJS
         (() => {
             var lastPeerId = null;
-            var peer = null;
+            var peer = {};
             var conn = null;
             var status = document.getElementById("status");
-            var message = document.getElementById("message");
-            var sendMessageBox = document.getElementById("sendMessageBox");
+            // var message = document.getElementById("message");
+            // var sendMessageBox = document.getElementById("sendMessageBox");
             var ping = document.getElementById("ping");
             var peerjs = document.getElementById("peerjs");
             var infoBottom = document.getElementById("infoBottom");
@@ -161,7 +186,19 @@
 
             const init = () => {
                 status.innerText = "No connection";
-                peer = new Peer(null, { debug: 2 });
+
+                const Config = {
+                    secure: true,
+                    port: 443,
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302'  }, 
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ],
+                    host: 'perfect-night-374900.oa.r.appspot.com',
+                    path: '/peer',
+                    debug: 2
+                };
+                peer = new Peer(Config);
 
                 peer.on('open', (id) => {
                     if (peer.id === null) {
@@ -172,7 +209,8 @@
                     }
                     peerId.innerText = "ID: " + peer.id;
                     const params = new URLSearchParams(document.location.search);
-                    const conn_id = params.get("i");
+                    let conn_id = params.get("i");
+                    console.log(conn_id);
                     if (conn_id) {
                         join(conn_id);
                     } else {
@@ -264,72 +302,93 @@
                 if (h > 12) h -= 12;
                 else if (h === 0) h = 12;
 
-                message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
+                console.log(msg + " - " + h + ":" + m + ":" + s)
+                // message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
             };
 
+
+
             // Send Message
-            if (sendMessageBox) {
-                sendMessageBox.addEventListener('keypress', (e) => {
-                    if (e.keyCode == '13') {
-                        if (conn && conn.open) {
-                            var msg = sendMessageBox.value;
-                            sendMessageBox.value = "";
-                            conn.send(msg);
-                            addMessage("<span class=\"selfMsg\">Self: </span> " + msg);
-                        } else {
-                            console.log('Connection is closed');
-                        }
-                    }
-                });
+            // if (sendMessageBox) {
+            //     sendMessageBox.addEventListener('keypress', (e) => {
+            //         if (e.keyCode == '13') {
+            //             if (conn && conn.open) {
+            //                 var msg = sendMessageBox.value;
+            //                 sendMessageBox.value = "";
+            //                 conn.send(msg);
+            //                 addMessage("<span class=\"selfMsg\">Self: </span> " + msg);
+            //             } else {
+            //                 console.log('Connection is closed');
+            //             }
+            //         }
+            //     });
+            // }
+
+
+            // joystickLeft.on('start end', function (evt, data) {
+            //     if (conn) {
+            //         conn.send({
+            //         // ICI
+            //             t: new Date().getTime(), // Time
+            //             j: "l", // Joystick Left / Right
+            //             x: 0, // Position Joystick X
+            //             y: 0, // Position Joystick Y
+            //         });
+            //     }
+
+            // }).on('move', function (evt, data) {
+            //     if (conn) {
+            //         conn.send({
+            //             t: new Date().getTime(), // Time
+            //             j: "l",
+            //             x: (Math.round(data.instance.frontPosition.x) / 50),
+            //             y: (Math.round(data.instance.frontPosition.y) / 50)
+            //         })
+            //     }
+            // }).on('pressure', function (evt, data) {
+            //     // console.log('pressure', data);
+            // });
+
+            // joystickRight.on('start end', function (evt, data) {
+            //     if (conn) {
+            //         conn.send({
+            //             t: new Date().getTime(), // Time
+            //             j: "r", // Joystick Left / Right
+            //             x: 0, // Position Joystick X
+            //             y: 0, // Position Joystick Y
+            //         });
+            //     }
+            // }).on('move', function (evt, data) {
+            //     if (conn) {
+            //         conn.send({
+            //             t: new Date().getTime(), // Time
+            //             j: "r",
+            //             x: (Math.round(data.instance.frontPosition.x) / 50),
+            //             y: (Math.round(data.instance.frontPosition.y) / 50)
+            //         })
+            //     }
+            // }).on('pressure', function (evt, data) {
+            //     // console.log('pressure', data);
+            // });
+            console.log(joystickLeft.get(0));
+            console.log(joystickRight[0]);
+            console.log(joystickRight.get(0));
+
+            const loop = (timestamp) => {
+                if (joystickLeft && joystickRight && peer.id && conn) {
+                    // console.log("X/Y = ", joystickLeft[0].frontPosition.x, joystickLeft[0].frontPosition.y);
+                    conn.send({
+                        t: new Date().getTime(), // Time
+                        lx: (Math.round(joystickLeft[0].frontPosition.x) / 50),
+                        ly: (Math.round(joystickLeft[0].frontPosition.y) / 50),
+                        rx: (Math.round(joystickRight[0].frontPosition.x) / 50),
+                        ry: (Math.round(joystickRight[0].frontPosition.y) / 50)
+                    })
+                    // console.log(joystickRight[0]);
+                }
+                window.requestAnimationFrame(loop)
             }
-
-
-            joystickLeft.on('start end', function (evt, data) {
-                if (conn) {
-                    conn.send({
-                    // ICI
-                        t: new Date().getTime(), // Time
-                        j: "l", // Joystick Left / Right
-                        x: 0, // Position Joystick X
-                        y: 0, // Position Joystick Y
-                    });
-                }
-
-            }).on('move', function (evt, data) {
-                if (conn) {
-                    conn.send({
-                        t: new Date().getTime(), // Time
-                        j: "l",
-                        x: (Math.round(data.instance.frontPosition.x) / 50),
-                        y: (Math.round(data.instance.frontPosition.y) / 50)
-                    })
-                }
-            }).on('pressure', function (evt, data) {
-                // console.log('pressure', data);
-            });
-
-            joystickRight.on('start end', function (evt, data) {
-                if (conn) {
-                    conn.send({
-                        t: new Date().getTime(), // Time
-                        j: "r", // Joystick Left / Right
-                        x: 0, // Position Joystick X
-                        y: 0, // Position Joystick Y
-                    });
-                }
-            }).on('move', function (evt, data) {
-                if (conn) {
-                    conn.send({
-                        t: new Date().getTime(), // Time
-                        j: "r",
-                        x: (Math.round(data.instance.frontPosition.x) / 50),
-                        y: (Math.round(data.instance.frontPosition.y) / 50)
-                    })
-                }
-            }).on('pressure', function (evt, data) {
-                // console.log('pressure', data);
-            });
-
+            window.requestAnimationFrame(loop)
             init();
         })();
     </script>

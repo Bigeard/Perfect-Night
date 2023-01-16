@@ -1,10 +1,11 @@
 {
-    "activeFile": "dev/resources/map3.tmx",
+    "activeFile": "dev/resources/map4-team.tmx",
     "expandedProjectPaths": [
+        ".",
         "dev/resources",
-        "dev",
-        "."
+        "dev"
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "dev/resources/Grass.tsx": {
             "scaleInDock": 1
@@ -16,8 +17,8 @@
             "scale": 0.8872,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 693.7556357078449,
-                "y": 511.722272317403
+                "x": 512.2858431018935,
+                "y": 512.8494138863842
             }
         },
         "dev/resources/map2.tmx": {
@@ -27,8 +28,8 @@
             "scale": 0.5587,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 817.0753534991945,
-                "y": 467.15589761947376
+                "x": 512.7975657776981,
+                "y": 513.6925004474674
             }
         },
         "dev/resources/map3.tmx": {
@@ -38,7 +39,7 @@
             "scale": 0.8872,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 513.4129846708746,
+                "x": 512.2858431018935,
                 "y": 511.722272317403
             }
         },
@@ -48,23 +49,27 @@
                 3
             ],
             "scale": 0.5508,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 901.4161220043575,
-                "y": 669.9346405228758
+                "x": 1039.3972403776327,
+                "y": 775.2360203340595
             }
         }
     },
     "map.lastUsedFormat": "tmx",
     "openFiles": [
-        "dev/resources/map3.tmx"
+        "dev/resources/map3.tmx",
+        "dev/resources/map1.tmx",
+        "dev/resources/map2.tmx",
+        "dev/resources/map4-team.tmx"
     ],
     "project": "perfect-night.tiled-project",
     "property.type": "object",
     "recentFiles": [
+        "dev/resources/map4-team.tmx",
         "dev/resources/map3.tmx",
-        "dev/resources/map2.tmx",
-        "dev/resources/map1.tmx"
+        "dev/resources/map1.tmx",
+        "dev/resources/map2.tmx"
     ],
     "resizeMap.removeObjects": true
 }

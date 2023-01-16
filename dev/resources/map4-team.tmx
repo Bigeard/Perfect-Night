@@ -94,7 +94,6 @@
   <object id="67" x="798.765" y="127.232" width="28.8677" height="171.229"/>
   <object id="68" x="543.232" y="380.627" width="176.691" height="34.2136"/>
   <object id="69" x="541.094" y="607.292" width="174.262" height="29.9369"/>
-  <object id="70" x="801.972" y="717.081" width="32.0753" height="112.782"/>
   <object id="73" x="384.44" y="-31.6179" width="191.936" height="191.994"/>
   <object id="74" x="1278.77" y="-34.9993" width="193.179" height="192.11"/>
   <object id="75" x="1279.89" y="863.894" width="187.486" height="186.417"/>
@@ -129,5 +128,6 @@
    </properties>
   </object>
   <object id="100" x="1024.27" y="717.08" width="32.0753" height="112.782"/>
+  <object id="101" x="801.972" y="717.081" width="32.0753" height="112.782"/>
  </objectgroup>
 </map>

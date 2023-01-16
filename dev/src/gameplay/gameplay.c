@@ -289,7 +289,7 @@ void UpdateGameplay(void) {
         camera.target = (Vector2){ centerPositionX, centerPositionY };
     } else {
         camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
-        camera.target = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
+        camera.target = (Vector2){ GetScreenWidth()/2.0f-30, GetScreenHeight()/2.0f-30 };
         // camera.target = (Vector2){ players[7].p.pos.x, players[7].p.pos.y };
     }
 
@@ -306,6 +306,7 @@ void UpdateGameplay(void) {
                     players[i].id = i+1;
                 }
             }
+            startTime = 0.0;
         }
     }
 

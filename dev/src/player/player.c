@@ -16,7 +16,7 @@ EM_JS(float, GetJoystickMobileRightY, (const char* id), { return listGamepad.get
 
 Texture2D playerBodyTexture;
 Texture2D playerFaceTexture;
-Texture2D playerTemplateTexture;
+Texture2D playerTemplatesTextures[9];
 
 
 void InitPlayer(void) {
@@ -27,7 +27,25 @@ void InitPlayer(void) {
     playerFaceTexture = LoadTextureFromImage(playerFaceImage);
 
     Image playerFaceTemplate = LoadImage("resources/player-template.png");
-    playerTemplateTexture = LoadTextureFromImage(playerFaceTemplate);
+    Image playerFaceTemplate1 = LoadImage("resources/player-1-template.png");
+    Image playerFaceTemplate2 = LoadImage("resources/player-2-template.png");
+    Image playerFaceTemplate3 = LoadImage("resources/player-3-template.png");
+    Image playerFaceTemplate4 = LoadImage("resources/player-4-template.png");
+    Image playerFaceTemplate5 = LoadImage("resources/player-5-template.png");
+    Image playerFaceTemplate6 = LoadImage("resources/player-6-template.png");
+    Image playerFaceTemplate7 = LoadImage("resources/player-7-template.png");
+    Image playerFaceTemplate8 = LoadImage("resources/player-8-template.png");
+
+    // playerTemplateTexture = LoadTextureFromImage(playerFaceTemplate);
+    playerTemplatesTextures[0] = LoadTextureFromImage(playerFaceTemplate);
+    playerTemplatesTextures[1] = LoadTextureFromImage(playerFaceTemplate1);
+    playerTemplatesTextures[2] = LoadTextureFromImage(playerFaceTemplate2);
+    playerTemplatesTextures[3] = LoadTextureFromImage(playerFaceTemplate3);
+    playerTemplatesTextures[4] = LoadTextureFromImage(playerFaceTemplate4);
+    playerTemplatesTextures[5] = LoadTextureFromImage(playerFaceTemplate5);
+    playerTemplatesTextures[6] = LoadTextureFromImage(playerFaceTemplate6);
+    playerTemplatesTextures[7] = LoadTextureFromImage(playerFaceTemplate7);
+    playerTemplatesTextures[8] = LoadTextureFromImage(playerFaceTemplate8);
 }
 
 void UpdatePlayer(Player *player) {
@@ -356,7 +374,7 @@ void DrawPlayer(Player player) {
 
     // Draw Face / Template of the tank
     DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, color);
-    DrawTexturePro(playerTemplateTexture, (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
+    DrawTexturePro(playerTemplatesTextures[player.id], (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
     // Draw the progress bar of the charge
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
