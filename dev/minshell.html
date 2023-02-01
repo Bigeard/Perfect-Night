@@ -8,9 +8,9 @@
     <meta name="title" content="Perfect Night">
     <meta name="description" content="Multi Player Video Game | Perfect Night">
     <meta name="keywords" content="perfectnight, multiplayer, videogame">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width minimum-scale=1">
     <link rel="shortcut icon" href="favicon.ico">
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.js"></script>
     <!-- <script src="js/peerjs.min.js"></script> -->
     <script src="js/qrenc3.min.js"></script>
     <script src="js/virtualgamepad.js"></script>
@@ -36,6 +36,8 @@
     <style>
         html {
             background: black;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         body {
@@ -44,6 +46,8 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         canvas {
@@ -128,11 +132,20 @@
 
             const init = () => {
                 const Config = {
-                    secure: true,
-                    port: 443,
+                    secure: false,
+                    port: 80,
                     iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302'  }, 
-                        { urls: 'stun:stun1.l.google.com:19302' }
+                        { urls: [
+                            'stun:stun3.l.google.com:19302', 
+                            'stun:stun4.l.google.com:19302'
+                        ]},
+                        // { urls: [
+                        //         "turn:eu-0.turn.peerjs.com:3478",
+                        //         // "turn:us-0.turn.peerjs.com:3478", 
+                        //     ],
+                        //     username: "peerjs",
+                        //     credential: "peerjsp"
+                        // }
                     ],
                     host: 'perfect-night-374900.oa.r.appspot.com',
                     path: '/peer',
@@ -140,6 +153,7 @@
                 };
                 // var peer = new Peer(Config); { debug: 2 }
                 peer = new Peer(Config);
+                console.log(peer);
 
                 peer.on('open', (id) => {
                     if (peer.id === null) {

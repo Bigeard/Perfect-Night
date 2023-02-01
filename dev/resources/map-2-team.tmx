@@ -122,7 +122,7 @@
     <property name="color" type="color" value="#ff23eb8d"/>
    </properties>
   </object>
-  <object id="98" x="799.741" y="799.741" width="256" height="256">
+  <object id="98" x="799.741" y="770" width="256" height="256">
    <properties>
     <property name="displayQrCode" type="bool" value="true"/>
    </properties>

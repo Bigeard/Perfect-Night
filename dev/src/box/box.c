@@ -37,6 +37,6 @@ void DrawBox(Box box) {
 
     // Draw QrCode
     if (box.displayQrCode) {
-        DrawTexture(qrCodeTexture, box.p.pos.x + 8, box.p.pos.x + 8, WHITE);
+        DrawTexture(qrCodeTexture, box.p.pos.x + 8, box.p.pos.y + 8, WHITE);
     }
 }

@@ -133,7 +133,6 @@ void draw_all_layers(tmx_map *map, tmx_layer *layers) {
 }
 
 void render_map(tmx_map *map) {
-	ClearBackground(int_to_color(map->backgroundcolor));
 	draw_all_layers(map, map->ly_head);
 }
 

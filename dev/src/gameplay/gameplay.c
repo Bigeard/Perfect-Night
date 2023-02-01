@@ -12,6 +12,7 @@
 #include "../player/player.h"
 #include "../bullet/bullet.h"
 #include "../box/box.h"
+#include "../tool/tool.h"
 #include "gameplay.h"
 #include "../../../lib/qrcode/c/qrcodegen.h"
 
@@ -75,6 +76,13 @@ Color themeColor[8] = {
     { 255, 149, 229, 255}, // PINK
     { 101, 126, 255, 255} // DISCORD COLOR x)
 };
+int ColorScore[8] = { -1,-1,-1,-1,-1,-1,-1,-1 };
+int numberActiveColor = 0;
+
+float wavePhase = 0;
+float waveAmplitude = 10;
+float waveFrequency = 0.01f;
+float waveSpeed = .2;
 
 bool qrCodeOk = false;
 Texture2D qrCodeTexture;
@@ -121,20 +129,41 @@ static Player players[8] = {
     // },
 };
 static int playersLength = sizeof(players)/sizeof(players[0]);
+Player *outsidePlayer;
+Player *lastOutsidePlayer;
+double startTimeOutside = 0.0;
+double elapsedTimeOutside = 0.0;
 
 static Box boxes[40] = {};
 static int boxesLength = sizeof(boxes)/sizeof(boxes[0]);
 
+int numberPlayer = 0;
+Texture titlePerfectNightTexture;
+Texture useSameWifiTexture;
+Texture andScanQrTexture;
 
 void InitGameplay(void) {
+    Image titlePerfectNightImage = LoadImage("resources/title-perfect-night.png");
+    ImageResizeNN(&titlePerfectNightImage, 155*7, 75*7);
+    titlePerfectNightTexture = LoadTextureFromImage(titlePerfectNightImage);
+
+    Image useSameWifiImage = LoadImage("resources/use-the-same-wifi.png");
+    ImageResizeNN(&useSameWifiImage, 159*2.5, 119*2.5);
+    useSameWifiTexture = LoadTextureFromImage(useSameWifiImage);
+
+    Image andScanQrImage = LoadImage("resources/and-scan.png");
+    ImageResizeNN(&andScanQrImage, 162*2.5, 112*2.5);
+    andScanQrTexture = LoadTextureFromImage(andScanQrImage);
+
 	tmx_img_load_func = raylib_tex_loader;
 	tmx_img_free_func = raylib_free_tex;
 
-	map = tmx_load("resources/map4-team.tmx");
+	map = tmx_load("resources/map-vs.tmx");
 	if (!map) {
 		tmx_perror("Cannot load map");
 	}
-
+    arenaSizeX = map->tile_width * map->width;
+    arenaSizeY = map->tile_height * map->height;
     tmx_init_object(map->ly_head, players, boxes);
     InitPlayer();
 
@@ -160,18 +189,51 @@ void UpdateGameplay(void) {
         camera.offset = (Vector2){ GetScreenWidth() - arenaSizeX/2 - GetScreenWidth()/2, GetScreenHeight() - arenaSizeY/2 - GetScreenHeight()/2 };
         lastSecond += 1;
     }
+    if (GetScreenWidth() < (arenaSizeX+60)*(camera.zoom/1.0001) || GetScreenHeight() < (arenaSizeY+60)*(camera.zoom/1.0001)) {
+        camera.zoom -= 0.001;
+    }
+    if (GetScreenWidth() > (arenaSizeX+120) || GetScreenHeight() > (arenaSizeY+120)) {
+        camera.zoom += 0.001;
+    }
 
-    int numberPlayer = GetNumberPlayer(); // +2
+    numberPlayer = GetNumberPlayer(); // +2
     if(lastPlayer < numberPlayer) {
         for (int i = 0; i < playersLength; i++) {
             if(!playerSpace[i]) {
                 playerSpace[i] = true;
                 players[i] = (Player) {
-                    i+1, GetIdGamepad(i), 1, 0, 0, 1, 600, {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, { 0, 0 }, {3.5, 3.5}, 2, true, 0, 0, { 0 }, 0, { PURPLE, VIOLET, DARKPURPLE }, MOBILE,
-                    {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y},
+                    i+1, // id: Identifier
+                    GetIdGamepad(i), // gamepadId: Gamepad identifier
+                    1, // life: Number of life
+                    300, // invincible: Time of invincibility
+                    0, // damagesTaken: Percentage of damages token
+                    4, // ammunition: Ammunition
+                    3.0f, // ammunitionLoad: Ammunition loading
+                    {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, // p: Physic
+                    { 0, 0 }, // spawn: Spawn position
+                    {3.5, 3.5}, // speed: Speed of the tank
+                    0, // charge: Charge delay
+                    true, // canShoot: Can Shoot
+                    0, // timeShoot: Time Shoot
+                    0, // radian: Radian : Determine the position of the cannon
+                    0, // lastRadian: Last Radian : Determine the position of the cannon
+                    { 0 }, // bullets: Array of bullet
+                    0, // lastBullet: Allow the ball to be replaced one after the other
+                    { PURPLE, VIOLET, DARKPURPLE }, // COLORS: Colors
+                    MOBILE, // INPUT_TYPE: Type of input (mouse, keyboard, gamepad)
+                    {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action
                 };
                 tmx_init_object(map->ly_head, players, boxes);
                 InitColorGamepad(players[i].gamepadId, players[i].COLORS[0].r, players[i].COLORS[0].g, players[i].COLORS[0].b);
+                for (int c = 0; c < sizeof(themeColor)/sizeof(themeColor[0]); c++) {
+                    if(ColorToInt(themeColor[c]) == ColorToInt(players[i].COLORS[0])) {
+                        if (ColorScore[c] < 0) {
+                            numberActiveColor++;
+                            ColorScore[c] = 0;
+                        }
+                        break;
+                    }
+                }
                 i = playersLength;
                 lastPlayer++;
             }
@@ -253,6 +315,7 @@ void UpdateGameplay(void) {
 
             // Collision Player and Bullet
             for (int p = 0; p < numberPlayer; p++) {
+                if(players[p].life <= 0) continue;
                 Rectangle envPlayer = { players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y };
                 bool bulletCollision = CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
                 CollisionBulletPlayer(bulletCollision, &players[i].bullets[j], &players[p], envPlayer);
@@ -289,12 +352,76 @@ void UpdateGameplay(void) {
         camera.target = (Vector2){ centerPositionX, centerPositionY };
     } else {
         camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
-        camera.target = (Vector2){ GetScreenWidth()/2.0f-30, GetScreenHeight()/2.0f-30 };
+        camera.target = (Vector2){ arenaSizeX/2.0f, arenaSizeY/2.0f };
         // camera.target = (Vector2){ players[7].p.pos.x, players[7].p.pos.y };
     }
 
-    if((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) {
-        if (startTime == 0.0) {
+    if (!outsidePlayer) {
+        startTimeOutside = 0.0;
+    }
+    if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id)) {
+        TraceLog(LOG_INFO, "outsidePlayer->id: %d", outsidePlayer->id);
+        if (lastOutsidePlayer) {
+            TraceLog(LOG_INFO, "lastOutsidePlayer->id: %d", lastOutsidePlayer->id);
+        }
+
+        if (lastOutsidePlayer && ColorToInt(outsidePlayer->COLORS[0]) != ColorToInt(lastOutsidePlayer->COLORS[0])) {
+
+            TraceLog(LOG_INFO, "outsidePlayer->COLOR: %d", ColorToInt(outsidePlayer->COLORS[0]));
+            TraceLog(LOG_INFO, "lastOutsidePlayer->COLOR: %d", ColorToInt(lastOutsidePlayer->COLORS[0]));
+
+            for (int i = 0; i < playersLength; i++) {
+                if (ColorToInt(players[i].COLORS[0]) != ColorToInt(outsidePlayer->COLORS[0])) {
+                    if ((players[i].p.pos.x >= arenaSizeX ||
+                        players[i].p.pos.x + players[i].p.size.x <= 0) ||
+                        (players[i].p.pos.y >= arenaSizeY ||
+                        players[i].p.pos.y + players[i].p.size.y <= 0)) {
+
+                        if (players[i].life > 0) players[i].life--;
+                        players[i].p.pos = (Vector2) { players[i].spawn.x, players[i].spawn.y };
+                    }
+                }
+            }
+        }
+        lastOutsidePlayer = outsidePlayer;
+        startTimeOutside = GetTime();
+    }
+    elapsedTimeOutside = GetTime() - startTimeOutside;
+    if (elapsedTimeOutside > 2) {
+        for (int i = 0; i < playersLength; i++) {
+            if (ColorToInt(players[i].COLORS[0]) == ColorToInt(outsidePlayer->COLORS[0])) {
+                if ((players[i].p.pos.x >= arenaSizeX ||
+                    players[i].p.pos.x + players[i].p.size.x <= 0) ||
+                    (players[i].p.pos.y >= arenaSizeY ||
+                    players[i].p.pos.y + players[i].p.size.y <= 0)) {
+
+                    if (players[i].life > 0) players[i].life--;
+                    players[i].p.pos = (Vector2) { players[i].spawn.x, players[i].spawn.y };
+                }
+            }
+        }
+        outsidePlayer = NULL;
+        lastOutsidePlayer = NULL;
+        startTimeOutside = 0.0;
+    }
+
+    if(((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) || playerAlive == 0) {
+        if (startTime == 0.0 && numberPlayer > 1) {
+            for (int c = 0; c < sizeof(themeColor)/sizeof(themeColor[0]); c++) {
+                if(ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].COLORS[0])) {
+                    if (ColorScore[c] > -1) {
+                        ColorScore[c]++;
+                    }
+                    break;
+                }
+            }
+            for (int i = 0; i < playersLength; i++) {
+                if(playerSpace[i]) {
+                    for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
+                        players[i].bullets[j].inactive = true;
+                    }
+                }
+            }
             startTime = GetTime();
         }
         elapsedTime = GetTime() - startTime;
@@ -304,6 +431,12 @@ void UpdateGameplay(void) {
                 if(playerSpace[i]) {
                     players[i].life = 1;
                     players[i].id = i+1;
+                    players[i].ammunition = 4; // @Todo change for use maxAmmunition
+                    players[i].invincible = 300;
+                    players[i].charge = 0;
+                    for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
+                        players[i].bullets[j].inactive = true;
+                    }
                 }
             }
             startTime = 0.0;
@@ -324,6 +457,11 @@ void UpdateGameplay(void) {
 void DrawGameplay(void) {
     // DRAW GAME
     BeginMode2D(camera);
+        if(outsidePlayer) {
+	        ClearBackground(LightenColor(outsidePlayer->COLORS[0], 0.2));
+        } else {
+	        ClearBackground(int_to_color(map->backgroundcolor));
+        }
         render_map(map);
         DrawGameArena();
 
@@ -344,11 +482,53 @@ void DrawGameplay(void) {
         }
 
         DrawPauseGame();
-        if((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) {
+
+        // Draw Wins 
+        if(startTime != 0.0) {
+            int indexFindColor = 0;
+            for (int i = 0; i < numberActiveColor; i++) {
+                if (ColorScore[i] > -1) {
+                    DrawText(TextFormat("%d", ColorScore[indexFindColor]), camera.target.x-50*2-65+300*indexFindColor, camera.target.y - 80, 80, themeColor[indexFindColor]);
+                }
+                else i--;
+                indexFindColor++;
+            }
             DrawCircle(camera.target.x, camera.target.y-100, 50, BLACK);
             DrawCircle(camera.target.x, camera.target.y-100, 48, WHITE);
             DrawCircle(camera.target.x, camera.target.y-100, 40, players[playerAliveId].COLORS[0]);
-            DrawText("WIN THIS GAME", camera.target.x-50*6.5, camera.target.y, 80, players[playerAliveId].COLORS[0]);
+            DrawText("WINS THIS GAME", camera.target.x-50*7, camera.target.y + 40, 80, players[playerAliveId].COLORS[0]);
+        }
+
+        // Draw title
+        if(numberPlayer == 0) {
+            Rectangle recBackground = { -1000, -1000, GetScreenWidth() / camera.zoom + arenaSizeX + 500, GetScreenHeight() / camera.zoom + arenaSizeY + 500 };
+            DrawRectangleRec(recBackground, Fade(BLACK, 0.4)); 
+
+            // @TODO background animation
+            // for (int x = 0; x < GetScreenWidth() + arenaSizeX; x++)
+            // {
+            //     float y = waveAmplitude * sin(waveFrequency * x + wavePhase);
+            //     for (int c = 0; c < sizeof(themeColor)/sizeof(themeColor[0]); c++) {
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2) + y + c * 50, WHITE);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 1) + y + c * 50, WHITE);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 2) + y + c * 50, WHITE);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 3) + y + c * 50, themeColor[c]);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 4) + y + c * 50, themeColor[c]);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 5) + y + c * 50, themeColor[c]);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 6) + y + c * 50, themeColor[c]);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 8) + y + c * 50, themeColor[c]);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 9) + y + c * 50, WHITE);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 10) + y + c * 50, WHITE);
+            //         DrawPixel(x - 500, 140 +(GetScreenHeight() / 2 + 11) + y + c * 50, WHITE);
+            //     }
+            // }
+            // wavePhase += waveSpeed;
+
+            DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
+            DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
+            DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
+            DrawRectangleRec((Rectangle) {camera.target.x - qrCodeTexture.width/2 - 5, camera.target.y - qrCodeTexture.height/2 + 315, qrCodeTexture.width+10, qrCodeTexture.height+10}, BLACK); 
+            DrawTexture(qrCodeTexture, camera.target.x - qrCodeTexture.width/2, camera.target.y - qrCodeTexture.height/2 + 320, WHITE);
         }
     EndMode2D();
 
@@ -471,7 +651,7 @@ void GenerateQrCode(void) {
                         c++;
                     }
                 }
-                ImageResize(&qrCodeImage, sizeRec, sizeRec);
+                ImageResizeNN(&qrCodeImage, sizeRec, sizeRec);
                 qrCodeTexture = LoadTextureFromImage(qrCodeImage);
                 UnloadImage(qrCodeImage);
                 TraceLog(LOG_INFO, "Generate QrCode Ok.");

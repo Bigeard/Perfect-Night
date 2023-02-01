@@ -363,7 +363,8 @@ OBJS ?= main.c \
         src/player/player.c \
         src/bullet/bullet.c \
         src/box/box.c \
-        src/line_segment/line_segment.c
+        src/line_segment/line_segment.c \
+        src/tool/tool.c
 
 # TMX LIB
 OBJS += ../lib/tmx/src/tmx_err.c \

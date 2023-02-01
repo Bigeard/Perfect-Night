@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- <meta http-equiv="ScreenOrientation" content="autoRotate:disabled"> -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Perfect Night - Mobile Gamepad</title>
@@ -124,9 +124,15 @@
     </div>
 
     <script type="text/javascript">
-        // document.addEventListener('touchmove', function (event) {
-        //     if (event.scale !== 1) { event.preventDefault(); }
-        // }, { passive: false });
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if(isIOS) {
+            // document.addEventListener('touchmove', function (event) {
+            //     if (event.scale !== 1) { event.preventDefault(); }
+            // }, { passive: false });
+            document.addEventListener('touchend', (event) => {
+                event.preventDefault();
+            }, { passive: false });
+        }
 
         // NippleJS
         var joystickLeft = nipplejs.create({
@@ -134,7 +140,7 @@
             mode: 'static',
             position: { left: '50%', top: '50%' },
             color: 'grey',
-            size: 150
+            size: 180
         });
 
         var joystickRight = nipplejs.create({
@@ -142,7 +148,7 @@
             mode: 'static',
             position: { right: '50%', top: '50%' },
             color: 'grey',
-            size: 150
+            size: 180
         });
 
         joystickLeft[0].resetDirection = function () {
@@ -154,7 +160,6 @@
             };
             this.frontPosition.x = 0;
             this.frontPosition.y = 0;
-            console.log("test", this);
         };
 
         joystickRight[0].resetDirection = function () {
@@ -166,7 +171,6 @@
             };
             this.frontPosition.x = 0;
             this.frontPosition.y = 0;
-            console.log("test", this);
         };
 
         // PeerJS
@@ -188,11 +192,20 @@
                 status.innerText = "No connection";
 
                 const Config = {
-                    secure: true,
-                    port: 443,
+                    secure: false,
+                    port: 80,
                     iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302'  }, 
-                        { urls: 'stun:stun1.l.google.com:19302' }
+                        { urls: [
+                            'stun:stun3.l.google.com:19302', 
+                            'stun:stun4.l.google.com:19302'
+                        ]},
+                        // { urls: [
+                        //         "turn:eu-0.turn.peerjs.com:3478",
+                        //         // "turn:us-0.turn.peerjs.com:3478", 
+                        //     ],
+                        //     username: "peerjs",
+                        //     credential: "peerjsp"
+                        // }
                     ],
                     host: 'perfect-night-374900.oa.r.appspot.com',
                     path: '/peer',
@@ -306,77 +319,8 @@
                 // message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
             };
 
-
-
-            // Send Message
-            // if (sendMessageBox) {
-            //     sendMessageBox.addEventListener('keypress', (e) => {
-            //         if (e.keyCode == '13') {
-            //             if (conn && conn.open) {
-            //                 var msg = sendMessageBox.value;
-            //                 sendMessageBox.value = "";
-            //                 conn.send(msg);
-            //                 addMessage("<span class=\"selfMsg\">Self: </span> " + msg);
-            //             } else {
-            //                 console.log('Connection is closed');
-            //             }
-            //         }
-            //     });
-            // }
-
-
-            // joystickLeft.on('start end', function (evt, data) {
-            //     if (conn) {
-            //         conn.send({
-            //         // ICI
-            //             t: new Date().getTime(), // Time
-            //             j: "l", // Joystick Left / Right
-            //             x: 0, // Position Joystick X
-            //             y: 0, // Position Joystick Y
-            //         });
-            //     }
-
-            // }).on('move', function (evt, data) {
-            //     if (conn) {
-            //         conn.send({
-            //             t: new Date().getTime(), // Time
-            //             j: "l",
-            //             x: (Math.round(data.instance.frontPosition.x) / 50),
-            //             y: (Math.round(data.instance.frontPosition.y) / 50)
-            //         })
-            //     }
-            // }).on('pressure', function (evt, data) {
-            //     // console.log('pressure', data);
-            // });
-
-            // joystickRight.on('start end', function (evt, data) {
-            //     if (conn) {
-            //         conn.send({
-            //             t: new Date().getTime(), // Time
-            //             j: "r", // Joystick Left / Right
-            //             x: 0, // Position Joystick X
-            //             y: 0, // Position Joystick Y
-            //         });
-            //     }
-            // }).on('move', function (evt, data) {
-            //     if (conn) {
-            //         conn.send({
-            //             t: new Date().getTime(), // Time
-            //             j: "r",
-            //             x: (Math.round(data.instance.frontPosition.x) / 50),
-            //             y: (Math.round(data.instance.frontPosition.y) / 50)
-            //         })
-            //     }
-            // }).on('pressure', function (evt, data) {
-            //     // console.log('pressure', data);
-            // });
-            console.log(joystickLeft.get(0));
-            console.log(joystickRight[0]);
-            console.log(joystickRight.get(0));
-
             const loop = (timestamp) => {
                 if (joystickLeft && joystickRight && peer.id && conn) {
-                    // console.log("X/Y = ", joystickLeft[0].frontPosition.x, joystickLeft[0].frontPosition.y);
                     conn.send({
                         t: new Date().getTime(), // Time
                         lx: (Math.round(joystickLeft[0].frontPosition.x) / 50),
@@ -384,10 +328,12 @@
                         rx: (Math.round(joystickRight[0].frontPosition.x) / 50),
                         ry: (Math.round(joystickRight[0].frontPosition.y) / 50)
                     })
-                    // console.log(joystickRight[0]);
                 }
                 window.requestAnimationFrame(loop)
             }
+            // setInterval(() => {
+            //     loop();
+            // }, 1000/240);
             window.requestAnimationFrame(loop)
             init();
         })();

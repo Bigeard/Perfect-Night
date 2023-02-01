@@ -22,14 +22,15 @@ typedef struct Player {
     int invincible; // Time of invincibility
     int damagesTaken; // Percentage of damages token
     int ammunition; // Ammunition
-    int ammunitionLoad; // Ammunition loading
+    float ammunitionLoad; // Ammunition loading
     Physic p; // Physic (position, velocity...)
-    Vector2 spawn;
+    Vector2 spawn; // Spawn position
     Vector2 speed;
     float charge;
     bool canShoot;
     int timeShoot;
     float radian; // Determine the position of the cannon
+    float lastRadian; // Determine the position of the cannon
     Bullet bullets[4]; // Array of bullet
     int lastBullet; // Allow the ball to be replaced one after the other
     Color COLORS[3];

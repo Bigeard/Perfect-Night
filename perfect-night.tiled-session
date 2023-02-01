@@ -1,8 +1,8 @@
 {
     "activeFile": "dev/resources/map4-team.tmx",
     "expandedProjectPaths": [
-        ".",
         "dev/resources",
+        ".",
         "dev"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -66,10 +66,10 @@
     "project": "perfect-night.tiled-project",
     "property.type": "object",
     "recentFiles": [
-        "dev/resources/map4-team.tmx",
         "dev/resources/map3.tmx",
         "dev/resources/map1.tmx",
-        "dev/resources/map2.tmx"
+        "dev/resources/map2.tmx",
+        "dev/resources/map4-team.tmx"
     ],
     "resizeMap.removeObjects": true
 }

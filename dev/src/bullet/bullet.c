@@ -38,10 +38,12 @@ void BulletBounce(Bullet *bullet) {
 
 void DrawBullet(Bullet bullet) {
     if (bullet.inactive) {
-        DrawCircleV((Vector2){bullet.p.pos.x + 5, bullet.p.pos.y + 5}, bullet.p.size.x, Fade(bullet.COLOR, 0.2)); 
+        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, Fade(bullet.COLOR, 0.2)); 
     }
     else {
-        DrawCircleV((Vector2){bullet.p.pos.x + 5, bullet.p.pos.y + 5}, bullet.p.size.x, bullet.COLOR); 
+        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, 7.3, BLACK);
+        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, 6.5, WHITE);
+        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, bullet.COLOR); 
     }
     // DrawText(TextFormat("Bullet Vel: X %f/ Y %f", bullet.p.vel.x, bullet.p.vel.y), bullet.p.pos.x - 30, bullet.p.pos.y - 14, 20, bullet.COLOR);
     // DrawCircleV((Vector2){bullet.p.pos.x + 5, bullet.p.pos.y + 5}, bullet.p.size.x-1, GREEN); 

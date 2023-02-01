@@ -54,21 +54,6 @@ class VirtualGamepad {
         });
     }
 
-    // I can't send data (socket, WebRTC)
-    // initColorGamepad() {
-    //     console.log('InitColorGamepadPhone', this.conn, this.conn.open, this.color);
-    //     if (this.conn) {
-    //         console.log('conn');
-    //         this.conn.send({
-    //             type: "color",
-    //             value: this.color
-    //         })
-    //     }
-    //     if (this.conn && this.conn.open) {
-    //         this.conn.send("HELLO !");
-    //     }
-    // }
-
     disconnect() {
         this.conn = null;
         this.status = "Disconnect"
