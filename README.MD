@@ -5,6 +5,13 @@ RUN / COMPILE THE GAME :
 > make PLATFORM=PLATFORM_WEB -B
 > make PLATFORM=PLATFORM_WEB BUILD_MODE=DEBUG -B
 
+TURN SERVER
+> turnserver --log-file stdout
+
+PeerJS SERVER
+> npm start
+
+
 INSTALL :
 
 - https://emscripten.org/docs/getting_started/downloads.html  

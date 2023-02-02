@@ -158,7 +158,7 @@ void InitGameplay(void) {
 	tmx_img_load_func = raylib_tex_loader;
 	tmx_img_free_func = raylib_free_tex;
 
-	map = tmx_load("resources/map-vs.tmx");
+	map = tmx_load("resources/map-2-team.tmx");
 	if (!map) {
 		tmx_perror("Cannot load map");
 	}

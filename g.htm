@@ -12,8 +12,8 @@
     <!-- <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black"> -->
 
-    <!-- <script src="js/peerjs.min.js"></script> -->
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script> -->
+    <script src="js/peerjs.min.js"></script>
     <script src="js/nipplejs.min.js"></script>
     <style>
         html {
@@ -193,11 +193,17 @@
 
                 const Config = {
                     secure: false,
+                    host: 'perfect-night-374900.oa.r.appspot.com',
                     port: 80,
+                    // LOCAL
+                    // host: '192.168.12.1',
+                    // port: 9000,
+                    path: '/peer',
                     iceServers: [
                         { urls: [
                             'stun:stun3.l.google.com:19302', 
-                            'stun:stun4.l.google.com:19302'
+                            'stun:stun4.l.google.com:19302',
+                            // '192.168.12.1:5349'
                         ]},
                         // { urls: [
                         //         "turn:eu-0.turn.peerjs.com:3478",
@@ -207,8 +213,6 @@
                         //     credential: "peerjsp"
                         // }
                     ],
-                    host: 'perfect-night-374900.oa.r.appspot.com',
-                    path: '/peer',
                     debug: 2
                 };
                 peer = new Peer(Config);
