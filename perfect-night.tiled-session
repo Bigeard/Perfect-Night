@@ -1,8 +1,8 @@
 {
-    "activeFile": "dev/resources/map-4-team.tmx",
+    "activeFile": "dev/resources/map-vs.tmx",
     "expandedProjectPaths": [
-        "dev/resources",
         ".",
+        "dev/resources",
         "dev"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -10,20 +10,35 @@
         "dev/resources/Grass.tsx": {
             "scaleInDock": 1
         },
-        "dev/resources/map-4-team.tmx": {
-            "scale": 0.9750488281249999,
+        "dev/resources/map-2-team.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 0.808,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 492.7958335419901,
-                "y": 472.7968350943963
+                "x": 925.1237623762376,
+                "y": 60.64356435643566
+            }
+        },
+        "dev/resources/map-4-team.tmx": {
+            "expandedObjectLayers": [
+                4,
+                5
+            ],
+            "scale": 0.7548,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 538.5532591414944,
+                "y": 544.5151033386327
             }
         },
         "dev/resources/map-vs.tmx": {
-            "scale": 0.9750488281249999,
-            "selectedLayer": 1,
+            "scale": 0.5416,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 450.7466573188442,
-                "y": 551.7672392207924
+                "x": 423.7444608567208,
+                "y": 498.5228951255539
             }
         },
         "dev/resources/map1.tmx": {
@@ -74,12 +89,15 @@
     },
     "map.lastUsedFormat": "tmx",
     "openFiles": [
-        "dev/resources/map-4-team.tmx"
+        "dev/resources/map-4-team.tmx",
+        "dev/resources/map-2-team.tmx",
+        "dev/resources/map-vs.tmx"
     ],
     "project": "perfect-night.tiled-project",
-    "property.type": "object",
+    "property.type": "float",
     "recentFiles": [
         "dev/resources/map-4-team.tmx",
+        "dev/resources/map-2-team.tmx",
         "dev/resources/map-vs.tmx",
         "dev/resources/map3.tmx",
         "dev/resources/map1.tmx",

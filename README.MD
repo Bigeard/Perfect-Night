@@ -43,7 +43,6 @@ CHECKLIST :
 - Fix bug of collision (need review)
 - Improve the design
     - Add design for the collision boxes
-    - Change graphic of the player info (life / amm.)
     - (optional) customization of the player (color, appearance)
     - Change UI/UX of the phone gamepad (add info game play / p2p button)
     - Create the design of the pages

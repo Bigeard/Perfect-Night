@@ -12,7 +12,14 @@ extern "C" {
 extern bool activeDev;
 extern float arenaSizeX;
 extern float arenaSizeY;
+extern Color themeColor[8];
+
 extern Texture2D qrCodeTexture;
+extern Texture2D BonusLifeTexture;
+extern Texture2D BonusAmmunitionTexture;
+extern Texture2D BonusSpeedTexture;
+
+extern Player players[8];
 extern Player *outsidePlayer;
 extern Player *lastOutsidePlayer;
 

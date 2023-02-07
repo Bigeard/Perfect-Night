@@ -10,6 +10,7 @@ extern "C" {
 
 #include "../player/player.h"
 #include "../box/box.h"
+#include "../loot/loot.h"
 
 
 void *raylib_tex_loader(const char *path);
@@ -24,7 +25,7 @@ void draw_tile(void *image, unsigned int sx, unsigned int sy, unsigned int sw, u
 void draw_layer(tmx_map *map, tmx_layer *layer);
 void draw_all_layers(tmx_map *map, tmx_layer *layers);
 void render_map(tmx_map *map);
-void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes);
+void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots);
 
 #ifdef __cplusplus
 }

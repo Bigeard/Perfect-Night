@@ -8,12 +8,21 @@ extern "C" {
 
 #include "../physic/physic.h"
 #include "../bullet/bullet.h"
+#include "../item/item.h"
 
 // INPUT_TYPE
 #define MOUSE 0
 #define KEYBOARD 1
 #define GAMEPAD 2
 #define MOBILE 3
+
+extern int maxAmmunition;
+extern float delayAmmunition;
+extern int delayInvincible;
+
+extern Texture2D playerBodyTexture;
+extern Texture2D playerFaceTexture;
+extern Texture2D playerTemplatesTextures[9];
 
 typedef struct Player {
     int id; // Identifier
@@ -31,9 +40,10 @@ typedef struct Player {
     int timeShoot;
     float radian; // Determine the position of the cannon
     float lastRadian; // Determine the position of the cannon
-    Bullet bullets[4]; // Array of bullet
+    Bullet bullets[7]; // Array of bullet
     int lastBullet; // Allow the ball to be replaced one after the other
     Color COLORS[3];
+    Item item;
     int INPUT_TYPE; // Type of input (mouse, keyboard, gamepad)
     int KEY[7]; // Key you can press to move or do an action
 } Player;

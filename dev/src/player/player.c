@@ -1,6 +1,7 @@
 #include "../../../lib/raylib/src/raylib.h"
 #include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
+// #include <stdbool.h>
 #include "stdio.h"
 
 #include "player.h"
@@ -10,6 +11,7 @@
 
 int maxAmmunition = 4;
 float delayAmmunition = 3.0f;
+int delayInvincible = 140;
 
 EM_JS(float, GetJoystickMobileLeftX, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[0] });
 EM_JS(float, GetJoystickMobileLeftY, (const char* id), { return listGamepad.get(Module.UTF8ToString(id)).axes[1] });
@@ -140,22 +142,28 @@ void UpdatePlayer(Player *player) {
                     calcPosRadianY = lround(sin(player->lastRadian));
                 }
 
-                player->bullets[player->lastBullet] = (Bullet) { 
-                    player->id,
-                    (Physic) {
-                        {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
-                        {5, 5},
-                        {cos(player->lastRadian) * player->charge + delta_x * 2, sin(player->lastRadian) * player->charge + delta_y * 2},
-                        {0, 0, 0, 0, 0}
-                    }, 
-                    { player->charge + delta_x * 2, player->charge + delta_y * 2 }, 
-                    player->lastRadian,
-                    false,
-                    false,
-                    true,
-                    player->COLORS[0]
-                };
-
+                bool defaultShoot = true;
+                if (player->item.active) {
+                    player->item.ShootItem(&player->item, calcPosRadianX, calcPosRadianY, delta_x, delta_y);
+                    defaultShoot = player->item.defaultShoot;
+                }
+                if (defaultShoot) {
+                    player->bullets[player->lastBullet] = (Bullet) { 
+                        player->id,
+                        (Physic) {
+                            {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
+                            {5, 5},
+                            {cos(player->lastRadian) * player->charge + delta_x * 2, sin(player->lastRadian) * player->charge + delta_y * 2},
+                            {0, 0, 0, 0, 0}
+                        }, 
+                        { player->charge + delta_x * 2, player->charge + delta_y * 2 }, 
+                        player->lastRadian,
+                        false,
+                        false,
+                        true,
+                        player->COLORS[0]
+                    };
+                }
                 // Remove ammunition
                 player->ammunition--;
                 player->canShoot = false;
@@ -167,6 +175,10 @@ void UpdatePlayer(Player *player) {
 
     player->p.pos.x = player->p.pos.x + delta_x;
     player->p.pos.y = player->p.pos.y + delta_y;
+
+    if (player->item.active) {
+        player->item.UpdateItem(&player->item);
+    }
 
     // Out of area
     if ((player->p.pos.x >= arenaSizeX || 
@@ -182,6 +194,10 @@ void UpdatePlayer(Player *player) {
         if (outsidePlayer->id == player->id) {
             outsidePlayer = NULL;
         }
+    }
+
+    if (player->life <= 0 && outsidePlayer->id == player->id) {
+        outsidePlayer = NULL;
     }
 }
 
@@ -212,41 +228,52 @@ void DrawPlayer(Player player) {
         whiteColor = Fade(WHITE, 0.5);
     }
     
-    // Draw BLACK 1 Cannon
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 33, 14 }, (Vector2){ 0, 7 }, player.radian * (180 / PI), blackColor);
-    
-    // Draw Body of the Tank
-    DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, whiteColor);
-
-    // Draw WHITE 2 and COLOR 3 Cannon
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI), WHITE);
-    DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 30, 8 }, (Vector2){ 0, 4 }, player.radian * (180 / PI), color);
-
-    // Draw Face / Template of the tank
-    DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, color);
-    DrawTexturePro(playerTemplatesTextures[player.id], (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
-
-    for (int a = 0; a < maxAmmunition; a++) {
-        if (a >= player.ammunition) break;
-        int ammunitionDisplay = player.ammunition;
-        // if (player.ammunition != maxAmmunition) ammunitionDisplay++;
-        // float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
-        float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
-        float loadColor = 1;
-        // if (a >= player.ammunition) {
-        //     loadColor = (delayAmmunition - player.ammunitionLoad) / delayAmmunition;
-        // }
-        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
-        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, Fade(BLACK, loadColor+0.3));
-        DrawCircle(ammunitionPosX, ammunitionPosY, 6.5,WHITE);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 5, ReverseColor(player.COLORS[0], loadColor));
-        // if (a >= player.ammunition) break;
+    bool defaultDisplay = true;
+    if (player.item.active) {
+        defaultDisplay = player.item.defaultDisplay;
     }
 
-    // Draw the progress bar of the charge
-    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
-    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
+    if (defaultDisplay) {
+        // Draw BLACK 1 Cannon
+        DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 33, 14 }, (Vector2){ 0, 7 }, player.radian * (180 / PI), blackColor);
+        
+        // Draw Body of the Tank
+        DrawTextureEx(playerBodyTexture, (Vector2) {player.p.pos.x, player.p.pos.y}, 0, 1, whiteColor);
+
+        // Draw WHITE 2 and COLOR 3 Cannon
+        DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 32, 12 }, (Vector2){ 0, 6 }, player.radian * (180 / PI), WHITE);
+        DrawRectanglePro((Rectangle){ player.p.pos.x + 20, player.p.pos.y + 20, 30, 8 }, (Vector2){ 0, 4 }, player.radian * (180 / PI), color);
+
+        // Draw Face / Template of the tank
+        DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, color);
+        DrawTexturePro(playerTemplatesTextures[player.id], (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
+
+        for (int a = 0; a < maxAmmunition; a++) {
+            if (a >= player.ammunition) break;
+            int ammunitionDisplay = player.ammunition;
+            // if (player.ammunition != maxAmmunition) ammunitionDisplay++;
+            // float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
+            float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
+            float loadColor = 1;
+            // if (a >= player.ammunition) {
+            //     loadColor = (delayAmmunition - player.ammunitionLoad) / delayAmmunition;
+            // }
+            float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
+            float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
+            DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, Fade(BLACK, loadColor+0.3));
+            DrawCircle(ammunitionPosX, ammunitionPosY, 6.5,WHITE);
+            DrawCircle(ammunitionPosX, ammunitionPosY, 5, ReverseColor(player.COLORS[0], loadColor));
+            // if (a >= player.ammunition) break;
+        }
+
+        // Draw the progress bar of the charge
+        DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
+        DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
+    }
+
+    if (player.item.active) {
+        player.item.DrawItem(&player.item);
+    }
 
     if (activeDev) {
         // DrawRectangleRec((Rectangle) { player.p.pos.x, player.p.pos.y, player.p.size.x - 0.1, player.p.size.y - 0.1 }, RED);

@@ -5,6 +5,7 @@
 
 #include "../player/player.h"
 #include "../box/box.h"
+#include "../loot/loot.h"
 
 
 void *raylib_tex_loader(const char *path) {
@@ -136,8 +137,9 @@ void render_map(tmx_map *map) {
 	draw_all_layers(map, map->ly_head);
 }
 
-void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes) {
+void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots) {
 	int box_number = 0;
+	int loot_number = 0;
 	while (layer) {
         if (layer->visible && layer->type == L_OBJGR) {
 	        tmx_object *head = layer->content.objgr->head;
@@ -167,6 +169,19 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes) {
 						displayQrCode->value.boolean 
 					};
 					box_number++;
+				}
+                if (head->visible && head->obj_type == OT_SQUARE && layer->id == 5) {
+					tmx_property *type = tmx_get_property(head->properties, "type");
+					tmx_property *delay = tmx_get_property(head->properties, "delay");
+					loots[loot_number] = (Loot) {
+						head->id,
+						{{head->x, head->y}, {head->width, head->height}, {0, 0}}, 
+						true,
+						type->value.integer,
+						0.0,
+						delay->value.decimal,
+					};
+					loot_number++;
 				}
         		head = head->next;
             }

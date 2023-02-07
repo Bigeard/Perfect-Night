@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="58" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#f5f5f5" nextlayerid="5" nextobjectid="101">
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="58" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#f5f5f5" nextlayerid="7" nextobjectid="104">
  <tileset firstgid="1" source="Grass.tsx"/>
  <layer id="1" name="Background" width="58" height="32">
   <data encoding="csv">
@@ -87,6 +87,20 @@
    </properties>
   </object>
  </objectgroup>
+ <objectgroup color="#23eb8d" id="5" name="items">
+  <object id="102" name="Random" class="random" x="891.63" y="1090.64" width="64" height="64">
+   <properties>
+    <property name="delay" type="float" value="10"/>
+    <property name="type" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="103" name="Random" class="random" x="890.03" y="167.257" width="64" height="64">
+   <properties>
+    <property name="delay" type="float" value="10"/>
+    <property name="type" type="int" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
  <objectgroup id="4" name="Boxes">
   <object id="64" x="1137.59" y="603.015" width="174.379" height="36.352"/>
   <object id="65" x="1139.9" y="381.696" width="170.998" height="34.2136"/>
@@ -99,8 +113,8 @@
   <object id="75" x="1279.89" y="863.894" width="187.486" height="186.417"/>
   <object id="76" x="387.822" y="864.963" width="188.555" height="187.486"/>
   <object id="78" x="1537.84" y="321.039" width="63.5772" height="378.239"/>
-  <object id="80" x="910" y="467.351" width="62.5661" height="63.0814"/>
-  <object id="81" x="910" y="-32.745" width="63.0814" height="63.7511"/>
+  <object id="80" x="896.314" y="479.62" width="62.5661" height="63.0814"/>
+  <object id="81" x="895.149" y="-33.9826" width="63.0814" height="63.7511"/>
   <object id="92" x="1722.07" y="-28.822" width="168.334" height="117.557">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>

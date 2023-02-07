@@ -363,6 +363,15 @@ OBJS ?= main.c \
         src/player/player.c \
         src/bullet/bullet.c \
         src/box/box.c \
+        src/loot/loot.c \
+        src/item/items/bonus_ammunition/bonus_ammunition.c \
+        src/item/items/bonus_life/bonus_life.c \
+        src/item/items/bonus_speed/bonus_speed.c \
+        src/item/items/laser/laser.c \
+        src/item/items/multi_shot/multi_shot.c \
+        src/item/items/rocket/rocket.c \
+        src/item/items/sword/sword.c \
+        src/item/items/nothing/nothing.c \
         src/line_segment/line_segment.c \
         src/tool/tool.c
 
