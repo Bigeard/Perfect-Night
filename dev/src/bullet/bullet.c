@@ -2,6 +2,7 @@
 #include "../../../lib/raylib/src/raymath.h"
 
 #include "bullet.h"
+#include "../tool/tool.h"
 #include <stdbool.h>
 
 
@@ -37,14 +38,16 @@ void BulletBounce(Bullet *bullet) {
 }
 
 void DrawBullet(Bullet bullet) {
-    if (bullet.inactive) {
-        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, Fade(bullet.COLOR, 0.2)); 
-    }
-    else {
+    // if (bullet.inactive) {
+    //     DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, Fade(bullet.COLOR, 0.2)); 
+    // }
+    // else {
+    if (!bullet.inactive) {
         DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, 7.3, BLACK);
         DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, 6.5, WHITE);
-        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, bullet.COLOR); 
+        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, DarkenColor(bullet.COLOR, 0.9)); 
     }
+    // }
     // DrawText(TextFormat("Bullet Vel: X %f/ Y %f", bullet.p.vel.x, bullet.p.vel.y), bullet.p.pos.x - 30, bullet.p.pos.y - 14, 20, bullet.COLOR);
     // DrawCircleV((Vector2){bullet.p.pos.x + 5, bullet.p.pos.y + 5}, bullet.p.size.x-1, GREEN); 
     // DrawRectangleRec((Rectangle){bullet.p.pos.x + 2.5, bullet.p.pos.y + 2.5, bullet.p.size.x * 2 - 5, bullet.p.size.y  * 2 - 5}, PURPLE);

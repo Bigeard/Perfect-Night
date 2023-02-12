@@ -115,12 +115,12 @@ void DrawItemBonusAmmunition(Item *item) {
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
     DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
 
-    if (elapsedTime <= 2.0) {
+    if (elapsedTime <= 4.0) {
         DrawTexture(
             BonusAmmunitionTexture, 
             (player.p.pos.x + player.p.size.x / 2) - 17,
             player.p.pos.y - 27,
-            Fade(player.COLORS[0], 1-(elapsedTime/2))
+            Fade(player.COLORS[0], 1-(elapsedTime/4))
         );
     }
 }

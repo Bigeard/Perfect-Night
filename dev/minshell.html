@@ -132,18 +132,23 @@
 
             const init = () => {
                 const Config = {
+                    //// ONLINE
                     secure: true,
                     host: 'perfect-night-374900.oa.r.appspot.com',
                     port: 443,
-                    // LOCAL
+
+                    //// LOCAL
                     // secure: false,
                     // host: '192.168.12.1',
                     // port: 9000,
                     path: '/peer',
                     iceServers: [
                         { urls: [
-                            'stun:stun3.l.google.com:19302', 
-                            'stun:stun4.l.google.com:19302',
+                            //// ONLINE
+                            'stun:stun3.l.google.com:19302',
+                            // 'stun:stun4.l.google.com:19302',
+
+                            //// LOCAL
                             // '192.168.12.1:5349'
                         ]},
                         // { urls: [

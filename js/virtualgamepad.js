@@ -10,6 +10,7 @@ class VirtualGamepad {
     axes = [0, 0, 0, 0];
     status = "Connect";
     color;
+    life = 0;
     edit = false;
     lastUpdate = 0;
     // Optional add life and amm. in the mobile view 
@@ -37,6 +38,7 @@ class VirtualGamepad {
                 if (this.edit) {
                     dataSend.index = this.index;
                     dataSend.color = this.color;
+                    dataSend.life = this.life;
                     this.edit = false;
                 }
                 this.conn.send(dataSend);

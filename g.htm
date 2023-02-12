@@ -26,6 +26,9 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            background-color: rgb(228, 228, 228);
+            /* background: rgba(91, 255, 146, 0.589); */
+            /* background: repeating-linear-gradient(45deg, white, white 20px, #9198e5 20px, #9198e5 25px); */
         }
 
         body {
@@ -35,13 +38,14 @@
             height: 100vh;
             display: block;
             /* background: #CDCDCD; */
+            cursor: pointer;
         }
 
         #peerjs {
             display: block;
             background: #aaa;
             padding: 15px;
-            border-radius: 15px;
+            border-radius: 25px 25px 0 0;
             /* border: double 3px #000; */
             width: auto;
             /* height: 60%; */
@@ -58,10 +62,28 @@
             width: 100%;
         }
 
+        #tutorial-video {
+            width: 100%;
+            height: auto;
+            padding-top: 20px;
+            background-color: #aaa;
+            border-radius: 0px 0px 35px 35px;
+        }
+
         #joysticks {
             width: 100%;
-            background: white;
-            border-radius: 15px;
+            height: 100%;
+            /* background: rgba(91, 255, 146, 0.589); */
+            background-color: white;
+            border-radius: 0px 0px 35px 35px;
+        }
+
+        .dead-background {
+            background-image: url("g_resources/dead_face.png"), url("g_resources/dead_background.png");
+            background-repeat: no-repeat, repeat;
+            background-position: center;
+            background-size: 90vh, 30px;
+            image-rendering: pixelated;
         }
 
         #joystickLeft {
@@ -76,7 +98,7 @@
         #joystickRight {
             position: absolute;
             right: 0;
-            bottom: -40;
+            bottom: -50;
             width: 50%;
             height: 100vh;
             border-left: dashed #ddd 1px;
@@ -87,14 +109,36 @@
         } */
 
         #infoBottom {
+            z-index: 100;
             position: absolute;
             left: 0;
             right: 0;
-            padding: 10px;
+            padding: 8px 10px;
+            margin: 0;
             margin: auto;
             background: #aaa;
             width: fit-content;
             border-radius: 0px 0px 15px 15px;
+        }
+
+        @media screen and (orientation:portrait) {
+            #joysticks {
+                display: none;
+            }
+
+            #tutorial-video {
+                height: 450px;
+                background-image: url("g_resources/rotate_phone.png");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 100%;
+                image-rendering: pixelated;
+            }
+        }
+        @media screen and (orientation:landscape) {
+            #tutorial-video {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -107,23 +151,32 @@
         </div> -->
         <div class="info-container">
             <span>Status: <span id="status"></span></span><br>
-            <span id="peerId">ID: ...</span><br>
+            <!-- <span id="peerId">ID: ...</span><br> -->
             <span id="ping">Ping: X</span>
         </div>
     </div>
+
+    <div id="infoBottom">
+        <span id="playerId" onclick="playerIdClick">PLAYER X</span>
+    </div>
+
     <div id="joysticks">
         <div id="joystickLeft"></div>
         <div id="joystickRight"></div>
+    </div>
+
+    <div id="tutorial-video">
+
     </div>
     <!-- <div class="infoTop">
         <span>Life X</span>
         <span>Ammo. X</span>
     </div> -->
-    <div id="infoBottom">
-        <span id="playerId">PLAYER X</span>
-    </div>
+
 
     <script type="text/javascript">
+        window.scrollBy(0, 0);
+
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         if(isIOS) {
             // document.addEventListener('touchmove', function (event) {
@@ -135,12 +188,14 @@
         }
 
         // NippleJS
+        var joysticks = document.getElementById("joysticks");
+
         var joystickLeft = nipplejs.create({
             zone: document.getElementById('joystickLeft'),
             mode: 'static',
             position: { left: '50%', top: '50%' },
             color: 'grey',
-            size: 180
+            size: 185
         });
 
         var joystickRight = nipplejs.create({
@@ -148,7 +203,7 @@
             mode: 'static',
             position: { right: '50%', top: '50%' },
             color: 'grey',
-            size: 180
+            size: 185
         });
 
         joystickLeft[0].resetDirection = function () {
@@ -186,24 +241,29 @@
             var infoBottom = document.getElementById("infoBottom");
             var playerId = document.getElementById("playerId");
 
-            var peerId = document.getElementById("peerId");
+            // var peerId = document.getElementById("peerId");
 
             const init = () => {
                 status.innerText = "No connection";
 
                 const Config = {
+                    //// ONLINE
                     secure: true,
                     host: 'perfect-night-374900.oa.r.appspot.com',
                     port: 443,
-                    // LOCAL
+
+                    //// LOCAL
                     // secure: false,
                     // host: '192.168.12.1',
                     // port: 9000,
                     path: '/peer',
                     iceServers: [
                         { urls: [
-                            'stun:stun3.l.google.com:19302', 
-                            'stun:stun4.l.google.com:19302',
+                            //// ONLINE
+                            'stun:stun3.l.google.com:19302',
+                            // 'stun:stun4.l.google.com:19302',
+
+                            //// LOCAL
                             // '192.168.12.1:5349'
                         ]},
                         // { urls: [
@@ -225,7 +285,7 @@
                     } else {
                         lastPeerId = peer.id;
                     }
-                    peerId.innerText = "ID: " + peer.id;
+                    // peerId.innerText = "ID: " + peer.id;
                     const params = new URLSearchParams(document.location.search);
                     let conn_id = params.get("i");
                     console.log(conn_id);
@@ -257,7 +317,7 @@
 
                 peer.on('error', (err) => {
                     console.error(err);
-                    alert('' + err);
+                    // alert('' + err);
                 });
             };
 
@@ -269,7 +329,8 @@
                     reliable: true
                 });
                 conn.on('open', () => {
-                    status.innerText = "Connected to " + conn.peer;
+                    status.innerText = "Connected";
+                    // status.innerText = "Connected to " + conn.peer;
                 });
                 conn.on('data', (data) => {
                     if (data != null && (typeof data === 'object' || typeof data === 'function')) {
@@ -287,6 +348,15 @@
                         }
                         if (data.index != null) {
                             playerId.innerText = "PLAYER " + data.index;
+                        }
+                        if (data.life != null || data.life === 0) {
+                            console.log(data);
+                            if(data.life <= 0) {
+                                joysticks.classList.add("dead-background");
+                            }
+                            else {
+                                joysticks.classList.remove("dead-background");
+                            }
                         }
                         ping.innerText = "Ping: " + (new Date().getTime() - data.t);
                     }

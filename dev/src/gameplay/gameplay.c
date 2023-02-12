@@ -215,6 +215,7 @@ void UpdateGameplay(void) {
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action
                 };
                 tmx_init_object(map->ly_head, players, boxes, loots);
+                GamepadPlayerLife(players[i].gamepadId, players[i].life);
                 InitColorGamepad(players[i].gamepadId, players[i].COLORS[0].r, players[i].COLORS[0].g, players[i].COLORS[0].b);
                 for (int c = 0; c < sizeof(themeColor)/sizeof(themeColor[0]); c++) {
                     if(ColorToInt(themeColor[c]) == ColorToInt(players[i].COLORS[0])) {
@@ -360,7 +361,10 @@ void UpdateGameplay(void) {
                         (players[i].p.pos.y >= arenaSizeY ||
                         players[i].p.pos.y + players[i].p.size.y <= 0)) {
 
-                        if (players[i].life > 0) players[i].life--;
+                        if (players[i].life > 0) {
+                            players[i].life--;
+                            GamepadPlayerLife(players[i].gamepadId, players[i].life);
+                        };
                         players[i].p.pos = (Vector2) { players[i].spawn.x, players[i].spawn.y };
                     }
                 }
@@ -380,7 +384,10 @@ void UpdateGameplay(void) {
                     (players[i].p.pos.y >= arenaSizeY ||
                     players[i].p.pos.y + players[i].p.size.y <= 0)) {
 
-                    if (players[i].life > 0) players[i].life--;
+                    if (players[i].life > 0) {
+                        players[i].life--;
+                        GamepadPlayerLife(players[i].gamepadId, players[i].life);
+                    };
                     players[i].p.pos = (Vector2) { players[i].spawn.x, players[i].spawn.y };
                 }
             }
@@ -429,6 +436,7 @@ void UpdateGameplay(void) {
                     for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
                         players[i].bullets[j].inactive = true;
                     }
+                    GamepadPlayerLife(players[i].gamepadId, players[i].life);
                 }
             }
             startTime = 0.0;

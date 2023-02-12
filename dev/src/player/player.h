@@ -55,6 +55,8 @@ void DrawPlayer(Player player);
 void DrawSpawnPlayer(Player player);
 void DrawStatsPlayer(Player player);
 
+int GamepadPlayerLife(char* p_id, int life);
+
 
 #ifdef __cplusplus
 }

@@ -96,25 +96,33 @@ void DrawItemMultiShot(Item *item) {
     DrawTextureEx(playerFaceTexture, (Vector2) {player.p.pos.x+3, player.p.pos.y+3}, 0, 1, color);
     DrawTexturePro(playerTemplatesTextures[player.id], (Rectangle) {0,0,32,32}, (Rectangle) {player.p.pos.x+20, player.p.pos.y+20,32,32}, (Vector2) {16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
-    for (int a = 0; a < maxAmmunition; a++) {
-        if (a >= player.ammunition) break;
-        int ammunitionDisplay = player.ammunition;
-        // if (player.ammunition != maxAmmunition) ammunitionDisplay++;
-        // float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
-        float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
-        float loadColor = 1;
-        // if (a >= player.ammunition) {
-        //     loadColor = (delayAmmunition - player.ammunitionLoad) / delayAmmunition;
-        // }
+    for (int a = 0; a < player.ammunition; a++) {
+        float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (player.ammunition * 0.7 / 2));
         float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
         float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, Fade(BLACK, loadColor+0.3));
+        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, BLACK);
         DrawCircle(ammunitionPosX, ammunitionPosY, 6.5,WHITE);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 5, ReverseColor(player.COLORS[0], loadColor));
-        // if (a >= player.ammunition) break;
+        DrawCircle(ammunitionPosX, ammunitionPosY, 5, DarkenColor(player.COLORS[0], 0.7));
     }
 
     // Draw the progress bar of the charge
-    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6 }, Fade(WHITE, 0.4));
-    DrawRectangleRec((Rectangle){ player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4 }, Fade(player.COLORS[1], 0.8));
+    DrawRing(
+        (Vector2) { player.p.pos.x + player.p.size.x/2, player.p.pos.y + player.p.size.y/2 }, 
+        38.0f, 
+        47.0f, 
+        player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4 -2,
+        player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4 +2, 
+        0, 
+        Fade(WHITE, 0.6)
+    );
+
+    DrawRing(
+        (Vector2) { player.p.pos.x + player.p.size.x/2, player.p.pos.y + player.p.size.y/2 }, 
+        40.0f, 
+        45.0f, 
+        player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4,
+        player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4, 
+        0, 
+        Fade(player.COLORS[1], 0.8)
+    );
 }

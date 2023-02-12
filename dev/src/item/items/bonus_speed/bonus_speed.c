@@ -54,12 +54,12 @@ void DrawItemBonusSpeed(Item *item) {
     if (!item->active) return;
     Player player = players[item->player_id-1];
     double elapsedTime = GetTime() - item->timer; 
-    if (elapsedTime <= 2.0) {
+    if (elapsedTime <= 4.0) {
         DrawTexture(
             BonusSpeedTexture, 
             (player.p.pos.x + player.p.size.x / 2) - 10,
             player.p.pos.y - 42,
-            Fade(player.COLORS[0], 1-(elapsedTime/2))
+            Fade(player.COLORS[0], 1-(elapsedTime/4))
         );
     }
 }

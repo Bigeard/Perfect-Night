@@ -12,7 +12,7 @@ Item InitItemBonusLife(int player_id) {
         "Bonus Life",
         true,
         GetTime(),
-        2.0,
+        4.0,
         true,
         true,
         ShootItemBonusLife,
@@ -22,6 +22,7 @@ Item InitItemBonusLife(int player_id) {
     };
     Player *player = &players[item.player_id-1];
     player->life++;
+    GamepadPlayerLife(player->gamepadId, player->life);
     return item;
 }
 

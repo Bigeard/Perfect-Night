@@ -36,7 +36,7 @@ void DrawBox(Box box) {
     }
 
     // Draw QrCode
-    if (box.displayQrCode) {
+    if (box.displayQrCode && numberPlayer != 0) {
         DrawTexture(qrCodeTexture, box.p.pos.x + 8, box.p.pos.y + 8, WHITE);
     }
 }

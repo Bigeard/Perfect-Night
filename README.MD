@@ -9,7 +9,12 @@ TURN SERVER
 > turnserver --log-file stdout
 
 PeerJS SERVER
-> npm start
+> cd server && npm start
+
+TRUN WIFI ON
+> wihotspot
+
+and use chromium !
 
 
 INSTALL :

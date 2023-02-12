@@ -81,13 +81,14 @@ void UpdateLoot(Loot *loot, Player *player) {
 
 void DrawLoot(Loot loot) {
     if (!loot.active) return;
+    DrawPoly((Vector2) {loot.p.pos.x + 32, loot.p.pos.y + 32}, 6, 25, 0, WHITE);
     DrawTexture(
-        LootBoxTexture, 
+        LootBoxTexture,
         loot.p.pos.x,
-        loot.p.pos.y, 
+        loot.p.pos.y,
         LerpColor(
-            themeColor[loot.idColorA], 
-            themeColor[loot.idColorB], 
+            themeColor[loot.idColorA],
+            themeColor[loot.idColorB],
             loot.animationTimer
         )
     );

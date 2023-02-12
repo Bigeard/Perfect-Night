@@ -20,6 +20,8 @@ extern Texture2D BonusAmmunitionTexture;
 extern Texture2D BonusSpeedTexture;
 
 extern Player players[8];
+extern int numberPlayer;
+
 extern Player *outsidePlayer;
 extern Player *lastOutsidePlayer;
 
