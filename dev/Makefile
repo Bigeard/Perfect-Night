@@ -193,7 +193,7 @@ endif
 #  -std=gnu99           defines C language mode (GNU C from 1999 revision)
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS += -Wall -std=gnu99 -D_DEFAULT_SOURCE -Wno-missing-braces -s EXPORTED_RUNTIME_METHODS=['lengthBytesUTF8','stringToUTF8','UTF8ToString','ccall']
+CFLAGS += -Wall -std=gnu99 -D_DEFAULT_SOURCE -Wno-missing-braces -s EXPORTED_RUNTIME_METHODS=['lengthBytesUTF8','stringToUTF8','UTF8ToString','ccall'] -s "EXPORTED_FUNCTIONS=['_main', '_malloc']"
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -O0
@@ -373,6 +373,7 @@ OBJS ?= main.c \
         src/item/items/sword/sword.c \
         src/item/items/nothing/nothing.c \
         src/line_segment/line_segment.c \
+        src/particle/particle.c \
         src/tool/tool.c
 
 # TMX LIB

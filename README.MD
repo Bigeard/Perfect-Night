@@ -24,7 +24,7 @@ INSTALL :
 
 PACKAGE VSCODE :
 
-- clangd
+- C/C++ (Microsoft)
 - Cmake
 - Code Spell Checker
 - GitLens

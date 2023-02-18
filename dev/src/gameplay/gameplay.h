@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+
 #include "../../../lib/raylib/src/raylib.h"
 #include "../player/player.h"
 
@@ -31,6 +32,7 @@ void DrawGameplay(void);
 void DrawGameArena(void);
 void DrawPauseGame(void);
 void GenerateQrCode(void);
+
 
 #ifdef __cplusplus
 }

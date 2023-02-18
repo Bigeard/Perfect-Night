@@ -1,42 +1,32 @@
 #include "../../../lib/raylib/src/raylib.h"
-#include "../../../lib/raylib/src/raymath.h"
-#include "stdio.h"
 
 #include "box.h"
 #include "../gameplay/gameplay.h"
 #include "../physic/physic.h"
 
+void InitBox(void) {}
 
-void InitBox(void) {
+void UpdateBox(Box *box) {}
 
-}
+void DrawBox(Box box)
+{
+	// Draw Box
+	Rectangle envBox = {box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y};
+	DrawRectangleRec(envBox, Fade(box.color, 0.5f));
 
-void UpdateBox(Box *box) {
+	// Draw QrCode
+	if (box.displayQrCode && numberPlayer != 0)
+	{
+		DrawTexture(qrCodeTexture, box.p.pos.x + 8.0f, box.p.pos.y + 8.0f, WHITE);
+	}
 
-}
-
-void DrawBox(Box box) {
-    if (activeDev) {
-        // Draw Cell Position
-        char cellBox[54];
-        sprintf(cellBox, "W: %d / H: %d", (int)box.p.size.x, (int)box.p.size.y);
-        DrawText(cellBox, box.p.pos.x+1, box.p.pos.y, 12, BLACK);
-        char cellBox1[54];
-        sprintf(cellBox1, "X: %d / Y: %d", (int)box.p.pos.x, (int)box.p.pos.y);
-        DrawText(cellBox1, box.p.pos.x+1, box.p.pos.y+12, 12, BLACK);
-    }
-
-    // Draw Box
-    Rectangle envBox = {box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y};
-    if (activeDev) {
-        DrawRectangleRec(envBox, Fade(box.color, 0.4));
-    }
-    else {
-        DrawRectangleRec(envBox, Fade(box.color, 0.5));
-    }
-
-    // Draw QrCode
-    if (box.displayQrCode && numberPlayer != 0) {
-        DrawTexture(qrCodeTexture, box.p.pos.x + 8, box.p.pos.y + 8, WHITE);
-    }
+	// *** DEV INFO ***
+	if (activeDev)
+	{
+		// Draw Cell Position
+		DrawText(TextFormat("W: %d / H: %d", (int)box.p.size.x, (int)box.p.size.y),
+				 box.p.pos.x + 1.0f, box.p.pos.y, 12, BLACK);
+		DrawText(TextFormat("X: %d / Y: %d", (int)box.p.pos.x, (int)box.p.pos.y),
+				 box.p.pos.x + 1, box.p.pos.y + 12.0f, 12.0f, BLACK);
+	}
 }

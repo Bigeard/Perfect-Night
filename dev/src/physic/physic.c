@@ -120,16 +120,19 @@ bool CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB) {
           }
       }
 
-      if(phyA->collision[1]) phyA->vel.y *= -1; // Top
-      else if(phyA->collision[2]) {
-        phyA->vel.y *= -1; // Bottom
-        phyA->vel.x *= -1;
-      }
-      else if(phyA->collision[3]) phyA->vel.x *= -1; // Left
-      else if(phyA->collision[4]) phyA->vel.x *= -1; // Right
-
       phyA->vel.x *= 0.8;
       phyA->vel.y *= 0.8;
+
+      // if(phyA->collision[1]) phyA->vel.y *= -1; // Top
+      // else if(phyA->collision[2]) {
+      //   phyA->vel.y *= -1; // Bottom
+      //   phyA->vel.x *= -1;
+      // }
+      // else if(phyA->collision[3]) phyA->vel.x *= -1; // Left
+      // else if(phyA->collision[4]) phyA->vel.x *= -1; // Right
+
+      // phyA->vel.x *= 0.8;
+      // phyA->vel.y *= 0.8;
 
       
       // phyA->vel.x = -phyA->vel.x;

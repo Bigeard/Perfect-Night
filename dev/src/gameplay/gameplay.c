@@ -15,6 +15,7 @@
 #include "../loot/loot.h"
 #include "../item/item.h"
 #include "../item/items/multi_shot/multi_shot.h"
+#include "../particle/particle.h"
 #include "../tool/tool.h"
 #include "gameplay.h"
 #include "../../../lib/qrcode/c/qrcodegen.h"
@@ -196,12 +197,13 @@ void UpdateGameplay(void) {
                     GetIdGamepad(i), // gamepadId: Gamepad identifier
                     1, // life: Number of life
                     delayInvincible, // invincible: Time of invincibility
-                    0, // damagesTaken: Percentage of damages token
+                    // 0, // damagesTaken: Percentage of damages token
                     maxAmmunition, // ammunition: Ammunition
                     delayAmmunition, // ammunitionLoad: Ammunition loading
                     {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, // p: Physic
                     { 0, 0 }, // spawn: Spawn position
                     {3.5, 3.5}, // speed: Speed of the tank
+                    // Bullet
                     0, // charge: Charge delay
                     true, // canShoot: Can Shoot
                     0, // timeShoot: Time Shoot
@@ -209,10 +211,13 @@ void UpdateGameplay(void) {
                     0, // lastRadian: Last Radian : Determine the position of the cannon
                     { 0 }, // bullets: Array of bullet
                     0, // lastBullet: Allow the ball to be replaced one after the other
+                    // Other
                     { PURPLE, VIOLET, DARKPURPLE }, // COLORS: Colors
                     { 0 }, // Item
+                    // Control
                     MOBILE, // INPUT_TYPE: Type of input (mouse, keyboard, gamepad)
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action
+                    { 0 } // shootParticle
                 };
                 tmx_init_object(map->ly_head, players, boxes, loots);
                 GamepadPlayerLife(players[i].gamepadId, players[i].life);
@@ -334,6 +339,10 @@ void UpdateGameplay(void) {
 
         for (int j = 0; j < lootsLength; j++) {
             UpdateLoot(&loots[j], &players[i]);
+        }
+
+        if (players[i].shootParticle[0].timer != 0) {
+            UpdateParticles(players[i].shootParticle, 20);
         }
 
         centerPositionX += players[i].p.pos.x;
@@ -480,6 +489,9 @@ void DrawGameplay(void) {
                 DrawBullet(players[i].bullets[j]);
             }
             DrawPlayer(players[i]);
+            if (players[i].shootParticle[0].timer != 0) {
+                DrawParticles(players[i].shootParticle, 20);
+            }
         }
 
         for (int i = 0; i < lootsLength; i++) {

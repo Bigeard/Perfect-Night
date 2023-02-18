@@ -7,6 +7,7 @@
 #include "player.h"
 #include "../gameplay/gameplay.h"
 #include "../bullet/bullet.h"
+#include "../particle/particle.h"
 #include "../tool/tool.h"
 
 int maxAmmunition = 4;
@@ -218,6 +219,8 @@ void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player,
             player->life--;
             player->invincible = delayInvincible;
             GamepadPlayerLife(player->gamepadId, player->life);
+            
+            InitParticles(bullet->p.pos, bullet->p.vel, player->COLORS[0], player->shootParticle, 20);
         }
     }
 }

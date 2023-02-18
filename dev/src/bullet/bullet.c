@@ -1,17 +1,16 @@
 #include "../../../lib/raylib/src/raylib.h"
-#include "../../../lib/raylib/src/raymath.h"
 
-#include "bullet.h"
+#include "../gameplay/gameplay.h"
 #include "../tool/tool.h"
-#include <stdbool.h>
+#include "bullet.h"
 
+void InitBullet(void) {}
 
-void InitBullet(void) {
+void UpdateBullet(Bullet *bullet)
+{
+    if (bullet->inactive)
+        return;
 
-}
-
-void UpdateBullet(Bullet *bullet) {
-    if (bullet->inactive) return;
     bullet->p.collision[0] = false;
     bullet->p.collision[1] = false;
     bullet->p.collision[2] = false;
@@ -21,34 +20,56 @@ void UpdateBullet(Bullet *bullet) {
     bullet->p.pos.x += bullet->p.vel.x;
     bullet->p.pos.y += bullet->p.vel.y;
 
-    if (bullet->p.vel.x < 1 && bullet->p.vel.y < 1 && bullet->p.vel.x > -1 && bullet->p.vel.y > -1) {
+    if (bullet->p.vel.x < 1.0f && bullet->p.vel.y < 1.0f &&
+        bullet->p.vel.x > -1.0f && bullet->p.vel.y > -1.0f)
+    {
         bullet->inactive = true;
     }
 }
 
-void BulletBounce(Bullet *bullet) {
-    // if(bullet->p.collision[0]) {
-        // if(bullet->p.collision[1]) bullet->p.vel.y *= -1; // Top
-        // else if(bullet->p.collision[2]) bullet->p.vel.y *= -1; // Bottom
-        // else if(bullet->p.collision[3]) bullet->p.vel.x *= -1; // Left
-        // else if(bullet->p.collision[4]) bullet->p.vel.x *= -1; // Right
-        // bullet->p.vel.x *= 0.8;
-        // bullet->p.vel.y *= 0.8;
-    // }
+void BulletBounce(Bullet *bullet)
+{
+    if (bullet->p.collision[0])
+    {
+        if (bullet->p.collision[1]) // Top
+            bullet->p.vel.y *= -1.0f;
+        else if (bullet->p.collision[2])
+        { // Bottom
+            bullet->p.vel.y *= -1.0f;
+            bullet->p.vel.x *= -1.0f;
+        }
+        else if (bullet->p.collision[3])
+            bullet->p.vel.x *= -1.0f; // Left
+        else if (bullet->p.collision[4])
+            bullet->p.vel.x *= -1.0f; // Right
+    }
 }
 
-void DrawBullet(Bullet bullet) {
-    // if (bullet.inactive) {
-    //     DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, Fade(bullet.COLOR, 0.2)); 
-    // }
-    // else {
-    if (!bullet.inactive) {
-        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, 7.3, BLACK);
-        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, 6.5, WHITE);
-        DrawCircle(bullet.p.pos.x + 5, bullet.p.pos.y + 5, bullet.p.size.x, DarkenColor(bullet.COLOR, 0.9)); 
+void DrawBullet(Bullet bullet)
+{
+    float centerBulletX = bullet.p.pos.x + bullet.p.size.x;
+    float centerBulletY = bullet.p.pos.y + bullet.p.size.y;
+
+    if (!bullet.inactive)
+    {
+        DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x * 1.46f, BLACK);
+        DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x * 1.3f, WHITE);
+        DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x,
+                   DarkenColor(bullet.COLOR, 0.9f));
     }
-    // }
-    // DrawText(TextFormat("Bullet Vel: X %f/ Y %f", bullet.p.vel.x, bullet.p.vel.y), bullet.p.pos.x - 30, bullet.p.pos.y - 14, 20, bullet.COLOR);
-    // DrawCircleV((Vector2){bullet.p.pos.x + 5, bullet.p.pos.y + 5}, bullet.p.size.x-1, GREEN); 
-    // DrawRectangleRec((Rectangle){bullet.p.pos.x + 2.5, bullet.p.pos.y + 2.5, bullet.p.size.x * 2 - 5, bullet.p.size.y  * 2 - 5}, PURPLE);
+
+    // *** DEV INFO ***
+    if (activeDev)
+    {
+        DrawText(TextFormat("B Vel: X %f/ Y %f", bullet.p.vel.x, bullet.p.vel.y),
+                 bullet.p.pos.x, bullet.p.pos.y - 20.0f, 16,
+                 DarkenColor(bullet.COLOR, 0.9f));
+        DrawRectangleRec(
+            (Rectangle){
+                bullet.p.pos.x,
+                bullet.p.pos.y,
+                bullet.p.size.x * 2,
+                bullet.p.size.y * 2},
+            PURPLE);
+    }
 }

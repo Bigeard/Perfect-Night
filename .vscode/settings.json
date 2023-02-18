@@ -15,5 +15,9 @@
 		"perfectnight",
 		"SKYBLUE",
 		"videogame"
-	]
+	],
+	"C_Cpp.intelliSenseEngine": "default",
+	"[c]": {
+		"editor.tabSize": 4
+	},
 }

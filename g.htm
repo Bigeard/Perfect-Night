@@ -3,7 +3,14 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> -->
+    <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
+
+    <meta name="apple-mobile-web-app-title" content="Perfect Night" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#e4e4e4" />
+    <link rel="apple-touch-icon" href="/favicon.ico">
+
     <!-- <meta http-equiv="ScreenOrientation" content="autoRotate:disabled"> -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Perfect Night - Mobile Gamepad</title>
@@ -26,7 +33,7 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            background-color: rgb(228, 228, 228);
+            background-color: white;
         }
 
         body {
@@ -61,7 +68,7 @@
             width: 100%;
             height: auto;
             padding-top: 20px;
-            background-color: #aaa;
+            background-color: #d4d4d4;
             border-radius: 0px 0px 35px 35px;
         }
 
@@ -117,15 +124,23 @@
             }
 
             #tutorial-video {
-                height: 450px;
+                height: 430px;
                 background-image: url("g_resources/rotate_phone.png");
                 background-repeat: no-repeat;
                 background-position: center;
                 background-size: 100%;
                 image-rendering: pixelated;
             }
+            body {
+                padding: 0 20px;
+                width: auto;
+            }
         }
         @media screen and (orientation:landscape) {
+            html {
+                background-color: #e4e4e4;
+            }
+
             #tutorial-video {
                 display: none;
             }
@@ -144,6 +159,7 @@
             <!-- <span id="peerId">ID: ...</span><br> -->
             <span id="ping">Ping: X</span>
         </div>
+        <!-- <input type="button" onClick="pageScroll()" value="Scroll Page"> -->
     </div>
 
     <div id="infoBottom">
@@ -165,7 +181,14 @@
 
 
     <script type="text/javascript">
-        window.scrollBy(0, 0);
+        function pageScroll(e) {
+                window.scrollTo(0, document.body.scrollHeight);
+                // window.scrollBy(0,50); // horizontal and vertical scroll increments
+                // scrolldelay = setTimeout('pageScroll()',100); // scrolls every 100 milliseconds
+        }
+
+
+        // window.scrollBy(0, 0);
 
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         if(isIOS) {
@@ -173,9 +196,19 @@
             //     if (event.scale !== 1) { event.preventDefault(); }
             // }, { passive: false });
             document.addEventListener('touchend', (event) => {
-                event.preventDefault();
+                if (event.target.localName != 'input') {
+                    event.preventDefault();
+                }
+                // if (event.scale !== 1) { event.preventDefault(); }
             }, { passive: false });
         }
+
+        //// Bug scroll bottom and change orientation to portrait
+        // window.addEventListener("orientationchange", function() {
+        //     // if (window.orientation === 0) {
+        //         window.scrollTo(0, 0);
+        //     // }
+        // }, false);
 
         // NippleJS
         var joysticks = document.getElementById("joysticks");
@@ -246,6 +279,7 @@
                     // secure: false,
                     // host: '192.168.12.1',
                     // port: 9000,
+
                     path: '/peer',
                     iceServers: [
                         { urls: [

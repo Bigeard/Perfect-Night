@@ -1,0 +1,85 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Main Run All Task",
+            "type": "shell",
+            "command": "Echo Done !",
+            "presentation": {
+                "reveal": "never",
+                "panel": "new",
+                "group": "develop"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "dependsOn": [
+                "Compile The Game",
+                "Run Static Server",
+                "Run PeerJs Server (WebRTC)",
+                "Run Hotspot Wifi",
+                "Run TURN Server"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Compile The Game",
+            "type": "shell",
+            "command": "make PLATFORM=PLATFORM_WEB -B",
+            "presentation": {
+                "reveal": "never",
+                "panel": "new",
+                "group": "develop"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/dev"
+            },
+        },
+        {
+            "label": "Run Static Server",
+            "type": "shell",
+            "command": "sudo node main.js",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "develop"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/static_server"
+            }
+        },
+        {
+            "label": "Run PeerJs Server (WebRTC)",
+            "type": "shell",
+            "command": "npm start",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "develop"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/peerjs_server"
+            }
+        },
+        {
+            "label": "Run Hotspot Wifi",
+            "type": "shell",
+            "command": "sudo create_ap --freq-band 2.4 --country UK -d -n wlp0s20f3 Perfect-Night",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "develop"
+            },
+        },
+        {
+            "label": "Run TURN Server",
+            "type": "shell",
+            "command": "turnserver --log-file stdout",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "develop"
+            }
+        }
+    ]
+}
