@@ -118,21 +118,27 @@
                 });
 
                 peer.on('connection', (conn) => {
-                    if (listGamepad.size >= 8) {
+                    let gamepad = false;
+                    listGamepad.forEach(g => g.conn?.peer === conn.peer ? gamepad = g : 0);
+
+                    if (gamepad) { // If connection exist
+                        gamepad.conn = conn;
+                        gamepad.connect();
+                    }
+                    else if (conn.metadata?.id != false) { // If gamepad still open
+                        gamepad = listGamepad.get(conn.metadata.id);
+                        gamepad.conn = conn;
+                        gamepad.connect();
+                    }
+                    else if (listGamepad.size >= 8) { // check if the maximum size is reached
                         conn.on('open', () => {
                             conn.send("Error: To many players");
                             setTimeout(() => conn.close(), 500);
                         });
                         return;
                     }
-                    let connectionExist = false;
-                    listGamepad.forEach(g => g.conn.peer === conn.peer ? connectionExist = g : 0);
-                    if (connectionExist) {
-                        connectionExist.conn = conn;
-                        connectionExist.connect();
-                    }
-                    else {
-                        const gamepad = new VirtualGamepad(
+                    else { // Create Virtual Gamepad and the player
+                        gamepad = new VirtualGamepad(
                             conn,
                             conn.peer,
                             listGamepad.size
@@ -141,7 +147,7 @@
                     }
 
                     const listPlayerConnected = [];
-                    listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn.peer }));
+                    listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn?.peer }));
                     console.info("Player connected: ", listPlayerConnected);
                 });
 

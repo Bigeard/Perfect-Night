@@ -3,6 +3,8 @@
 
 #include "line_segment.h"
 
+// @TODO review bug collision. Example: https://gist.github.com/Pikachuxxxx/0dda4b70bf71b794b08923df34961844
+
 // Function to compute the cross product of two vectors
 float Vector2CrossProduct(Vector2 a, Vector2 b)
 {

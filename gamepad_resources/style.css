@@ -43,10 +43,6 @@ body {
     border-radius: 0px 0px 15px 15px;
 }
 
-.scrollDownText {
-    /* text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -1px #000; */
-}
-
 .scrollDownArrow {
     display: block;
     margin: auto;
@@ -58,6 +54,7 @@ body {
     height: 100%;
     background-color: white;
     border-radius: 0px 0px 35px 35px;
+    touch-action: none;
 }
 
 #joystickLeft {
@@ -86,6 +83,13 @@ body {
     image-rendering: pixelated;
 }
 
+.controlInfo {
+    background-image: url("images/control_info.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100%;
+    image-rendering: pixelated;
+}
 
 #infoTop {
     z-index: 100;

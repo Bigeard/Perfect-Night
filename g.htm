@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1, user-scalable=no" />
 
     <title>Perfect Night - Mobile Gamepad</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1, user-scalable=no" />
 
     <!-- Apple WebApp -->
     <meta name="apple-mobile-web-app-title" content="Perfect Night" />
@@ -51,7 +51,7 @@
         <span id="playerAmmunition">Ammo. X</span>
     </div>
 
-    <div id="joysticks">
+    <div id="joysticks" class="controlInfo">
         <div id="joystickLeft"></div>
         <div id="joystickRight"></div>
     </div>
@@ -60,13 +60,23 @@
 
     <script type="text/javascript">
         // IOS disable zoom page
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod|Safari/.test(navigator.userAgent);
         if (isIOS) {
             document.addEventListener("touchend", (event) => {
                 if (event.target.localName != "input") {
                     event.preventDefault();
                 }
             }, { passive: false });
+            document.addEventListener("gesturestart", (e) => {
+                e.preventDefault();
+            });
+
+            document.addEventListener("gesturechange", (e) => {
+                e.preventDefault();
+            });
+            document.addEventListener("gestureend", (e) => {
+                e.preventDefault();
+            });
         }
 
         // NippleJS - Joystick
@@ -109,17 +119,26 @@
         };
 
         // Display none scroll down indicator
-        document.addEventListener('scroll', () => {
+        document.addEventListener("scroll", () => {
             if (joysticks.offsetHeight + joysticks.scrollTop >= joysticks.scrollHeight) {
                 scrollDown.style.display = "none";
             }
         });
+
+        // Display / Disable control information
+        const controlInfo = localStorage.getItem("controlInfo");
+        if (controlInfo) {
+            joysticks.classList.remove("controlInfo");
+        } else {
+            localStorage.setItem("controlInfo", true);
+        }
 
         var conn = null;
         var peer = {};
 
         // PeerJS - Communication with main screen
         (() => {
+            var PeerPlayerId = false;
             var lastPeerId = null;
             var status = document.getElementById("status");
             var ping = document.getElementById("ping");
@@ -169,20 +188,38 @@
                 };
                 peer = new Peer(Config);
 
-                peer.on("open", (id) => {
+                peer.on("open", (NewPeerPlayerId) => {
+                    console.info("Peer Player (Client) Id:", NewPeerPlayerId);
                     if (peer.id === null) {
                         peer.id = lastPeerId;
                         console.info("Received null id from peer open");
                     } else {
                         lastPeerId = peer.id;
                     }
+
+                    // Find Peer Server Id (in URL)
                     const params = new URLSearchParams(document.location.search);
-                    let conn_id = params.get("i");
-                    console.info(conn_id);
-                    if (conn_id) {
-                        join(conn_id);
+                    let PeerServerId = params.get("i");
+                    console.info("Peer Server (Main) Id:", PeerServerId);
+
+                    // Manage Peer Player Id to reconnect easily
+                    const peerConnection = JSON.parse(localStorage.getItem("peerConnection"));
+                    if (peerConnection?.PeerServerId === PeerServerId) {
+                        PeerPlayerId = peerConnection.PeerPlayerId
+                    }
+                    if (!PeerPlayerId) {
+                        // Store connection player
+                        localStorage.setItem("peerConnection", JSON.stringify({
+                            PeerServerId,
+                            PeerPlayerId: NewPeerPlayerId
+                        }));
+                    }
+
+                    // Join the connection
+                    if (PeerServerId) {
+                        join(PeerServerId);
                     } else {
-                        console.error("No ID", id);
+                        console.error("No ID - PeerServerId:", PeerServerId);
                     }
                 });
 
@@ -212,8 +249,6 @@
                     peer.id = lastPeerId;
                     peer._lastServerId = lastPeerId;
                     peer.reconnect();
-                    // conn = null;
-                    // status.innerText = "Connection destroyed. Please refresh";
                 });
 
                 peer.on("error", (err) => {
@@ -221,12 +256,15 @@
                 });
             };
 
-            const join = (conn_id) => {
+            const join = (PeerServerId) => {
                 if (conn) {
                     conn.close();
                 }
-                conn = peer.connect(conn_id, {
-                    reliable: true
+                conn = peer.connect(PeerServerId, {
+                    metadata: {
+                        id: PeerPlayerId,
+                    },
+                    reliable: true,
                 });
                 conn.on("open", () => {
                     status.innerText = "Connected";
@@ -297,12 +335,9 @@
 
             const loop = (timestamp) => {
                 if (lastPing != 0 && new Date().getTime() - lastPing > 1000) {
-                    // console.log("test lastPing", lastPing);
+                    lastPing = 0;
                     peer.disconnect();
-                    // peer.id = lastPeerId;
-                    // peer._lastServerId = lastPeerId;
                     conn = peer.connect(conn.peer, { reliable: true });
-                    lastPing = new Date().getTime();
                 }
                 if (joystickLeft && joystickRight && peer.id && conn) {
                     conn.send({

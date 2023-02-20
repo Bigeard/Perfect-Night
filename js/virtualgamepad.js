@@ -58,8 +58,8 @@ class VirtualGamepad {
             this.status = "Close";
             console.info("Close", this.id, this.name);
             this.conn = null;
-            disconnectGamepad.push(this.id)
-            listGamepad.delete(this.id);
+            // disconnectGamepad.push(this.id)
+            // listGamepad.delete(this.id);
         });
     }
 }

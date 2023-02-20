@@ -579,40 +579,41 @@ void DrawGameplay(void)
     {
         DrawLoot(loots[i]);
     }
+    EndMode2D();
+
+    // DRAW STAT LOG INFO MENU SCREEN
+    BeginDrawing();
 
     DrawPauseGame();
 
+    float centerScreenX = GetScreenWidth() / 2.0f;
+    float centerScreenY = GetScreenHeight() / 2.0f;
     // Draw Wins
     if (startTime != 0.0)
     {
+        DrawRectangleRec((Rectangle){0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()}, Fade(BLACK, 0.4f));
         int indexFindColor = 0;
         for (int i = 0; i < numberActiveColor; i++)
         {
             if (ColorScore[i] > -1)
             {
                 // @TODO fix display if multi color team
-                DrawText(TextFormat("%d", ColorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 65.0f + 300.0f) * indexFindColor, (int)(camera.target.y - 80.0f), 80, themeColor[indexFindColor]);
+                DrawText(TextFormat("%d", ColorScore[indexFindColor]), (int)(centerScreenX - 50.0f * 2.0f - 80.0f) + 320 * indexFindColor, (int)(centerScreenY - 80.0f), 80, themeColor[indexFindColor]);
             }
             else
                 i--;
             indexFindColor++;
         }
-        DrawCircle(camera.target.x, camera.target.y - 100.0f, 50.0f, BLACK);
-        DrawCircle(camera.target.x, camera.target.y - 100.0f, 48.0f, WHITE);
-        DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, players[playerAliveId].color);
-        DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, players[playerAliveId].color);
+        DrawCircle(centerScreenX, centerScreenY - 100.0f, 50.0f, BLACK);
+        DrawCircle(centerScreenX, centerScreenY - 100.0f, 48.0f, WHITE);
+        DrawCircle(centerScreenX, centerScreenY - 100.0f, 40.0f, players[playerAliveId].color);
+        DrawText("WINS THIS GAME", (int)(centerScreenX - 50.0f * 7.0f), (int)(centerScreenY + 40.0f), 80, players[playerAliveId].color);
     }
-    EndMode2D();
 
-    // DRAW STAT LOG INFO
-    BeginDrawing();
     // Draw title
     if (numberPlayer == 0)
     {
-        float centerScreenX = GetScreenWidth() / 2.0f;
-        float centerScreenY = GetScreenHeight() / 2.0f;
-        Rectangle recBackground = { 0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()};
-        DrawRectangleRec(recBackground, Fade(BLACK, 0.4f));
+        DrawRectangleRec((Rectangle){0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()}, Fade(BLACK, 0.4f));
         DrawTexture(titlePerfectNightTexture, centerScreenX - 155.0f * 3.47f, centerScreenY - 125.0f * 3.47f, WHITE);
         DrawTexture(useSameWifiTexture, centerScreenX - 205.0f * 3.47f, centerScreenY + 160.0f, WHITE);
         DrawTexture(andScanQrTexture, centerScreenX + 80.0f * 3.47f, centerScreenY + 180.0f, WHITE);
