@@ -1,28 +1,37 @@
 # Perfect Night
 
-RUN / COMPILE THE GAME :
+With the game Perfect Night you don't need to have multiple controllers lying around. All you need is your trusty smartphone 📱 and a QR code ! Simply scan the QR code on the main screen 📺 and watch as your phone transforms into a controller, giving you the chance to unleash your inner fighter and take down your opponents.  
+
+Don’t wait grab your phone, call your friends, and get ready to rumble in the ultimate fighting showdown !  
+
+Are you ready to become the champion of the ring? ⚔️. 
+
+Click on this link to play ! 👾  
+🔗 - https://bigeard.github.io/Perfect-Night 
+
+## RUN / COMPILE THE GAME :
 
 > make PLATFORM=PLATFORM_WEB -B
 > make PLATFORM=PLATFORM_WEB BUILD_MODE=DEBUG -B
 
-TURN SERVER
+### TURN SERVER
 > turnserver --log-file stdout
 
-PeerJS SERVER
-> cd server && npm start
+### PEERJS SERVER
+> cd peerjs_server && npm start
 
-TRUN WIFI ON
+### TRUN WIFI ON
 > wihotspot
 
-and use chromium !
+and use Chromium !
 
 
-INSTALL :
+## INSTALL :
 
 - https://emscripten.org/docs/getting_started/downloads.html  
 - https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)
 
-PACKAGE VSCODE :
+### PACKAGE VSCODE :
 
 - C/C++ (Microsoft)
 - Cmake
@@ -30,7 +39,7 @@ PACKAGE VSCODE :
 - GitLens
 - Liver Server
 
-COMPILE libxml2
+### COMPILE `libxml2`
 
 ```shell
 mkdir -p ./build
@@ -43,7 +52,9 @@ emmake make
 cd ..
 ```
 
-CHECKLIST :
+## CHECKLIST :
+
+> Go to the project task list in `Projects` to see everything.
 
 - Fix bug of collision (need review)
 - Improve the design
