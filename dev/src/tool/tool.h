@@ -2,17 +2,18 @@
 #define TOOL_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../lib/raylib/src/raylib.h"
 
-Color LightenColor(Color color, float percentage);
-Color DarkenColor(Color color, float percentage);
-Color ReverseColor(Color color, float percentage);
+    Color LightenColor(Color color, float percentage);
+    Color DarkenColor(Color color, float percentage);
+    Color ReverseColor(Color color, float percentage);
 
-float LerpCo(float start, float end, float t);
-Color LerpColor(Color colorA, Color colorB, float t);
+    float LerpCo(float start, float end, float t);
+    Color LerpColor(Color colorA, Color colorB, float t);
 
 #ifdef __cplusplus
 }

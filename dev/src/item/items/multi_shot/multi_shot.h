@@ -2,15 +2,16 @@
 #define MULTI_SHOT_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct MultiShot {
-    int numCannon;
-} MultiShot;
-
+    typedef struct MultiShot
+    {
+        int numCannon;
+    } MultiShot;
 
 #ifdef __cplusplus
 }

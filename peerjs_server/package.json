@@ -1,7 +1,7 @@
 {
-  "name": "perfect-night-server",
+  "name": "peerjs_server_perfect_night",
   "version": "1.0.0",
-  "description": "",
+  "description": "PeerJS server for Perfect Night",
   "main": "main.js",
   "scripts": {
     "start": "node main.js",

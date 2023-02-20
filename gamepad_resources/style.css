@@ -1,0 +1,158 @@
+html {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    padding: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: white;
+    cursor: pointer;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+#infoContainer {
+    background: #aaa;
+    padding: 15px;
+    border-radius: 25px 25px 0 0;
+    width: auto;
+    margin: 15px auto 0 auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+#scrollDown {
+    text-align: center;
+    width: 100px;
+    z-index: 120;
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 8px 10px 0 10px;
+    margin: -10px auto auto auto;
+    background: #aaa;
+    width: fit-content;
+    border-radius: 0px 0px 15px 15px;
+}
+
+.scrollDownText {
+    /* text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -1px #000; */
+}
+
+.scrollDownArrow {
+    display: block;
+    margin: auto;
+    width: 62px;
+}
+
+#joysticks {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border-radius: 0px 0px 35px 35px;
+}
+
+#joystickLeft {
+    position: absolute;
+    left: 0;
+    bottom: -50;
+    width: 50%;
+    height: 100vh;
+    border-right: dashed #ddd 1px;
+}
+
+#joystickRight {
+    position: absolute;
+    right: 0;
+    bottom: -50;
+    width: 50%;
+    height: 100vh;
+    border-left: dashed #ddd 1px;
+}
+
+.deadBackground {
+    background-image: url("images/dead_face.png"), url("images/dead_background.png");
+    background-repeat: no-repeat, repeat;
+    background-position: center;
+    background-size: 90vh, 30px;
+    image-rendering: pixelated;
+}
+
+
+#infoTop {
+    z-index: 100;
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 8px 10px;
+    margin: -1px auto auto auto;
+    background: #aaa;
+    width: fit-content;
+    border-radius: 0px 0px 15px 15px;
+}
+
+#infoLeft {
+    z-index: 100;
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 8px 10px;
+    margin: -1px auto auto 0;
+    background: #aaa;
+    width: fit-content;
+    border-radius: 0px 0px 15px 0;
+}
+
+#infoRight {
+    z-index: 100;
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 8px 10px;
+    margin: -1px 0 auto auto;
+    background: #aaa;
+    width: fit-content;
+    border-radius: 0px 0px 0 15px;
+}
+
+#rotatePhone {
+    width: 100%;
+    height: 430px;
+    padding-top: 20px;
+    background-color: #d4d4d4;
+    border-radius: 0px 0px 35px 35px;
+    background-image: url("images/rotate_phone.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 350px;
+    image-rendering: pixelated;
+}
+
+@media screen and (orientation:portrait) {
+    #joysticks, #infoLeft, #infoRight, #scrollDown, .menuGame {
+        display: none;
+    }
+
+    body {
+        padding: 0 20px;
+        width: auto;
+    }
+}
+
+@media screen and (orientation:landscape) {
+    html {
+        background-color: #e4e4e4;
+    }
+
+    #rotatePhone {
+        display: none;
+    }
+}

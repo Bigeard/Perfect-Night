@@ -12,7 +12,6 @@
     <link rel="shortcut icon" href="favicon.ico">
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.js"></script> -->
     <script src="js/peerjs.min.js"></script>
-    <script src="js/qrenc3.min.js"></script>
     <script src="js/virtualgamepad.js"></script>
     <script src="js/filesaver.min.js"> </script>
     <script type='text/javascript'>
@@ -36,44 +35,20 @@
     <style>
         html {
             background: black;
-            margin: 0 !important;
-            padding: 0 !important;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0px;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            margin: 0 !important;
-            padding: 0 !important;
+            margin: 0;
+            padding: 0;
         }
 
         canvas {
-            width: 100%;
-        }
-
-        #peerjs {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #CDCDCD;
-            padding: 15px;
-            border-radius: 10px;
-            border: double 3px #000;
-            width: 60%;
-            height: 60%;
-            justify-content: space-around;
-        }
-
-        .message-container {
-            width: 100%;
-        }
-
-        .info-container {
             width: 100%;
         }
     </style>
@@ -81,55 +56,17 @@
 
 <body>
     <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
-    <div id="peerjs">
-        <div class="message-container">
-            <span>Messages: <span id="message"></span></span><br>
-            <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
-            <button id="sendMessageButton" onclick="sendMessage()">></button>
-        </div>
-        <div class="info-container">
-            <span>Status: <span id="status"></span></span>
-            <div style="font-weight: bold;" title="Copy this ID to the input on send.html.">ID:
-                <input type="text" id="receiverId">
-                <button onclick="copyToClipboard()">Copy ID</button>
-                <canvas id="qrcanv"></canvas>
-            </div>
-        </div>
-    </div>
 
     <script type="text/javascript">
         // RayLib
         var Module = { canvas: document.getElementById('canvas') }
 
         // PeerJS
-        var peerjs = document.getElementById("peerjs");
-        togglePeerJs = () => {
-            if (peerjs.style.display === "flex") {
-                peerjs.style.display = "none";
-            } else {
-                peerjs.style.display = "flex";
-            }
-            return 1;
-        }
-
         var gamepadUrl = "n";
         var lastPeerId = null;
         var peer = null;
-        var status = document.getElementById("status");
-        var message = document.getElementById("message");
-        var sendMessageBox = document.getElementById("sendMessageBox");
-
-        var recvId = document.getElementById("receiverId");
 
         (() => {
-            // Setup QrCode
-            setupqr();
-
-            copyToClipboard = () => {
-                recvId.select();
-                navigator.clipboard.writeText();
-            }
-
             const init = () => {
                 const Config = {
                     //// ONLINE
@@ -144,14 +81,16 @@
 
                     path: '/peer',
                     iceServers: [
-                        { urls: [
-                            //// ONLINE
-                            'stun:stun3.l.google.com:19302',
-                            'stun:stun4.l.google.com:19302',
+                        {
+                            urls: [
+                                //// ONLINE
+                                'stun:stun3.l.google.com:19302',
+                                'stun:stun4.l.google.com:19302',
 
-                            //// LOCAL
-                            // '192.168.12.1:5349'
-                        ]},
+                                //// LOCAL
+                                // '192.168.12.1:5349'
+                            ]
+                        },
                         // { urls: [
                         //         "turn:eu-0.turn.peerjs.com:3478",
                         //         // "turn:us-0.turn.peerjs.com:3478", 
@@ -162,24 +101,20 @@
                     ],
                     debug: 2
                 };
-                // var peer = new Peer(Config); { debug: 2 }
                 peer = new Peer(Config);
-                console.log(peer);
+                console.info(peer);
 
                 peer.on('open', (id) => {
                     if (peer.id === null) {
-                        console.log('Received null id from peer open');
+                        console.info('Received null id from peer open');
                         peer.id = lastPeerId;
                     } else {
                         lastPeerId = peer.id;
                     }
 
-                    recvId.value = peer.id;
-                    // Generate QrCode
+                    // QrCode
                     gamepadUrl = window.location.href + "g.htm?i=" + peer.id;
-                    doqr(gamepadUrl)
-                    console.log(gamepadUrl);
-                    status.innerHTML = "Awaiting connection...";
+                    console.info(gamepadUrl);
                 });
 
                 peer.on('connection', (conn) => {
@@ -190,71 +125,44 @@
                         });
                         return;
                     }
-                    const gamepad = new VirtualGamepad(
-                        conn,
-                        conn.peer,
-                        listGamepad.size
-                    );
-                    listGamepad.set(gamepad.id, gamepad);
-                    const names = listGamepad.forEach(g => g.name + " | ");
-                    status.innerHTML = "Connected to: " + names;
+                    let connectionExist = false;
+                    listGamepad.forEach(g => g.conn.peer === conn.peer ? connectionExist = g : 0);
+                    if (connectionExist) {
+                        connectionExist.conn = conn;
+                        connectionExist.connect();
+                    }
+                    else {
+                        const gamepad = new VirtualGamepad(
+                            conn,
+                            conn.peer,
+                            listGamepad.size
+                        );
+                        listGamepad.set(gamepad.id, gamepad);
+                    }
+
+                    const listPlayerConnected = [];
+                    listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn.peer }));
+                    console.info("Player connected: ", listPlayerConnected);
                 });
 
                 peer.on('disconnected', () => {
-                    status.innerHTML = "Connection lost. Please reconnect";
+                    console.info("Connection lost. Please reconnect");
                     peer.id = lastPeerId;
                     peer._lastServerId = lastPeerId;
-                    // ICI
-                    const gamepad = listGamepad.get(peer.id);
-                    gamepad.disconnect();
                     peer.reconnect();
+                    // listGamepad.forEach(g => g.disconnect());
                 });
 
                 peer.on('close', () => {
-                    listGamepad.forEach(g => g.disconnect());
-                    status.innerHTML = "Connection destroyed. Please refresh";
+                    console.info("Connection destroyed. Please refresh");
+                    peer.reconnect();
+                    // listGamepad.forEach(g => g.disconnect());
                 });
 
-                peer.on('error', (err) => alert('' + err));
+                peer.on('error', (err) => console.error(err));
             };
-
-            // Send Message
-            sendMessageBox.addEventListener('keypress', function (e) {
-                if (e.keyCode === '13') {
-                    sendMessage();
-                }
-            });
-
             init();
         })();
-
-        const sendMessage = () => {
-            console.log('press code');
-            listGamepad.forEach((gamepad) => {
-                if (gamepad.conn && gamepad.conn.open) {
-                    var msg = sendMessageBox.value;
-                    gamepad.conn.send(msg);
-                    addMessage("<span class=\"selfMsg\">Self: </span>" + msg);
-                } else {
-                    console.error('Connection is closed');
-                }
-            })
-            sendMessageBox.value = "";
-        }
-
-        const addMessage = (msg) => {
-            var now = new Date();
-            var h = now.getHours();
-            const addZero = (t) => {
-                if (t < 10) t = "0" + t;
-                return t;
-            };
-            var m = addZero(now.getMinutes());
-            var s = addZero(now.getSeconds());
-            if (h > 12) h -= 12;
-            else if (h === 0) h = 12;
-            message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
-        }
     </script>
     {{{ SCRIPT }}}
 </body>

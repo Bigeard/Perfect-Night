@@ -2,15 +2,16 @@
 #define NOTHING_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct Nothing {
-    int none;
-} Nothing;
-
+    typedef struct Nothing
+    {
+        int none;
+    } Nothing;
 
 #ifdef __cplusplus
 }

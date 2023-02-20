@@ -1,6 +1,7 @@
 {
     "version": "2.0.0",
     "tasks": [
+        // Tasks for launching servers locally
         {
             "label": "Main Run All Task",
             "type": "shell",

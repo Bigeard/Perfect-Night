@@ -1,3 +1,5 @@
+// The PeerJs server allows communication between the phone and the main screen.
+
 const express = require('express');
 const { ExpressPeerServer } = require('peer');
 const app = express();

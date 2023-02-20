@@ -2,16 +2,17 @@
 #define BONUS_SPEED_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct BonusSpeed {
-    int t;
-    float speed;
-} BonusSpeed;
-
+    typedef struct BonusSpeed
+    {
+        int t;
+        float speed;
+    } BonusSpeed;
 
 #ifdef __cplusplus
 }

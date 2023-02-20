@@ -1,8 +1,8 @@
 #include "../../../lib/raylib/src/raylib.h"
 
+#include "bullet.h"
 #include "../gameplay/gameplay.h"
 #include "../tool/tool.h"
-#include "bullet.h"
 
 void InitBullet(void) {}
 
@@ -54,22 +54,22 @@ void DrawBullet(Bullet bullet)
     {
         DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x * 1.46f, BLACK);
         DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x * 1.3f, WHITE);
-        DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x,
-                   DarkenColor(bullet.COLOR, 0.9f));
+        DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x, DarkenColor(bullet.COLOR, 0.9f));
     }
 
     // *** DEV INFO ***
     if (activeDev)
     {
-        DrawText(TextFormat("B Vel: X %f/ Y %f", bullet.p.vel.x, bullet.p.vel.y),
-                 bullet.p.pos.x, bullet.p.pos.y - 20.0f, 16,
-                 DarkenColor(bullet.COLOR, 0.9f));
+        DrawText(
+            TextFormat("B Vel: X %f/ Y %f", bullet.p.vel.x, bullet.p.vel.y),
+            (int)bullet.p.pos.x, (int)(bullet.p.pos.y - 20.0f), 16,
+            DarkenColor(bullet.COLOR, 0.9f));
         DrawRectangleRec(
             (Rectangle){
                 bullet.p.pos.x,
                 bullet.p.pos.y,
-                bullet.p.size.x * 2,
-                bullet.p.size.y * 2},
+                bullet.p.size.x * 2.0f,
+                bullet.p.size.y * 2.0f},
             PURPLE);
     }
 }

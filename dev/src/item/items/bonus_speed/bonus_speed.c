@@ -5,8 +5,8 @@
 #include "../../../gameplay/gameplay.h"
 #include "../../../player/player.h"
 
-
-Item InitItemBonusSpeed(int player_id) {
+Item InitItemBonusSpeed(int player_id)
+{
     Item item = {
         player_id,
         "Bonus Speed",
@@ -18,48 +18,55 @@ Item InitItemBonusSpeed(int player_id) {
         ShootItemBonusSpeed,
         UpdateItemBonusSpeed,
         DrawItemBonusSpeed,
-        { 0, 2.1 }
-    };
-    Player *player = &players[player_id-1];
+        {0, 2.1}};
+    Player *player = &players[player_id - 1];
     player->speed.x = player->speed.x + item.bonusSpeed.speed;
     player->speed.y = player->speed.y + item.bonusSpeed.speed;
     return item;
 }
 
-void ShootItemBonusSpeed(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y) {
+void ShootItemBonusSpeed(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y)
+{
     // Nothing
 }
 
-void UpdateItemBonusSpeed(Item *item) {
-    if (!item->active) {
-        Player *player = &players[item->player_id-1];
-        if (player->speed.x > 3.5 || player->speed.y > 3.5) {
+void UpdateItemBonusSpeed(Item *item)
+{
+    if (!item->active)
+    {
+        Player *player = &players[item->player_id - 1];
+        if (player->speed.x > 3.5 || player->speed.y > 3.5)
+        {
             player->speed.x = 3.5;
             player->speed.y = 3.5;
         }
         return;
     };
     double elapsedTime = GetTime() - item->timer;
-    if (item->maxTimer < elapsedTime) {
+    if (item->maxTimer < elapsedTime)
+    {
         item->active = false;
     }
-    Player *player = &players[item->player_id-1];
-    if (player->speed.x <= 3.5 && player->speed.y <= 3.5) {
+    Player *player = &players[item->player_id - 1];
+    if (player->speed.x <= 3.5 && player->speed.y <= 3.5)
+    {
         player->speed.x = player->speed.x + item->bonusSpeed.speed;
         player->speed.y = player->speed.y + item->bonusSpeed.speed;
     }
 }
 
-void DrawItemBonusSpeed(Item *item) {
-    if (!item->active) return;
-    Player player = players[item->player_id-1];
-    double elapsedTime = GetTime() - item->timer; 
-    if (elapsedTime <= 4.0) {
+void DrawItemBonusSpeed(Item *item)
+{
+    if (!item->active)
+        return;
+    Player player = players[item->player_id - 1];
+    double elapsedTime = GetTime() - item->timer;
+    if (elapsedTime <= 4.0)
+    {
         DrawTexture(
-            BonusSpeedTexture, 
+            BonusSpeedTexture,
             (player.p.pos.x + player.p.size.x / 2) - 10,
             player.p.pos.y - 42,
-            Fade(player.COLORS[0], 1-(elapsedTime/4))
-        );
+            Fade(player.color, 1 - (elapsedTime / 4)));
     }
 }

@@ -2,8 +2,6 @@
 #include "../../../lib/raylib/src/raymath.h"
 
 #include "line_segment.h"
-#include <stdbool.h>
-
 
 // Function to compute the cross product of two vectors
 float Vector2CrossProduct(Vector2 a, Vector2 b)
@@ -14,7 +12,7 @@ float Vector2CrossProduct(Vector2 a, Vector2 b)
 // Function to subtract two vectors
 Vector2 Vector2SubtractCustom(Vector2 a, Vector2 b)
 {
-    Vector2 result = { a.x - b.x, a.y - b.y };
+    Vector2 result = {a.x - b.x, a.y - b.y};
     return result;
 }
 
@@ -61,10 +59,10 @@ bool CheckCollisionPointSegment(float pointX, float pointY, LineSegment segment)
 bool CheckCollisionLineRec(LineSegment segment, Rectangle rec)
 {
     // Create a line segment for each side of the rectangle
-    LineSegment side1 = { { rec.x, rec.y }, { rec.x + rec.width, rec.y } };
-    LineSegment side2 = { { rec.x + rec.width, rec.y }, { rec.x + rec.width, rec.y + rec.height } };
-    LineSegment side3 = { { rec.x + rec.width, rec.y + rec.height }, { rec.x, rec.y + rec.height } };
-    LineSegment side4 = { { rec.x, rec.y + rec.height }, { rec.x, rec.y } };
+    LineSegment side1 = {{rec.x, rec.y}, {rec.x + rec.width, rec.y}};
+    LineSegment side2 = {{rec.x + rec.width, rec.y}, {rec.x + rec.width, rec.y + rec.height}};
+    LineSegment side3 = {{rec.x + rec.width, rec.y + rec.height}, {rec.x, rec.y + rec.height}};
+    LineSegment side4 = {{rec.x, rec.y + rec.height}, {rec.x, rec.y}};
 
     // Check if the line segment intersects any of the sides of the rectangle
     if (CheckCollisionLineSegment(segment, side1) ||

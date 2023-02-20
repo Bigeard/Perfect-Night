@@ -2,15 +2,16 @@
 #define SWORD_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct Sword {
-    int delayKill;
-} Sword;
-
+    typedef struct Sword
+    {
+        int delayKill;
+    } Sword;
 
 #ifdef __cplusplus
 }

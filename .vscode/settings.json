@@ -2,22 +2,27 @@
 	"files.exclude": {
 		// "**/.git": true,
 		// "**/.gitignore": true,
-		// "emsdk": true,
-		// "raylib": true,
 	},
 	"cSpell.words": [
+		"Bigeard",
 		"DARKGRAY",
 		"DARKGREEN",
 		"DARKPURPLE",
 		"GAMEPAD",
 		"Gameplay",
 		"LIGHTGRAY",
+		"peerjs",
 		"perfectnight",
+		"RAYLIB",
 		"SKYBLUE",
 		"videogame"
 	],
 	"C_Cpp.intelliSenseEngine": "default",
 	"[c]": {
 		"editor.tabSize": 4
+	},
+	"files.associations": {
+		"*.h": "c",
+		"*.c": "c",
 	},
 }

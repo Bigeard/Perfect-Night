@@ -2,15 +2,16 @@
 #define ROCKET_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct Rocket {
-    int sizeExplosion;
-} Rocket;
-
+    typedef struct Rocket
+    {
+        int sizeExplosion;
+    } Rocket;
 
 #ifdef __cplusplus
 }

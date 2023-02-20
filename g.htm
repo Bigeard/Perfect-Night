@@ -3,167 +3,52 @@
 
 <head>
     <meta charset="utf-8" />
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> -->
-    <meta name="viewport" content = "width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1, user-scalable=no" />
 
+    <title>Perfect Night - Mobile Gamepad</title>
+
+    <!-- Apple WebApp -->
     <meta name="apple-mobile-web-app-title" content="Perfect Night" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="#e4e4e4" />
     <link rel="apple-touch-icon" href="/favicon.ico">
 
-    <!-- <meta http-equiv="ScreenOrientation" content="autoRotate:disabled"> -->
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Perfect Night - Mobile Gamepad</title>
     <link rel="shortcut icon" href="/favicon.ico">
-
-    <!-- <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black"> -->
+    <link rel="stylesheet" href="gamepad_resources/style.css">
 
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script> -->
     <script src="js/peerjs.min.js"></script>
     <script src="js/nipplejs.min.js"></script>
-    <style>
-        html {
-            font-family: Arial, Helvetica, sans-serif;
-            font-weight: bold;
-            color: white;
-            margin: 0;
-            padding: 0;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            background-color: white;
-        }
-
-        body {
-            margin: 0px;
-            padding: 0;
-            width: 100%;
-            height: 100vh;
-            display: block;
-            cursor: pointer;
-        }
-
-        #peerjs {
-            display: block;
-            background: #aaa;
-            padding: 15px;
-            border-radius: 25px 25px 0 0;
-            width: auto;
-            margin: 15px auto 0 auto;
-            justify-content: space-around;
-        }
-
-        .message-container {
-            display: none;
-            width: 100%;
-        }
-
-        .info-container {
-            width: 100%;
-        }
-
-        #tutorial-video {
-            width: 100%;
-            height: auto;
-            padding-top: 20px;
-            background-color: #d4d4d4;
-            border-radius: 0px 0px 35px 35px;
-        }
-
-        #joysticks {
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            border-radius: 0px 0px 35px 35px;
-        }
-
-        .dead-background {
-            background-image: url("g_resources/dead_face.png"), url("g_resources/dead_background.png");
-            background-repeat: no-repeat, repeat;
-            background-position: center;
-            background-size: 90vh, 30px;
-            image-rendering: pixelated;
-        }
-
-        #joystickLeft {
-            position: absolute;
-            left: 0;
-            bottom: -50;
-            width: 50%;
-            height: 100vh;
-            border-right: dashed #ddd 1px;
-        }
-
-        #joystickRight {
-            position: absolute;
-            right: 0;
-            bottom: -50;
-            width: 50%;
-            height: 100vh;
-            border-left: dashed #ddd 1px;
-        }
-
-        #infoBottom {
-            z-index: 100;
-            position: absolute;
-            left: 0;
-            right: 0;
-            padding: 8px 10px;
-            margin: 0;
-            margin: auto;
-            background: #aaa;
-            width: fit-content;
-            border-radius: 0px 0px 15px 15px;
-        }
-
-        @media screen and (orientation:portrait) {
-            #joysticks {
-                display: none;
-            }
-
-            #tutorial-video {
-                height: 430px;
-                background-image: url("g_resources/rotate_phone.png");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: 100%;
-                image-rendering: pixelated;
-            }
-            body {
-                padding: 0 20px;
-                width: auto;
-            }
-        }
-        @media screen and (orientation:landscape) {
-            html {
-                background-color: #e4e4e4;
-            }
-
-            #tutorial-video {
-                display: none;
-            }
-        }
-    </style>
 </head>
 
 <body id="body">
-    <div id="peerjs">
-        <!-- <div class="message-container">
-            <span>Messages: <span id="message"></span></span><br>
-            <input type="text" id="sendMessageBox" placeholder="Enter a message..." />
-        </div> -->
-        <div class="info-container">
+    <div id="infoContainer">
+        <div class="connectionStatus">
             <span>Status: <span id="status"></span></span><br>
-            <!-- <span id="peerId">ID: ...</span><br> -->
             <span id="ping">Ping: X</span>
         </div>
-        <!-- <input type="button" onClick="pageScroll()" value="Scroll Page"> -->
+        <div class="menuGame">
+            <span>Menu</span>
+        </div>
     </div>
 
-    <div id="infoBottom">
+    <div id="scrollDown">
+        <span class="scrollDownText">Scroll down</span><br>
+        <img class="scrollDownArrow" src="gamepad_resources/images/scroll_down.gif" alt="Scroll Down Gif">
+    </div>
+
+    <div id="infoTop">
         <span id="playerId" onclick="playerIdClick">PLAYER X</span>
+    </div>
+
+    <div id="infoLeft">
+        <span id="playerLife">Life X</span>
+    </div>
+
+    <div id="infoRight">
+        <span id="playerAmmunition">Ammo. X</span>
     </div>
 
     <div id="joysticks">
@@ -171,66 +56,39 @@
         <div id="joystickRight"></div>
     </div>
 
-    <div id="tutorial-video">
-
-    </div>
-    <!-- <div class="infoTop">
-        <span>Life X</span>
-        <span>Ammo. X</span>
-    </div> -->
-
+    <div id="rotatePhone"></div>
 
     <script type="text/javascript">
-        function pageScroll(e) {
-                window.scrollTo(0, document.body.scrollHeight);
-                // window.scrollBy(0,50); // horizontal and vertical scroll increments
-                // scrolldelay = setTimeout('pageScroll()',100); // scrolls every 100 milliseconds
-        }
-
-
-        // window.scrollBy(0, 0);
-
+        // IOS disable zoom page
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        if(isIOS) {
-            // document.addEventListener('touchmove', function (event) {
-            //     if (event.scale !== 1) { event.preventDefault(); }
-            // }, { passive: false });
-            document.addEventListener('touchend', (event) => {
-                if (event.target.localName != 'input') {
+        if (isIOS) {
+            document.addEventListener("touchend", (event) => {
+                if (event.target.localName != "input") {
                     event.preventDefault();
                 }
-                // if (event.scale !== 1) { event.preventDefault(); }
             }, { passive: false });
         }
 
-        //// Bug scroll bottom and change orientation to portrait
-        // window.addEventListener("orientationchange", function() {
-        //     // if (window.orientation === 0) {
-        //         window.scrollTo(0, 0);
-        //     // }
-        // }, false);
-
-        // NippleJS
+        // NippleJS - Joystick
         var joysticks = document.getElementById("joysticks");
 
         var joystickLeft = nipplejs.create({
-            zone: document.getElementById('joystickLeft'),
-            mode: 'static',
-            position: { left: '50%', top: '50%' },
-            color: 'grey',
+            zone: document.getElementById("joystickLeft"),
+            mode: "static",
+            position: { left: "50%", top: "50%" },
+            color: "grey",
             size: 185
         });
 
         var joystickRight = nipplejs.create({
-            zone: document.getElementById('joystickRight'),
-            mode: 'static',
-            position: { right: '50%', top: '50%' },
-            color: 'grey',
+            zone: document.getElementById("joystickRight"),
+            mode: "static",
+            position: { right: "50%", top: "50%" },
+            color: "grey",
             size: 185
         });
 
         joystickLeft[0].resetDirection = function () {
-            // Fully rebuild the object to let the iteration possible.
             this.direction = {
                 x: false,
                 y: false,
@@ -241,7 +99,6 @@
         };
 
         joystickRight[0].resetDirection = function () {
-            // Fully rebuild the object to let the iteration possible.
             this.direction = {
                 x: false,
                 y: false,
@@ -251,20 +108,28 @@
             this.frontPosition.y = 0;
         };
 
-        // PeerJS
+        // Display none scroll down indicator
+        document.addEventListener('scroll', () => {
+            if (joysticks.offsetHeight + joysticks.scrollTop >= joysticks.scrollHeight) {
+                scrollDown.style.display = "none";
+            }
+        });
+
+        var conn = null;
+        var peer = {};
+
+        // PeerJS - Communication with main screen
         (() => {
             var lastPeerId = null;
-            var peer = {};
-            var conn = null;
             var status = document.getElementById("status");
-            // var message = document.getElementById("message");
-            // var sendMessageBox = document.getElementById("sendMessageBox");
             var ping = document.getElementById("ping");
-            var peerjs = document.getElementById("peerjs");
+            var infoContainer = document.getElementById("infoContainer");
             var infoBottom = document.getElementById("infoBottom");
             var playerId = document.getElementById("playerId");
+            var playerLife = document.getElementById("playerLife");
+            var playerAmmunition = document.getElementById("playerAmmunition");
 
-            // var peerId = document.getElementById("peerId");
+            var lastPing = 0;
 
             const init = () => {
                 status.innerText = "No connection";
@@ -272,24 +137,26 @@
                 const Config = {
                     //// ONLINE
                     secure: true,
-                    host: 'perfect-night-374900.oa.r.appspot.com',
+                    host: "perfect-night-374900.oa.r.appspot.com",
                     port: 443,
 
                     //// LOCAL
                     // secure: false,
-                    // host: '192.168.12.1',
+                    // host: "192.168.12.1",
                     // port: 9000,
 
-                    path: '/peer',
+                    path: "/peer",
                     iceServers: [
-                        { urls: [
-                            //// ONLINE
-                            'stun:stun3.l.google.com:19302',
-                            'stun:stun4.l.google.com:19302',
+                        {
+                            urls: [
+                                //// ONLINE
+                                "stun:stun3.l.google.com:19302",
+                                "stun:stun4.l.google.com:19302",
 
-                            //// LOCAL
-                            // '192.168.12.1:5349'
-                        ]},
+                                //// LOCAL
+                                // "192.168.12.1:5349"
+                            ]
+                        },
                         // { urls: [
                         //         "turn:eu-0.turn.peerjs.com:3478",
                         //         // "turn:us-0.turn.peerjs.com:3478", 
@@ -302,17 +169,16 @@
                 };
                 peer = new Peer(Config);
 
-                peer.on('open', (id) => {
+                peer.on("open", (id) => {
                     if (peer.id === null) {
-                        console.log('Received null id from peer open');
                         peer.id = lastPeerId;
+                        console.info("Received null id from peer open");
                     } else {
                         lastPeerId = peer.id;
                     }
-                    // peerId.innerText = "ID: " + peer.id;
                     const params = new URLSearchParams(document.location.search);
                     let conn_id = params.get("i");
-                    console.log(conn_id);
+                    console.info(conn_id);
                     if (conn_id) {
                         join(conn_id);
                     } else {
@@ -320,28 +186,38 @@
                     }
                 });
 
-                peer.on('connection', (c) => {
-                    c.on('open', () => {
+                peer.on("connection", (c) => {
+                    c.on("open", () => {
                         c.send("Sender does not accept incoming connections");
                         setTimeout(() => c.close(), 500);
                     });
                 });
 
-                peer.on('disconnected', () => {
-                    status.innerText = "Connection lost. Please reconnect";
+                peer.on("disconnected", () => {
+                    status.innerText = "Connection lost. Please reconnect (disconnected)";
                     peer.id = lastPeerId;
                     peer._lastServerId = lastPeerId;
                     peer.reconnect();
                 });
 
-                peer.on('close', () => {
-                    conn = null;
-                    status.innerText = "Connection destroyed. Please refresh";
+                peer.on("disconnect", () => {
+                    status.innerText = "Connection lost. Please reconnect (disconnect)";
+                    peer.id = lastPeerId;
+                    peer._lastServerId = lastPeerId;
+                    peer.reconnect();
                 });
 
-                peer.on('error', (err) => {
+                peer.on("close", () => {
+                    status.innerText = "Connection lost. Please reconnect (close)";
+                    peer.id = lastPeerId;
+                    peer._lastServerId = lastPeerId;
+                    peer.reconnect();
+                    // conn = null;
+                    // status.innerText = "Connection destroyed. Please refresh";
+                });
+
+                peer.on("error", (err) => {
                     console.error(err);
-                    // alert('' + err);
                 });
             };
 
@@ -352,12 +228,13 @@
                 conn = peer.connect(conn_id, {
                     reliable: true
                 });
-                conn.on('open', () => {
+                conn.on("open", () => {
                     status.innerText = "Connected";
-                    // status.innerText = "Connected to " + conn.peer;
+                    conn.send({ e: 1 }) // Get last edit
+                    console.info("Connected to ", conn.peer)
                 });
-                conn.on('data', (data) => {
-                    if (data != null && (typeof data === 'object' || typeof data === 'function')) {
+                conn.on("data", (data) => {
+                    if (data != null && (typeof data === "object" || typeof data === "function")) {
                         if (data.color != null) {
                             joystickLeft[0].options.color = data.color;
                             joystickLeft[0].ui.front.style.background = data.color;
@@ -367,58 +244,66 @@
                             joystickRight[0].ui.front.style.background = data.color;
                             joystickRight[0].ui.back.style.background = data.color;
 
-                            peerjs.style.background = data.color;
-                            infoBottom.style.background = data.color;
+                            infoContainer.style.background = data.color;
+                            infoTop.style.background = data.color;
+                            infoLeft.style.background = data.color;
+                            infoRight.style.background = data.color;
+                            scrollDown.style.background = data.color;
                         }
                         if (data.index != null) {
                             playerId.innerText = "PLAYER " + data.index;
                         }
                         if (data.life != null || data.life === 0) {
-                            console.log(data);
-                            if(data.life <= 0) {
-                                joysticks.classList.add("dead-background");
+                            playerLife.innerText = "Life " + data.life;
+                            if (data.life <= 0) {
+                                joysticks.classList.add("deadBackground");
                             }
                             else {
-                                joysticks.classList.remove("dead-background");
+                                joysticks.classList.remove("deadBackground");
                             }
                         }
+                        if (data.ammunition != null || data.ammunition === 0) {
+                            playerAmmunition.innerText = "Ammu. " + data.ammunition;
+                        }
                         ping.innerText = "Ping: " + (new Date().getTime() - data.t);
+                        lastPing = data.t;
                     }
                     else {
-                        addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
+                        console.info("Peer:", data);
                     }
                 });
-                conn.on('close', () => {
-                    status.innerText = "Connection closed";
+                conn.on("disconnected", () => {
+                    peer.reconnect();
+                    status.innerText = "Connection disconnected (conn.on(disconnected))";
+                });
+                conn.on("disconnect", () => {
+                    peer.reconnect();
+                    status.innerText = "Connection disconnect (conn.on(disconnect))";
+                });
+                conn.on("close", () => {
+                    peer.reconnect();
+                    status.innerText = "Connection closed (conn.on(close))";
                 });
             };
 
             const signal = (sigName) => {
                 if (conn && conn.open) {
                     conn.send(sigName);
-                    addMessage(sigName + " signal sent");
+                    console.info(sigName, "signal sent");
                 } else {
-                    console.log('Connection is closed');
+                    console.info("Connection is closed");
                 }
             }
 
-            const addMessage = (msg) => {
-                var now = new Date();
-                var h = now.getHours();
-                const addZero = (t) => {
-                    if (t < 10) t = "0" + t;
-                    return t;
-                };
-                var m = addZero(now.getMinutes());
-                var s = addZero(now.getSeconds());
-                if (h > 12) h -= 12;
-                else if (h === 0) h = 12;
-
-                console.log(msg + " - " + h + ":" + m + ":" + s)
-                // message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
-            };
-
             const loop = (timestamp) => {
+                if (lastPing != 0 && new Date().getTime() - lastPing > 1000) {
+                    // console.log("test lastPing", lastPing);
+                    peer.disconnect();
+                    // peer.id = lastPeerId;
+                    // peer._lastServerId = lastPeerId;
+                    conn = peer.connect(conn.peer, { reliable: true });
+                    lastPing = new Date().getTime();
+                }
                 if (joystickLeft && joystickRight && peer.id && conn) {
                     conn.send({
                         t: new Date().getTime(), // Time
@@ -430,9 +315,6 @@
                 }
                 window.requestAnimationFrame(loop)
             }
-            // setInterval(() => {
-            //     loop();
-            // }, 1000/240);
             window.requestAnimationFrame(loop)
             init();
         })();

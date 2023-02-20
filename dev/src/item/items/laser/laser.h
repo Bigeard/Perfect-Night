@@ -2,15 +2,16 @@
 #define LASER_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct Laser {
-    int delayKill;
-} Laser;
-
+    typedef struct Laser
+    {
+        int delayKill;
+    } Laser;
 
 #ifdef __cplusplus
 }

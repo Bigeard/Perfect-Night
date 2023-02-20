@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="58" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#f5f5f5" nextlayerid="7" nextobjectid="104">
- <tileset firstgid="1" source="Grass.tsx"/>
+ <tileset firstgid="1" source="grass.tsx"/>
  <layer id="1" name="Background" width="58" height="32">
   <data encoding="csv">
 13,24,26,17,20,26,2147483674,2147483668,2147483665,2147483674,2147483672,2147483661,2147483679,32,6,1,9,19,32,21,7,6,16,20,20,31,14,1,13,4,17,1,1,23,12,29,16,17,31,13,24,26,17,20,26,31,13,24,26,17,20,26,2147483674,2147483668,2147483665,2147483674,2147483672,2147483661,

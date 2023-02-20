@@ -2,15 +2,16 @@
 #define BONUS_LIFE_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-typedef struct BonusLife {
-    int numLife;
-} BonusLife;
-
+    typedef struct BonusLife
+    {
+        int numLife;
+    } BonusLife;
 
 #ifdef __cplusplus
 }

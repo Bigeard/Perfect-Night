@@ -2,18 +2,18 @@
 #define BONUS_AMMUNITION_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-
-typedef struct BonusAmmunition {
-    int delayReload;
-    // Animation
-    float animationTimer;
-    int idColorA;
-    int idColorB;
-} BonusAmmunition;
-
+    typedef struct BonusAmmunition
+    {
+        int delayReload;
+        // Animation
+        float animationTimer;
+        int idColorA;
+        int idColorB;
+    } BonusAmmunition;
 
 #ifdef __cplusplus
 }

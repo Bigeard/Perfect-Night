@@ -1,13 +1,8 @@
 #include "../../../lib/raylib/src/raylib.h"
 #include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
-#include <stdbool.h>
-#include <string.h>
-#include "stdio.h"
 
-#include "../../../tmx/src/tmx.h"
-#include "../tmx_raylib/tmx_raylib.h"
-
+#include "gameplay.h"
 #include "../physic/physic.h"
 #include "../player/player.h"
 #include "../bullet/bullet.h"
@@ -17,30 +12,41 @@
 #include "../item/items/multi_shot/multi_shot.h"
 #include "../particle/particle.h"
 #include "../tool/tool.h"
-#include "gameplay.h"
+
+#include "../../../tmx/src/tmx.h"
+#include "../tmx_raylib/tmx_raylib.h"
+
 #include "../../../lib/qrcode/c/qrcodegen.h"
 
+#define PLAYERS_LENGTH 8
 
-EM_JS(char*, GetGamepadUrl, (), { 
-    const byteCount = Module.lengthBytesUTF8(gamepadUrl)+1;
+// Interaction with Javascript
+// More info https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html
+
+// Get URL to generate QrCode
+EM_JS(char *, GetGamepadUrl, (), {
+    const byteCount = Module.lengthBytesUTF8(gamepadUrl) + 1;
     const idPointer = Module._malloc(byteCount);
     Module.stringToUTF8(gamepadUrl, idPointer, byteCount);
     return idPointer;
 });
-EM_JS(int, GetCanvasWidthCustom, (), { return window.innerWidth });
-EM_JS(int, GetCanvasHeightCustom, (), { return window.innerHeight });
-EM_JS(int, ToggleInfoPeerJs, (), { return togglePeerJs() });
-EM_JS(int, GetNumberPlayer, (), { return listGamepad.size });
-EM_JS(char*, GetIdGamepad, (int index), { 
+
+// Resize the screen if it is too small or too large.
+EM_JS(int, GetCanvasWidthCustom, (), {return window.innerWidth});
+EM_JS(int, GetCanvasHeightCustom, (), {return window.innerHeight});
+
+// Manage Gamepad player
+EM_JS(int, GetNumberPlayer, (), {return listGamepad.size});
+EM_JS(char *, GetIdGamepad, (int index), {
     let i = 0;
     let res = "";
-    listGamepad.forEach((_,k) => { i === index ? res = k : 0; i++; });
-    const byteCount = Module.lengthBytesUTF8(res)+1;
+    listGamepad.forEach(function(_, k) { i === index ? res = k : 0; i++; });
+    const byteCount = Module.lengthBytesUTF8(res) + 1;
     const idPointer = Module._malloc(byteCount);
     Module.stringToUTF8(res, idPointer, byteCount);
     return idPointer;
 });
-EM_JS(int, InitColorGamepad, (char *p_id, int color_r, int color_g, int color_b), { 
+EM_JS(int, GamepadPlayerColor, (char *p_id, int color_r, int color_g, int color_b), {
     const id = Module.UTF8ToString(p_id);
     const gamepad = listGamepad.get(id);
     gamepad.color = `rgb(${color_r}, ${color_g}, ${color_b})`;
@@ -49,45 +55,46 @@ EM_JS(int, InitColorGamepad, (char *p_id, int color_r, int color_g, int color_b)
     return 1;
 });
 
-
+// Gameplay
 tmx_map *map;
 
-// float arenaSize = 32.0f * 32;
-float arenaSizeX = 58.0f * 32;
-float arenaSizeY = 32.0f * 32;
+float arenaSizeX = 0.0f;
+float arenaSizeY = 0.0f;
 bool activeDev = false;
-double lastSecond = 0;
-static Camera2D camera = { 0 };
-static bool pauseGame = 0;
+double lastSecond = 0.0;
+static Camera2D camera = {0};
+static bool pauseGame = false;
 
 double startTime = 0.0;
 double elapsedTime = 0.0;
+
+// Home Screen
+Texture titlePerfectNightTexture;
+Texture useSameWifiTexture;
+Texture andScanQrTexture;
+
+// Player
+int lastPlayer = 0;
+bool playerSpace[8] = {0};
+Color themeColor[8] = {
+    {35, 235, 141, 255},  // GREEN
+    {241, 82, 91, 255},   // RED
+    {64, 230, 230, 255},  // BLUE
+    {127, 102, 242, 255}, // PURPLE
+    {241, 209, 37, 255},  // YELLOW
+    {255, 130, 47, 255},  // ORANGE
+    {255, 149, 229, 255}, // PINK
+    {101, 126, 255, 255}  // DISCORD COLOR x)
+};
+int ColorScore[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+int numberActiveColor = 0;
 
 int playerAlive = 0;
 int playerAliveId = 0;
 Color ColorAlive;
 bool OtherColorAlive = false;
 
-int lastPlayer = 0;
-bool playerSpace[8] = { 0 };
-Color themeColor[8] = {
-    { 35, 235, 141, 255}, // GREEN
-    { 241, 82, 91, 255}, // RED
-    { 64, 230, 230, 255}, // BLUE
-    { 127, 102, 242, 255}, // PURPLE
-    { 241, 209, 37, 255}, // YELLOW
-    { 255, 130, 47, 255}, // ORANGE
-    { 255, 149, 229, 255}, // PINK
-    { 101, 126, 255, 255} // DISCORD COLOR x)
-};
-int ColorScore[8] = { -1,-1,-1,-1,-1,-1,-1,-1 };
-int numberActiveColor = 0;
-
-bool qrCodeOk = false;
-Texture2D qrCodeTexture;
-
-Player players[8] = {{},{},{},{},{},{},{},{}};
-static int playersLength = sizeof(players)/sizeof(players[0]);
+Player players[PLAYERS_LENGTH] = {{}, {}, {}, {}, {}, {}, {}, {}};
 int numberPlayer = 0;
 
 Player *outsidePlayer;
@@ -95,60 +102,58 @@ Player *lastOutsidePlayer;
 double startTimeOutside = 0.0;
 double elapsedTimeOutside = 0.0;
 
+// QrCode
+bool qrCodeOk = false;
+Texture2D qrCodeTexture;
+
+// Boxes
 Box boxes[40] = {};
-static int boxesLength = sizeof(boxes)/sizeof(boxes[0]);
+static int boxesLength = sizeof(boxes) / sizeof(boxes[0]);
 
+// Loots
 Loot loots[4] = {};
-static int lootsLength = sizeof(loots)/sizeof(loots[0]);
-
-// Home Screen
-Texture titlePerfectNightTexture;
-Texture useSameWifiTexture;
-Texture andScanQrTexture;
+static int lootsLength = sizeof(loots) / sizeof(loots[0]);
 
 // Items
 Texture BonusAmmunitionTexture;
 Texture BonusLifeTexture;
 Texture BonusSpeedTexture;
 
-
-void InitGameplay(void) {
+void InitGameplay(void)
+{
     // Home Screen
-    Image titlePerfectNightImage = LoadImage("resources/title-perfect-night.png");
-    ImageResizeNN(&titlePerfectNightImage, 155*7, 75*7);
+    // Resize Image for reduce the size of the game
+    Image titlePerfectNightImage = LoadImage("resources/title_perfect_night.png");
+    ImageResizeNN(&titlePerfectNightImage, 155 * 7, 75 * 7);
     titlePerfectNightTexture = LoadTextureFromImage(titlePerfectNightImage);
+    UnloadImage(titlePerfectNightImage);
 
-    Image useSameWifiImage = LoadImage("resources/use-the-same-wifi.png");
-    ImageResizeNN(&useSameWifiImage, 159*2.5, 119*2.5);
+    Image useSameWifiImage = LoadImage("resources/use_the_same_wifi.png");
+    ImageResizeNN(&useSameWifiImage, 159 * 2.5, 119 * 2.5);
     useSameWifiTexture = LoadTextureFromImage(useSameWifiImage);
+    UnloadImage(useSameWifiImage);
 
-    Image andScanQrImage = LoadImage("resources/and-scan.png");
-    ImageResizeNN(&andScanQrImage, 162*2.5, 112*2.5);
+    Image andScanQrImage = LoadImage("resources/and_scan.png");
+    ImageResizeNN(&andScanQrImage, 162 * 2.5, 112 * 2.5);
     andScanQrTexture = LoadTextureFromImage(andScanQrImage);
+    UnloadImage(andScanQrImage);
 
     // Items
-    Image BonusAmmunitionImage = LoadImage("resources/bonus-ammunition.png");
-    ImageResizeNN(&BonusAmmunitionImage, 34, 18);
-    BonusAmmunitionTexture = LoadTextureFromImage(BonusAmmunitionImage);
-
-    Image BonusLifeImage = LoadImage("resources/bonus-life.png");
-    ImageResizeNN(&BonusLifeImage, 32, 32);
-    BonusLifeTexture = LoadTextureFromImage(BonusLifeImage);
-
-    Image BonusSpeedImage = LoadImage("resources/bonus-speed.png");
-    ImageResizeNN(&BonusSpeedImage, 32, 32);
-    BonusSpeedTexture = LoadTextureFromImage(BonusSpeedImage);
+    BonusAmmunitionTexture = LoadTexture("resources/bonus_ammunition.png");
+    BonusLifeTexture = LoadTexture("resources/bonus_life.png");
+    BonusSpeedTexture = LoadTexture("resources/bonus_speed.png");
 
     // Load TMX
-	tmx_img_load_func = raylib_tex_loader;
-	tmx_img_free_func = raylib_free_tex;
+    tmx_img_load_func = raylib_tex_loader;
+    tmx_img_free_func = raylib_free_tex;
 
-	// map = tmx_load("resources/map-vs.tmx");
-	map = tmx_load("resources/map-2-team.tmx");
-	// map = tmx_load("resources/map-4-team.tmx");
-	if (!map) {
-		tmx_perror("Cannot load map");
-	}
+    // map = tmx_load("resources/map_vs.tmx");
+    map = tmx_load("resources/map_2_team.tmx");
+    // map = tmx_load("resources/map_4_team.tmx");
+    if (!map)
+    {
+        tmx_perror("Cannot load map");
+    }
     arenaSizeX = map->tile_width * map->width;
     arenaSizeY = map->tile_height * map->height;
     tmx_init_object(map->ly_head, players, boxes, loots);
@@ -158,13 +163,14 @@ void InitGameplay(void) {
     InitLoot();
 
     // Init Camera
-    camera.target = (Vector2){ 0, 0 };
-    camera.offset = (Vector2){ 0, 0 };
+    camera.target = (Vector2){0.0f, 0.0f};
+    camera.offset = (Vector2){0.0f, 0.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 }
 
-void UpdateGameplay(void) {
+void UpdateGameplay(void)
+{
     int centerPositionX = 0;
     int centerPositionY = 0;
     // int centerDistance = 0;
@@ -174,174 +180,204 @@ void UpdateGameplay(void) {
     OtherColorAlive = false;
 
     double time = GetTime();
-    if ((int)time == lastSecond) {
+    if ((int)time == lastSecond)
+    {
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
-        camera.target = (Vector2){ 0, 0 };
-        camera.offset = (Vector2){ GetScreenWidth() - arenaSizeX/2 - GetScreenWidth()/2, GetScreenHeight() - arenaSizeY/2 - GetScreenHeight()/2 };
+        camera.target = (Vector2){0.0f, 0.0f};
+        camera.offset = (Vector2){GetScreenWidth() - arenaSizeX / 2.0f - GetScreenWidth() / 2.0f, GetScreenHeight() - arenaSizeY / 2.0f - GetScreenHeight() / 2.0f};
         lastSecond += 1;
     }
-    if (GetScreenWidth() < (arenaSizeX+60)*(camera.zoom/1.0001) || GetScreenHeight() < (arenaSizeY+60)*(camera.zoom/1.0001)) {
-        camera.zoom -= 0.001;
+    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (camera.zoom / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (camera.zoom / 1.0001f))
+    {
+        camera.zoom -= 0.001f;
     }
-    if (GetScreenWidth() > (arenaSizeX+120) || GetScreenHeight() > (arenaSizeY+120)) {
-        camera.zoom += 0.001;
+    if (GetScreenWidth() > (arenaSizeX + 120.0f) || GetScreenHeight() > (arenaSizeY + 120.0f))
+    {
+        camera.zoom += 0.001f;
     }
 
     numberPlayer = GetNumberPlayer(); // +2
-    if(lastPlayer < numberPlayer) {
-        for (int i = 0; i < playersLength; i++) {
-            if(!playerSpace[i]) {
+    if (lastPlayer < numberPlayer)
+    {
+        for (int i = 0; i < PLAYERS_LENGTH; i++)
+        {
+            if (!playerSpace[i])
+            {
                 playerSpace[i] = true;
-                players[i] = (Player) {
-                    i+1, // id: Identifier
-                    GetIdGamepad(i), // gamepadId: Gamepad identifier
-                    1, // life: Number of life
-                    delayInvincible, // invincible: Time of invincibility
-                    // 0, // damagesTaken: Percentage of damages token
-                    maxAmmunition, // ammunition: Ammunition
-                    delayAmmunition, // ammunitionLoad: Ammunition loading
-                    {{600 - 20, 600 - 20}, {40, 40}, {0, 0}, {0, 0, 0, 0, 0}}, // p: Physic
-                    { 0, 0 }, // spawn: Spawn position
-                    {3.5, 3.5}, // speed: Speed of the tank
+                players[i] = (Player){
+                    i + 1,                                                                             // id: Identifier
+                    GetIdGamepad(i),                                                                   // gamepadId: Gamepad identifier
+                    1,                                                                                 // life: Number of life
+                    DELAY_INVINCIBLE,                                                                  // invincible: Time of invincibility
+                    MAX_AMMUNITION,                                                                    // ammunition: Ammunition
+                    DELAY_AMMUNITION,                                                                  // ammunitionLoad: Ammunition loading
+                    {{0.0f, 0.0f}, {40.0f, 40.0f}, {0.0f, 0.0f}, {false, false, false, false, false}}, // p: Physic
+                    {0.0f, 0.0f},                                                                      // spawn: Spawn position
+                    {3.5f, 3.5f},                                                                      // speed: Speed of the tank
                     // Bullet
-                    0, // charge: Charge delay
+                    0.0f, // charge: Charge delay
                     true, // canShoot: Can Shoot
-                    0, // timeShoot: Time Shoot
-                    0, // radian: Radian : Determine the position of the cannon
-                    0, // lastRadian: Last Radian : Determine the position of the cannon
-                    { 0 }, // bullets: Array of bullet
-                    0, // lastBullet: Allow the ball to be replaced one after the other
+                    0.0f, // timeShoot: Time Shoot
+                    0.0f, // radian: Radian : Determine the position of the cannon
+                    0.0f, // lastRadian: Last Radian : Determine the position of the cannon
+                    {0},  // bullets: Array of bullet
+                    0.0f, // lastBullet: Allow the ball to be replaced one after the other
                     // Other
-                    { PURPLE, VIOLET, DARKPURPLE }, // COLORS: Colors
-                    { 0 }, // Item
+                    PURPLE, // COLORS: Colors
+                    {0},    // Item
                     // Control
-                    MOBILE, // INPUT_TYPE: Type of input (mouse, keyboard, gamepad)
-                    {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action
-                    { 0 } // shootParticle
+                    MOBILE,                                                                                                                                                            // INPUT_TYPE: Type of input (mouse, keyboard, gamepad)
+                    {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action (@TODO play with controller)
+                    {0}                                                                                                                                                                // shootParticle
                 };
-                tmx_init_object(map->ly_head, players, boxes, loots);
-                GamepadPlayerLife(players[i].gamepadId, players[i].life);
-                InitColorGamepad(players[i].gamepadId, players[i].COLORS[0].r, players[i].COLORS[0].g, players[i].COLORS[0].b);
-                for (int c = 0; c < sizeof(themeColor)/sizeof(themeColor[0]); c++) {
-                    if(ColorToInt(themeColor[c]) == ColorToInt(players[i].COLORS[0])) {
-                        if (ColorScore[c] < 0) {
+                ResetGame();
+                for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
+                {
+                    if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
+                    {
+                        if (ColorScore[c] < 0)
+                        {
                             numberActiveColor++;
                             ColorScore[c] = 0;
                         }
                         break;
                     }
                 }
-                i = playersLength;
+                i = PLAYERS_LENGTH;
                 lastPlayer++;
             }
         }
     }
 
-    if(lastPlayer > numberPlayer) {
-        // @Todo remove player / disconnect
+    if (lastPlayer > numberPlayer)
+    {
+        // @TODO remove player / disconnect
+        // int listId = getPlayerDisconnected();
+        // playerSpace[i] = false;
+        // players[i] =
     }
 
     GenerateQrCode();
 
     // Zoom out / zoom in with the mouse wheel
-    camera.zoom += ((float)GetMouseWheelMove()*0.01f);
+    camera.zoom += ((float)GetMouseWheelMove() * 0.01f);
 
     // Active developer mode
-    if (IsKeyPressed(KEY_O)) activeDev = !activeDev;
+    if (IsKeyPressed(KEY_O))
+        activeDev = !activeDev;
 
-    // Display info of PeerJS
-    if (IsKeyPressed(KEY_U)) {
-        ToggleInfoPeerJs();
+    // Press R to reset
+    if (IsKeyPressed(KEY_R))
+    {
+        for (int i = 0; i < PLAYERS_LENGTH; i++)
+        {
+            ColorScore[i] = -1;
+        };
+        ResetGame();
     }
 
-    // Pause
-    if (IsKeyPressed(KEY_P)) pauseGame = !pauseGame;
-    if (pauseGame) {
-        if (IsKeyPressed(KEY_C)) {
+    // Pause / @TODO
+    if (IsKeyPressed(KEY_P))
+        pauseGame = !pauseGame;
+    if (pauseGame)
+    {
+        if (IsKeyPressed(KEY_C))
+        {
             // Controller display
         }
-        if (IsKeyPressed(KEY_E)) {
+        if (IsKeyPressed(KEY_E))
+        {
             // Edit map display
         }
         // return;
     }
-
-    // Reset
-    if (IsKeyPressed(KEY_R)) {
-        // Press R to reset
-        tmx_init_object(map->ly_head, players, boxes, loots);
-        for (int i = 0; i < playersLength; i++) {
-            if(playerSpace[i]) {
-                players[i].life = 1;
-                players[i].id = i+1;
-            }
-        }
-    }
+    if (pauseGame)
+        return;
 
     // Update Players / Bullets
-    for (int i = 0; i < playersLength; i++) {
-        if(!players[i].id) continue;
-        if(players[i].life > 0) {
+    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    {
+        // If player not exist continue
+        if (!players[i].id)
+            continue;
+
+        // Detect if one team win
+        if (players[i].life > 0)
+        {
             playerAlive++;
             playerAliveId = i;
-            if (ColorToInt(players[i].COLORS[0]) != ColorToInt(ColorAlive)) {
+            if (ColorToInt(players[i].color) != ColorToInt(ColorAlive))
+            {
                 OtherColorAlive = true;
             }
-            ColorAlive = players[i].COLORS[0];
+            ColorAlive = players[i].color;
         }
 
         UpdatePlayer(&players[i]);
 
         // Bullets
-        if (pauseGame) continue;
-        for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
-            UpdateBullet(&players[i].bullets[j]);
-            if(!players[i].bullets[j].playerId) continue;
+        for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+        {
+            if (!players[i].bullets[j].playerId || players[i].bullets[j].inactive)
+                continue;
 
-            Rectangle newBulletRec = { players[i].bullets[j].p.pos.x + 2, players[i].bullets[j].p.pos.y + 2, players[i].bullets[j].p.size.x * 2 - 5, players[i].bullets[j].p.size.y * 2 - 5 };
+            UpdateBullet(&players[i].bullets[j]);
+
+            Rectangle newBulletRec = {players[i].bullets[j].p.pos.x + 2.0f, players[i].bullets[j].p.pos.y + 2.0f, players[i].bullets[j].p.size.x * 2.0f - 5.0f, players[i].bullets[j].p.size.y * 2.0f - 5.0f};
             // Collision Bullet and Box
-            for (int b = 0; b < boxesLength; b++) {
-                Rectangle envBox = { boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y };
+            for (int b = 0; b < boxesLength; b++)
+            {
+                Rectangle envBox = {boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y};
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
             }
             // Stops the ball if it hits the wall when it is created
-            if (players[i].bullets[j].isNew && players[i].bullets[j].p.collision[0]) {
+            if (players[i].bullets[j].isNew && players[i].bullets[j].p.collision[0])
+            {
                 players[i].bullets[j].inactive = true;
             }
             players[i].bullets[j].isNew = false;
 
             // Collision Player and Bullet
-            for (int p = 0; p < numberPlayer; p++) {
-                if(players[p].life <= 0) continue;
-                Rectangle envPlayer = { players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y };
+            for (int p = 0; p < numberPlayer; p++)
+            {
+                if (players[p].life <= 0)
+                    continue;
+                Rectangle envPlayer = {players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y};
                 bool bulletCollision = CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
                 CollisionBulletPlayer(bulletCollision, &players[i].bullets[j], &players[p], envPlayer);
             }
             BulletBounce(&players[i].bullets[j]);
         }
-        
+
         // Collision Player and Player
-        Rectangle newPlayerRec = { players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y };
-        for (int j = 0; j < playersLength; j++) {
-            if(players[j].life <= 0 || !players[i].id || !players[j].id) continue;
-            if (players[i].id != players[j].id) {
-                Rectangle envPlayer = { players[j].p.pos.x, players[j].p.pos.y, players[j].p.size.x, players[j].p.size.y };
+        Rectangle newPlayerRec = {players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y};
+        for (int j = 0; j < PLAYERS_LENGTH; j++)
+        {
+            if (players[j].life <= 0 || !players[i].id || !players[j].id)
+                continue;
+            if (players[i].id != players[j].id)
+            {
+                Rectangle envPlayer = {players[j].p.pos.x, players[j].p.pos.y, players[j].p.size.x, players[j].p.size.y};
                 CollisionPhysic(&players[i].p, newPlayerRec, envPlayer);
             }
         }
 
         // Collision Player and Box
-        for (int j = 0; j < boxesLength; j++) {
-            if(!boxes[j].id) continue;
-            Rectangle envBox = { boxes[j].p.pos.x, boxes[j].p.pos.y, boxes[j].p.size.x, boxes[j].p.size.y };
+        for (int j = 0; j < boxesLength; j++)
+        {
+            if (!boxes[j].id)
+                continue;
+            Rectangle envBox = {boxes[j].p.pos.x, boxes[j].p.pos.y, boxes[j].p.size.x, boxes[j].p.size.y};
             CollisionPhysic(&players[i].p, newPlayerRec, envBox);
         }
 
-        for (int j = 0; j < lootsLength; j++) {
+        for (int j = 0; j < lootsLength; j++)
+        {
             UpdateLoot(&loots[j], &players[i]);
         }
 
-        if (players[i].shootParticle[0].timer != 0) {
+        if (players[i].shootParticle[0].timer != 0)
+        {
             UpdateParticles(players[i].shootParticle, 20);
         }
 
@@ -350,31 +386,39 @@ void UpdateGameplay(void) {
         // centerDistance += sqrtf(powf(camera.target.x - player.p.pos.x, 2) + powf(camera.target.x - player.p.pos.y, 2));
     }
 
-    if (lastPlayer>=2) {
-        camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
+    if (lastPlayer >= 2)
+    {
+        camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
         centerPositionX = centerPositionX / numberPlayer;
         centerPositionY = centerPositionY / numberPlayer;
-        camera.target = (Vector2){ centerPositionX, centerPositionY };
-    } else {
-        camera.offset = (Vector2){ GetScreenWidth()/2.0f, GetScreenHeight()/2.0f };
-        camera.target = (Vector2){ arenaSizeX/2.0f, arenaSizeY/2.0f };
-        // camera.target = (Vector2){ players[7].p.pos.x, players[7].p.pos.y };
+        camera.target = (Vector2){centerPositionX, centerPositionY};
+    }
+    else
+    {
+        camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+        camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
     }
 
-    if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id)) {
-        if (lastOutsidePlayer && ColorToInt(outsidePlayer->COLORS[0]) != ColorToInt(lastOutsidePlayer->COLORS[0])) {
-            for (int i = 0; i < playersLength; i++) {
-                if (ColorToInt(players[i].COLORS[0]) != ColorToInt(outsidePlayer->COLORS[0])) {
+    if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
+    {
+        if (lastOutsidePlayer && ColorToInt(outsidePlayer->color) != ColorToInt(lastOutsidePlayer->color))
+        {
+            for (int i = 0; i < PLAYERS_LENGTH; i++)
+            {
+                if (ColorToInt(players[i].color) != ColorToInt(outsidePlayer->color))
+                {
                     if ((players[i].p.pos.x >= arenaSizeX ||
-                        players[i].p.pos.x + players[i].p.size.x <= 0) ||
+                         players[i].p.pos.x + players[i].p.size.x <= 0.0f) ||
                         (players[i].p.pos.y >= arenaSizeY ||
-                        players[i].p.pos.y + players[i].p.size.y <= 0)) {
+                         players[i].p.pos.y + players[i].p.size.y <= 0.0f))
+                    {
 
-                        if (players[i].life > 0) {
+                        if (players[i].life > 0)
+                        {
                             players[i].life--;
                             GamepadPlayerLife(players[i].gamepadId, players[i].life);
                         };
-                        players[i].p.pos = (Vector2) { players[i].spawn.x, players[i].spawn.y };
+                        players[i].p.pos = (Vector2){players[i].spawn.x, players[i].spawn.y};
                     }
                 }
             }
@@ -382,22 +426,28 @@ void UpdateGameplay(void) {
         lastOutsidePlayer = outsidePlayer;
         startTimeOutside = GetTime();
     }
-    if (startTimeOutside != 0.0) {
+    if (startTimeOutside != 0.0)
+    {
         elapsedTimeOutside = GetTime() - startTimeOutside;
     }
-    if (elapsedTimeOutside > 2) {
-        for (int i = 0; i < playersLength; i++) {
-            if (ColorToInt(players[i].COLORS[0]) == ColorToInt(outsidePlayer->COLORS[0])) {
+    if (elapsedTimeOutside > 2.0)
+    {
+        for (int i = 0; i < PLAYERS_LENGTH; i++)
+        {
+            if (ColorToInt(players[i].color) == ColorToInt(outsidePlayer->color))
+            {
                 if ((players[i].p.pos.x >= arenaSizeX ||
-                    players[i].p.pos.x + players[i].p.size.x <= 0) ||
+                     players[i].p.pos.x + players[i].p.size.x <= 0.0f) ||
                     (players[i].p.pos.y >= arenaSizeY ||
-                    players[i].p.pos.y + players[i].p.size.y <= 0)) {
+                     players[i].p.pos.y + players[i].p.size.y <= 0.0f))
+                {
 
-                    if (players[i].life > 0) {
+                    if (players[i].life > 0)
+                    {
                         players[i].life--;
                         GamepadPlayerLife(players[i].gamepadId, players[i].life);
                     };
-                    players[i].p.pos = (Vector2) { players[i].spawn.x, players[i].spawn.y };
+                    players[i].p.pos = (Vector2){players[i].spawn.x, players[i].spawn.y};
                 }
             }
         }
@@ -405,24 +455,33 @@ void UpdateGameplay(void) {
         lastOutsidePlayer = NULL;
         startTimeOutside = 0.0;
     }
-    if (!outsidePlayer) {
+    if (!outsidePlayer)
+    {
         lastOutsidePlayer = NULL;
         startTimeOutside = 0.0;
     }
 
-    if(((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) || playerAlive == 0) {
-        if (startTime == 0.0 && numberPlayer > 1) {
-            for (int c = 0; c < sizeof(themeColor)/sizeof(themeColor[0]); c++) {
-                if(ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].COLORS[0])) {
-                    if (ColorScore[c] > -1) {
+    if (((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) || playerAlive == 0)
+    {
+        if (startTime == 0.0 && numberPlayer > 1)
+        {
+            for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
+            {
+                if (ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].color))
+                {
+                    if (ColorScore[c] > -1)
+                    {
                         ColorScore[c]++;
                     }
                     break;
                 }
             }
-            for (int i = 0; i < playersLength; i++) {
-                if(playerSpace[i]) {
-                    for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
+            for (int i = 0; i < PLAYERS_LENGTH; i++)
+            {
+                if (playerSpace[i])
+                {
+                    for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+                    {
                         players[i].bullets[j].inactive = true;
                     }
                 }
@@ -430,24 +489,9 @@ void UpdateGameplay(void) {
             startTime = GetTime();
         }
         elapsedTime = GetTime() - startTime;
-        if (elapsedTime > 3) {
-            tmx_init_object(map->ly_head, players, boxes, loots);
-            for (int i = 0; i < playersLength; i++) {
-                if(playerSpace[i]) {
-                    players[i].life = 1;
-                    players[i].id = i+1;
-                    players[i].ammunition = maxAmmunition;
-                    players[i].invincible = delayInvincible;
-                    players[i].charge = 0;
-                    players[i].item.active = false;
-                    players[i].speed.x = 3.5;
-                    players[i].speed.y = 3.5;
-                    for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
-                        players[i].bullets[j].inactive = true;
-                    }
-                    GamepadPlayerLife(players[i].gamepadId, players[i].life);
-                }
-            }
+        if (elapsedTime > 3.0)
+        {
+            ResetGame();
             startTime = 0.0;
         }
     }
@@ -463,163 +507,228 @@ void UpdateGameplay(void) {
     // TraceLog(LOG_INFO, "camera.zoom: %d", camera.zoom);
 }
 
-void DrawGameplay(void) {
+void ResetGame(void)
+{
+    tmx_init_object(map->ly_head, players, boxes, loots);
+    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    {
+        if (playerSpace[i])
+        {
+            players[i].life = 1;
+            players[i].id = i + 1;
+            players[i].ammunition = MAX_AMMUNITION;
+            players[i].invincible = DELAY_INVINCIBLE;
+            players[i].charge = 0.0f;
+            players[i].item.active = false;
+            players[i].speed.x = 3.5f;
+            players[i].speed.y = 3.5f;
+            for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+            {
+                players[i].bullets[j].inactive = true;
+            }
+            GamepadPlayerColor(players[i].gamepadId, players[i].color.r, players[i].color.g, players[i].color.b);
+            GamepadPlayerLife(players[i].gamepadId, players[i].life);
+            GamepadPlayerAmmunition(players[i].gamepadId, players[i].life);
+        }
+    }
+}
+
+void DrawGameplay(void)
+{
     // DRAW GAME
     BeginMode2D(camera);
-        if(outsidePlayer) {
-	        ClearBackground(DarkenColor(LightenColor(outsidePlayer->COLORS[0], 0.2), 1 - elapsedTimeOutside / 2));
-        } else {
-            if (elapsedTimeOutside > 0) elapsedTimeOutside = elapsedTimeOutside - 0.01;
-	        ClearBackground(DarkenColor(int_to_color(map->backgroundcolor), 1 - elapsedTimeOutside / 2));
-        }
-        render_map(map);
-        DrawGameArena();
+    if (outsidePlayer)
+    {
+        ClearBackground(DarkenColor(LightenColor(outsidePlayer->color, 0.2f), 1.0f - elapsedTimeOutside / 2.0f));
+    }
+    else
+    {
+        if (elapsedTimeOutside > 0)
+            elapsedTimeOutside = elapsedTimeOutside - 0.01;
+        ClearBackground(DarkenColor(int_to_color(map->backgroundcolor), 1.0f - elapsedTimeOutside / 2.0f));
+    }
+    render_map(map);
+    DrawGameArena();
 
-        // Draw Boxes
-        for (int i = 0; i < boxesLength; i++) {
-            DrawBox(boxes[i]);
-        }
+    // Draw Boxes
+    for (int i = 0; i < boxesLength; i++)
+    {
+        DrawBox(boxes[i]);
+    }
 
-        // Draw Players / Bullets
-        for (int i = 0; i < playersLength; i++) {
-            if(!players[i].id) continue;
-            DrawSpawnPlayer(players[i]);
-            for (int j = 0; j < sizeof(players[i].bullets)/sizeof(players[i].bullets[0]); j++) {
-                if(!players[i].bullets[j].playerId) continue;
-                DrawBullet(players[i].bullets[j]);
+    // Draw Players / Bullets
+    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    {
+        if (!players[i].id)
+            continue;
+        DrawSpawnPlayer(players[i]);
+        for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+        {
+            if (!players[i].bullets[j].playerId)
+                continue;
+            DrawBullet(players[i].bullets[j]);
+        }
+        DrawPlayer(players[i]);
+        if (players[i].shootParticle[0].timer != 0)
+        {
+            DrawParticles(players[i].shootParticle, 20);
+        }
+    }
+
+    for (int i = 0; i < lootsLength; i++)
+    {
+        DrawLoot(loots[i]);
+    }
+
+    DrawPauseGame();
+
+    // Draw Wins
+    if (startTime != 0.0)
+    {
+        int indexFindColor = 0;
+        for (int i = 0; i < numberActiveColor; i++)
+        {
+            if (ColorScore[i] > -1)
+            {
+                // @TODO fix display if multi color team
+                DrawText(TextFormat("%d", ColorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 65.0f + 300.0f) * indexFindColor, (int)(camera.target.y - 80.0f), 80, themeColor[indexFindColor]);
             }
-            DrawPlayer(players[i]);
-            if (players[i].shootParticle[0].timer != 0) {
-                DrawParticles(players[i].shootParticle, 20);
-            }
+            else
+                i--;
+            indexFindColor++;
         }
-
-        for (int i = 0; i < lootsLength; i++) {
-            DrawLoot(loots[i]);
-        }
-
-        DrawPauseGame();
-
-        // Draw Wins 
-        if(startTime != 0.0) {
-            int indexFindColor = 0;
-            for (int i = 0; i < numberActiveColor; i++) {
-                if (ColorScore[i] > -1) {
-                    DrawText(TextFormat("%d", ColorScore[indexFindColor]), camera.target.x-50*2-65+300*indexFindColor, camera.target.y - 80, 80, themeColor[indexFindColor]);
-                }
-                else i--;
-                indexFindColor++;
-            }
-            DrawCircle(camera.target.x, camera.target.y-100, 50, BLACK);
-            DrawCircle(camera.target.x, camera.target.y-100, 48, WHITE);
-            DrawCircle(camera.target.x, camera.target.y-100, 40, players[playerAliveId].COLORS[0]);
-            DrawText("WINS THIS GAME", camera.target.x-50*7, camera.target.y + 40, 80, players[playerAliveId].COLORS[0]);
-        }
-
-        // Draw title
-        if(numberPlayer == 0) {
-            Rectangle recBackground = { -1000, -1000, GetScreenWidth() / camera.zoom + arenaSizeX + 500, GetScreenHeight() / camera.zoom + arenaSizeY + 500 };
-            DrawRectangleRec(recBackground, Fade(BLACK, 0.4)); 
-            DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
-            DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
-            DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
-            DrawRectangleRec((Rectangle) {camera.target.x - qrCodeTexture.width/2 - 5, camera.target.y - qrCodeTexture.height/2 + 315, qrCodeTexture.width+10, qrCodeTexture.height+10}, BLACK); 
-            DrawTexture(qrCodeTexture, camera.target.x - qrCodeTexture.width/2, camera.target.y - qrCodeTexture.height/2 + 320, WHITE);
-        }
+        DrawCircle(camera.target.x, camera.target.y - 100.0f, 50.0f, BLACK);
+        DrawCircle(camera.target.x, camera.target.y - 100.0f, 48.0f, WHITE);
+        DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, players[playerAliveId].color);
+        DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, players[playerAliveId].color);
+    }
     EndMode2D();
 
     // DRAW STAT LOG INFO
     BeginDrawing();
-        for (int i = 0; i < 8; i++) {
-            DrawStatsPlayer(players[i]);
-        }
-
-        if (activeDev) {
-            // DISPLAY FPS
-            DrawFPS(10, 10);
-
-            // DISPLAY ZOOM
-            DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, BLACK);
-            DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, BLACK);
-            DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, BLACK);
-        }
-    EndDrawing();
-
-}
-
-void DrawGameArena(void) {
-    for (int x=0; x<=arenaSizeX*0.01; x++) {
-        if (x < arenaSizeX*0.01) {
-            DrawText(TextFormat("%d", x+1), x * 100 + 6, 4, 20, LIGHTGRAY);
-        }
-        // Rectangle posViewX = { 0, x * 100, arenaSizeX, 2 };
-        Rectangle posViewX = { x * 100, 0, 2, arenaSizeY };
-        DrawRectangleRec(posViewX, LIGHTGRAY);
-
+    // Draw title
+    if (numberPlayer == 0)
+    {
+        float centerScreenX = GetScreenWidth() / 2.0f;
+        float centerScreenY = GetScreenHeight() / 2.0f;
+        Rectangle recBackground = { 0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()};
+        DrawRectangleRec(recBackground, Fade(BLACK, 0.4f));
+        DrawTexture(titlePerfectNightTexture, centerScreenX - 155.0f * 3.47f, centerScreenY - 125.0f * 3.47f, WHITE);
+        DrawTexture(useSameWifiTexture, centerScreenX - 205.0f * 3.47f, centerScreenY + 160.0f, WHITE);
+        DrawTexture(andScanQrTexture, centerScreenX + 80.0f * 3.47f, centerScreenY + 180.0f, WHITE);
+        DrawRectangleRec((Rectangle){centerScreenX - qrCodeTexture.width / 2.0f - 5.0f, centerScreenY - qrCodeTexture.height / 2.0f + 275.0f, qrCodeTexture.width + 10.0f, qrCodeTexture.height + 10.0f}, BLACK);
+        DrawTexture(qrCodeTexture, centerScreenX - qrCodeTexture.width / 2.0f, centerScreenY - qrCodeTexture.height / 2.0f + 280.0f, WHITE);
     }
 
-    for (int y=0; y<=arenaSizeY*0.01; y++) {
-        if (y < arenaSizeY*0.01) {
-            DrawText(TextFormat("%d", y+1), 6,  y * 100 + 4, 20, LIGHTGRAY);
+    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    {
+        if (!players[i].id)
+            continue;
+        DrawStatsPlayer(players[i]);
+    }
+
+    if (activeDev)
+    {
+        // DISPLAY FPS
+        DrawFPS(10, 10);
+
+        // DISPLAY INFO
+        DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, BLACK);
+        DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, BLACK);
+        DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, BLACK);
+    }
+    EndDrawing();
+}
+
+void DrawGameArena(void)
+{
+    for (int x = 0; x <= (int)(arenaSizeX * 0.01f); x++)
+    {
+        if (x < (int)(arenaSizeX * 0.01f))
+        {
+            DrawText(TextFormat("%d", x + 1), x * 100 + 6, 4, 20, LIGHTGRAY);
+        }
+        // Rectangle posViewX = { 0, x * 100, arenaSizeX, 2 };
+        Rectangle posViewX = {(float)(x * 100), 0.0f, 2.0f, arenaSizeY};
+        DrawRectangleRec(posViewX, LIGHTGRAY);
+    }
+
+    for (int y = 0; y <= (int)(arenaSizeY * 0.01f); y++)
+    {
+        if (y < (int)(arenaSizeY * 0.01))
+        {
+            DrawText(TextFormat("%d", y + 1), 6, y * 100 + 4, 20, LIGHTGRAY);
         }
         // Rectangle posViewY = { y * 100, 0, 2, arenaSizeY };
-        Rectangle posViewY = { 0, y * 100, arenaSizeX, 2 };
+        Rectangle posViewY = {0.0f, (int)(y * 100), arenaSizeX, 2.0f};
         DrawRectangleRec(posViewY, LIGHTGRAY);
     }
 
-    DrawRectangleRec((Rectangle) { -2, -2, 5, 5 }, BLACK); // 0,0
-    DrawRectangleRec((Rectangle) { arenaSizeX - 1, arenaSizeY - 1, 5, 5 }, BLACK); // 1000, 1000
-    DrawRectangleRec((Rectangle) { arenaSizeX - 1, -2, 5, 5 }, BLACK); // 1000, 0
-    DrawRectangleRec((Rectangle) { -2, arenaSizeY - 1, 5, 5 }, BLACK); // 0, 1000
+    DrawRectangleRec((Rectangle){-2.0f, -2.0f, 5.0f, 5.0f}, BLACK);
+    DrawRectangleRec((Rectangle){arenaSizeX - 1.0f, arenaSizeY - 1.0f, 5.0f, 5.0f}, BLACK);
+    DrawRectangleRec((Rectangle){arenaSizeX - 1.0f, -2.0f, 5.0f, 5.0f}, BLACK);
+    DrawRectangleRec((Rectangle){-2.0f, arenaSizeY - 1.0f, 5.0f, 5.0f}, BLACK);
 
-    DrawRectangleRec((Rectangle) { -2, -2, arenaSizeX + 1, 1 }, BLACK);
-    DrawRectangleRec((Rectangle) { -2, -2, 1, arenaSizeY + 1 }, BLACK);
-    DrawRectangleRec((Rectangle) { arenaSizeX + 3, -2, 1, arenaSizeY + 1 }, BLACK);
-    DrawRectangleRec((Rectangle) { -2, arenaSizeY + 3, arenaSizeX + 1, 1 }, BLACK);
+    DrawRectangleRec((Rectangle){-2.0f, -2.0f, arenaSizeX + 1.0f, 1.0f}, BLACK);
+    DrawRectangleRec((Rectangle){-2.0f, -2.0f, 1.0f, arenaSizeY + 1.0f}, BLACK);
+    DrawRectangleRec((Rectangle){arenaSizeX + 3.0f, -2.0f, 1.0f, arenaSizeY + 1.0f}, BLACK);
+    DrawRectangleRec((Rectangle){-2.0f, arenaSizeY + 3.0f, arenaSizeX + 1.0f, 1.0f}, BLACK);
 }
 
-void DrawPauseGame(void) {
-    if (pauseGame) {
-        DrawRectangleRec((Rectangle) { camera.target.x - 480.0 / 2, camera.target.y - 240, 480, 400 }, Fade(LIGHTGRAY, 0.6));
-        DrawText("RESTART (R)", camera.target.x - 8 * 11, camera.target.y - 200.0, 30, BLACK);
-        DrawText("CONTROLLER (C)", camera.target.x - 8 * 14, camera.target.y - 100.0, 30, BLACK);
-        DrawText("EDIT THE MAP (E)", camera.target.x - 8 * 16, camera.target.y - 0.0, 30, BLACK);
-        DrawText("CONTINUE (P)", camera.target.x - 8 * 12, camera.target.y + 100.0, 30, BLACK);
+void DrawPauseGame(void)
+{
+    if (pauseGame)
+    {
+        DrawRectangleRec((Rectangle){camera.target.x - 480.0f / 2.0f, camera.target.y - 240.0f, 480.0f, 400.0f}, Fade(LIGHTGRAY, 0.6f));
+        DrawText("RESTART (R)", (int)(camera.target.x - 8 * 11), (int)(camera.target.y - 200), 30, BLACK);
+        DrawText("CONTROLLER (C)", (int)(camera.target.x - 8 * 14), (int)(camera.target.y - 100), 30, BLACK);
+        DrawText("CHANGE MAP (E)", (int)(camera.target.x - 8 * 16), (int)(camera.target.y), 30, BLACK);
+        DrawText("CONTINUE (P)", (int)(camera.target.x - 8 * 12), (int)(camera.target.y + 100), 30, BLACK);
     }
 }
 
-void GenerateQrCode(void) {
-    if(!qrCodeOk) {
+void GenerateQrCode(void)
+{
+    if (!qrCodeOk)
+    {
         // Generate Image QrCode
         const char *url = GetGamepadUrl();
-        if(url[0] != 'n') {
-            enum qrcodegen_Ecc errCorLvl = qrcodegen_Ecc_LOW;  // Error correction level
+        if (url[0] != 'n')
+        {
+            enum qrcodegen_Ecc errCorLvl = qrcodegen_Ecc_LOW; // Error correction level
             uint8_t qrCode[qrcodegen_BUFFER_LEN_MAX];
             uint8_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
             qrCodeOk = qrcodegen_encodeText(url, tempBuffer, qrCode, errCorLvl,
-                qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
-            if(qrCodeOk) {
+                                            qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true);
+            if (qrCodeOk)
+            {
                 int qrCodeSize = qrcodegen_getSize(qrCode);
                 int border = 8;
-                int sizeRec = 256.f;
-                sizeRec -= border*2;
+                int sizeRec = 256;
+                sizeRec -= border * 2;
                 int t = sizeRec / qrCodeSize;
                 int c = 0;
-                Image qrCodeImage = GenImageColor(t*qrCodeSize+border*2, t*qrCodeSize+border*2, WHITE);
-                for (int x = 0; x < qrCodeSize; x++) {
-                    for (int y = 0; y < qrCodeSize; y++) {
-                        if (qrcodegen_getModule(qrCode, x, y)) {
-                            if (c>7) c=0;
-                            if (((y<7 && x>qrCodeSize-8)) || 
-                                (y>qrCodeSize-8 && y<qrCodeSize && x<7) || 
-                                (x<7 && y<7) || 
-                                ((x>qrCodeSize-10 && y>qrCodeSize-10) && (x<qrCodeSize-4 && y<qrCodeSize-4))) {
+                Image qrCodeImage = GenImageColor(t * qrCodeSize + border * 2, t * qrCodeSize + border * 2, WHITE);
+                for (int x = 0; x < qrCodeSize; x++)
+                {
+                    for (int y = 0; y < qrCodeSize; y++)
+                    {
+                        if (qrcodegen_getModule(qrCode, x, y))
+                        {
+                            if (c > 7)
+                                c = 0;
+                            if (((y < 7 && x > qrCodeSize - 8)) ||
+                                (y > qrCodeSize - 8 && y < qrCodeSize && x < 7) ||
+                                (x < 7 && y < 7) ||
+                                ((x > qrCodeSize - 10 && y > qrCodeSize - 10) && (x < qrCodeSize - 4 && y < qrCodeSize - 4)))
+                            {
                                 // ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
-                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, BLACK);
+                                ImageDrawRectangle(&qrCodeImage, x * t + border, y * t + border, t, t, BLACK);
                             }
-                            else {
+                            else
+                            {
                                 // ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
-                                ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, BLACK);
+                                ImageDrawRectangle(&qrCodeImage, x * t + border, y * t + border, t, t, BLACK);
                             }
                         }
                         c++;
