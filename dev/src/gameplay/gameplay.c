@@ -135,15 +135,21 @@ void InitGameplay(void)
     titlePerfectNightTexture = LoadTextureFromImage(titlePerfectNightImage);
     UnloadImage(titlePerfectNightImage);
 
+    // titlePerfectNightTexture = LoadTexture("resources/title_perfect_night.png");
+
     Image useSameWifiImage = LoadImage("resources/use_the_same_wifi.png");
     ImageResizeNN(&useSameWifiImage, 159 * 2.5, 119 * 2.5);
     useSameWifiTexture = LoadTextureFromImage(useSameWifiImage);
     UnloadImage(useSameWifiImage);
 
+    // useSameWifiTexture = LoadTexture("resources/use_the_same_wifi.png");
+
     Image andScanQrImage = LoadImage("resources/and_scan.png");
     ImageResizeNN(&andScanQrImage, 162 * 2.5, 112 * 2.5);
     andScanQrTexture = LoadTextureFromImage(andScanQrImage);
     UnloadImage(andScanQrImage);
+
+    // andScanQrTexture = LoadTexture("resources/and_scan.png");
 
     // Items
     BonusAmmunitionTexture = LoadTexture("resources/bonus_ammunition.png");
@@ -601,40 +607,9 @@ void DrawGameplay(void)
     BeginDrawing();
 
     DrawPauseGame();
-
-    float centerScreenX = GetScreenWidth() / 2.0f;
-    float centerScreenY = GetScreenHeight() / 2.0f;
-    // Draw Wins
-    if (startTime != 0.0)
+    if (numberPlayer == 0 || startTime != 0.0) // Background for title / win
     {
-        DrawRectangleRec((Rectangle){0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()}, Fade(BLACK, 0.4f));
-        int indexFindColor = 0;
-        for (int i = 0; i < numberActiveColor; i++)
-        {
-            if (ColorScore[i] > -1)
-            {
-                // @TODO fix display if multi color team
-                DrawText(TextFormat("%d", ColorScore[indexFindColor]), (int)(centerScreenX - 50.0f * 2.0f - 80.0f) + 320 * indexFindColor, (int)(centerScreenY - 80.0f), 80, themeColor[indexFindColor]);
-            }
-            else
-                i--;
-            indexFindColor++;
-        }
-        DrawCircle(centerScreenX, centerScreenY - 100.0f, 50.0f, BLACK);
-        DrawCircle(centerScreenX, centerScreenY - 100.0f, 48.0f, WHITE);
-        DrawCircle(centerScreenX, centerScreenY - 100.0f, 40.0f, players[playerAliveId].color);
-        DrawText("WINS THIS GAME", (int)(centerScreenX - 50.0f * 7.0f), (int)(centerScreenY + 40.0f), 80, players[playerAliveId].color);
-    }
-
-    // Draw title
-    if (numberPlayer == 0)
-    {
-        DrawRectangleRec((Rectangle){0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()}, Fade(BLACK, 0.4f));
-        DrawTexture(titlePerfectNightTexture, centerScreenX - 155.0f * 3.47f, centerScreenY - 125.0f * 3.47f, WHITE);
-        DrawTexture(useSameWifiTexture, centerScreenX - 205.0f * 3.47f, centerScreenY + 160.0f, WHITE);
-        DrawTexture(andScanQrTexture, centerScreenX + 80.0f * 3.47f, centerScreenY + 180.0f, WHITE);
-        DrawRectangleRec((Rectangle){centerScreenX - qrCodeTexture.width / 2.0f - 5.0f, centerScreenY - qrCodeTexture.height / 2.0f + 275.0f, qrCodeTexture.width + 10.0f, qrCodeTexture.height + 10.0f}, BLACKGROUND);
-        DrawTexture(qrCodeTexture, centerScreenX - qrCodeTexture.width / 2.0f, centerScreenY - qrCodeTexture.height / 2.0f + 280.0f, WHITE);
+        DrawRectangle(0.0f, 0.0f, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.4f));
     }
 
     for (int i = 0; i < PLAYERS_LENGTH; i++)
@@ -650,11 +625,49 @@ void DrawGameplay(void)
         DrawFPS(10, 10);
 
         // DISPLAY INFO
-        DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, BLACK);
-        DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, BLACK);
-        DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, BLACK);
+        DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, WHITE);
+        DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, WHITE);
+        DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, WHITE);
     }
     EndDrawing();
+
+    if (numberPlayer == 0 || startTime != 0.0)
+    {
+        BeginMode2D(camera);
+
+        // Draw Wins
+        if (startTime != 0.0)
+        {
+            DrawRectangleRec((Rectangle){0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()}, Fade(BLACK, 0.4f));
+            int indexFindColor = 0;
+            for (int i = 0; i < numberActiveColor; i++)
+            {
+                if (ColorScore[i] > -1)
+                {
+                    // @TODO fix display if multi color team
+                    DrawText(TextFormat("%d", ColorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 80.0f) + 320 * indexFindColor, (int)(camera.target.y - 80.0f), 80, themeColor[indexFindColor]);
+                }
+                else
+                    i--;
+                indexFindColor++;
+            }
+            DrawCircle(camera.target.x, camera.target.y - 100.0f, 50.0f, BLACK);
+            DrawCircle(camera.target.x, camera.target.y - 100.0f, 48.0f, WHITE);
+            DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, players[playerAliveId].color);
+            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, players[playerAliveId].color);
+        }
+
+        // Draw title
+        if (numberPlayer == 0)
+        {
+            DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
+            DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
+            DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
+            DrawRectangle(camera.target.x - qrCodeTexture.width / 2 - 5, camera.target.y - qrCodeTexture.height / 2 + 315, qrCodeTexture.width + 10, qrCodeTexture.height + 10, BLACK);
+            DrawTexture(qrCodeTexture, camera.target.x - qrCodeTexture.width / 2, camera.target.y - qrCodeTexture.height / 2 + 320, WHITE);
+        }
+        EndMode2D();
+    }
 }
 
 void DrawGameArena(void)
