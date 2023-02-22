@@ -324,13 +324,16 @@ void DrawPlayer(Player player)
 
     if (activeDev)
     {
-        DrawRectangleRec((Rectangle){player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y}, PURPLE);
+        DrawRectangleRec((Rectangle){player.p.pos.x, player.p.pos.y, player.p.size.x, player.p.size.y}, Fade(PURPLE, 0.5f));
     }
 }
 
 void DrawSpawnPlayer(Player player)
 {
-    DrawRectangleLinesEx((Rectangle){player.spawn.x, player.spawn.y, player.p.size.x, player.p.size.y}, 2.5f, player.color);
+    const char *text = TextFormat("P%d", player.id);
+    int sizeText = MeasureText(text, 20);
+    DrawRectangleLinesEx((Rectangle){player.spawn.x, player.spawn.y, player.p.size.x, player.p.size.y}, 2.5f, Fade(player.color, 0.4f));
+    DrawText(text, player.spawn.x + player.p.size.x / 2 - sizeText / 2, player.spawn.y + player.p.size.y / 2 - 8, 20, Fade(player.color, 0.4f));
 }
 
 void DrawStatsPlayer(Player player)

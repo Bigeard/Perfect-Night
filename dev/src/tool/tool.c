@@ -46,3 +46,15 @@ Color LerpColor(Color colorA, Color colorB, float t)
         (unsigned char)LerpCo((float)colorA.a, (float)colorB.a, t),
     };
 }
+
+Color MultiplyColor(Color color, Color tint)
+{
+    Color result = { 0 };
+
+    result.r = (unsigned char)(((float)color.r / 255.0f) * ((float)tint.r / 255.0f) * 255);
+    result.g = (unsigned char)(((float)color.g / 255.0f) * ((float)tint.g / 255.0f) * 255);
+    result.b = (unsigned char)(((float)color.b / 255.0f) * ((float)tint.b / 255.0f) * 255);
+    result.a = (unsigned char)(((float)color.a / 255.0f) * ((float)tint.a / 255.0f) * 255);
+
+    return result;
+}

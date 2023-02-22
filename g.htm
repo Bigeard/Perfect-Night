@@ -207,13 +207,14 @@
                     if (peerConnection?.PeerServerId === PeerServerId) {
                         PeerPlayerId = peerConnection.PeerPlayerId
                     }
-                    if (!PeerPlayerId) {
-                        // Store connection player
-                        localStorage.setItem("peerConnection", JSON.stringify({
-                            PeerServerId,
-                            PeerPlayerId: NewPeerPlayerId
-                        }));
-                    }
+                    // @DEV_MODE
+                    // if (!PeerPlayerId) {
+                    //     // Store connection player
+                    //     localStorage.setItem("peerConnection", JSON.stringify({
+                    //         PeerServerId,
+                    //         PeerPlayerId: NewPeerPlayerId
+                    //     }));
+                    // }
 
                     // Join the connection
                     if (PeerServerId) {
@@ -334,7 +335,7 @@
             }
 
             const loop = (timestamp) => {
-                if (lastPing != 0 && new Date().getTime() - lastPing > 1000) {
+                if (lastPing != 0 && new Date().getTime() - lastPing > 3000) {
                     lastPing = 0;
                     peer.disconnect();
                     conn = peer.connect(conn.peer, { reliable: true });

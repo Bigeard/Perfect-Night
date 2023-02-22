@@ -13,7 +13,7 @@ extern "C"
 #include "items/bonus_speed/bonus_speed.h"
 #include "items/laser/laser.h"
 #include "items/nothing/nothing.h"
-#include "items/multi_shot/multi_shot.h"
+#include "items/multi_shoot/multi_shoot.h"
 #include "items/rocket/rocket.h"
 #include "items/sword/sword.h"
 
@@ -36,7 +36,7 @@ extern "C"
             BonusSpeed bonusSpeed;
             Laser laser;
             Nothing nothing;
-            MultiShot multiShot;
+            MultiShoot multiShoot;
             Rocket rocket;
             Sword sword;
         };
@@ -67,10 +67,10 @@ extern "C"
     void UpdateItemNothing(Item *item);
     void DrawItemNothing(Item *item);
 
-    Item InitItemMultiShot(int player_id);
-    void ShootItemMultiShot(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y);
-    void UpdateItemMultiShot(Item *item);
-    void DrawItemMultiShot(Item *item);
+    Item InitItemMultiShoot(int player_id);
+    void ShootItemMultiShoot(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y);
+    void UpdateItemMultiShoot(Item *item);
+    void DrawItemMultiShoot(Item *item);
 
     Item InitItemRocket(int player_id);
     void ShootItemRocket(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y);

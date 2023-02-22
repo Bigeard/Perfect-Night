@@ -6,7 +6,7 @@
 #include "../player/player.h"
 #include "../tool/tool.h"
 
-Texture LootBoxTexture;
+Texture2D LootBoxTexture;
 enum Types
 {
     RANDOM = 0,
@@ -14,7 +14,7 @@ enum Types
     BONUS_LIFE = 2,
     BONUS_SPEED = 3,
     LASER = 4,
-    MULTI_SHOT = 5,
+    MULTI_SHOOT = 5,
     ROCKET = 6,
     SWORD = 7,
     NOTHING = 8
@@ -27,6 +27,8 @@ void InitLoot(void)
 
 void UpdateLoot(Loot *loot, Player *player)
 {
+    if (!loot->id)
+        return;
     if (loot->timer != 0.0 && loot->delay <= (float)(GetTime() - loot->timer))
     {
         loot->active = true;
@@ -41,7 +43,8 @@ void UpdateLoot(Loot *loot, Player *player)
         enum Types type = loot->type;
         if (RANDOM == loot->type)
         {
-            type = GetRandomValue(1, 5); // Max = 5 and Min = 1
+            // type = GetRandomValue(1, 5); // Max = 5 and Min = 1
+            type = 4; // @DEV
         }
         switch (type)
         {
@@ -55,11 +58,12 @@ void UpdateLoot(Loot *loot, Player *player)
             player->item = InitItemBonusSpeed(player->id);
             break;
         case LASER:
+            // @TODO add feature laser
             // player->item = InitItemLaser(player->id);
-            player->item = InitItemMultiShot(player->id);
+            player->item = InitItemNothing(player->id);
             break;
-        case MULTI_SHOT:
-            player->item = InitItemMultiShot(player->id);
+        case MULTI_SHOOT:
+            player->item = InitItemMultiShoot(player->id);
             break;
         case ROCKET:
             player->item = InitItemRocket(player->id);

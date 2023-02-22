@@ -10,15 +10,33 @@ extern "C"
 #include "../../../lib/raylib/src/raylib.h"
 #include "../player/player.h"
 
+#define BLACKGROUND     \
+    CLITERAL(Color)     \
+    {                   \
+        33, 37, 48, 255 \
+    }
+#define CHANGECOLOR        \
+    CLITERAL(Color)        \
+    {                      \
+        255, 100, 255, 255 \
+    }
+
     extern bool activeDev;
     extern float arenaSizeX;
     extern float arenaSizeY;
     extern Color themeColor[8];
 
     extern Texture2D qrCodeTexture;
-    extern Texture2D BonusLifeTexture;
+
     extern Texture2D BonusAmmunitionTexture;
+    extern Texture2D BonusLifeTexture;
+    extern Texture2D BonusLifeWhiteTexture;
     extern Texture2D BonusSpeedTexture;
+    extern Texture2D NothingTexture;
+
+    extern Texture2D PattenSlashTexture;
+    extern Texture2D PattenSquareTexture;
+    extern Texture2D PattenCrossTexture;
 
     extern Player players[8];
     extern int numberPlayer;

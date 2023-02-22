@@ -1,5 +1,5 @@
-#ifndef MULTI_SHOT_H
-#define MULTI_SHOT_H
+#ifndef MULTI_SHOOT_H
+#define MULTI_SHOOT_H
 
 #ifdef __cplusplus
 extern "C"
@@ -8,13 +8,13 @@ extern "C"
 
 #include "../../../../../lib/raylib/src/raylib.h"
 
-    typedef struct MultiShot
+    typedef struct MultiShoot
     {
         int numCannon;
-    } MultiShot;
+    } MultiShoot;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MULTI_SHOT_H
+#endif // MULTI_SHOOT_H

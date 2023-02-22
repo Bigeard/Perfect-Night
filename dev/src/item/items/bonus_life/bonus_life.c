@@ -4,6 +4,7 @@
 #include "../../item.h"
 #include "../../../player/player.h"
 #include "../../../gameplay/gameplay.h"
+#include "../../../tool/tool.h"
 
 Item InitItemBonusLife(int player_id)
 {
@@ -46,6 +47,11 @@ void DrawItemBonusLife(Item *item)
     if (!item->active)
         return;
     Player player = players[item->player_id - 1];
+    DrawTexture(
+        BonusLifeWhiteTexture,
+        (player.p.pos.x + player.p.size.x / 2) - 16,
+        player.p.pos.y - 35,
+        Fade(WHITE, 0.9 - ((GetTime() - item->timer) / item->maxTimer)));
     DrawTexture(
         BonusLifeTexture,
         (player.p.pos.x + player.p.size.x / 2) - 16,

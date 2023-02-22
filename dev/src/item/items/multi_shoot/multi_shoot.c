@@ -1,13 +1,13 @@
 #include "../../../../../lib/raylib/src/raylib.h"
 #include "../../../../../lib/raylib/src/raymath.h"
 
-#include "./multi_shot.h"
+#include "./multi_shoot.h"
 #include "../../item.h"
 #include "../../../gameplay/gameplay.h"
 #include "../../../player/player.h"
 #include "../../../tool/tool.h"
 
-Item InitItemMultiShot(int player_id)
+Item InitItemMultiShoot(int player_id)
 {
     return (Item){
         player_id,
@@ -17,24 +17,24 @@ Item InitItemMultiShot(int player_id)
         8,
         false,
         false,
-        ShootItemMultiShot,
-        UpdateItemMultiShot,
-        DrawItemMultiShot,
+        ShootItemMultiShoot,
+        UpdateItemMultiShoot,
+        DrawItemMultiShoot,
         {3}};
 }
 
-void ShootItemMultiShot(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y)
+void ShootItemMultiShoot(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y)
 {
     if (!item->active)
         return;
     Player *player = &players[item->player_id - 1];
-    for (int i = 0; i < item->multiShot.numCannon; i++)
+    for (int i = 0; i < item->multiShoot.numCannon; i++)
     {
         // @TODO Fix bug direction for eg with 7 cannons
-        // TraceLog(LOG_INFO, "%d", (int)floor((float)item->multiShot.numCannon/2));
-        float radian = (player->lastRadian * (180 / PI) - 40 * (int)floor((float)item->multiShot.numCannon / 2) + i * 40) / (180 / PI);
-        // calcPosRadianX = (calcPosRadianX * (180 / PI) - 40 * (int)floor((float)item->multiShot.numCannon/2) + i * 40) / (180 / PI);
-        // calcPosRadianY = (calcPosRadianY * (180 / PI) - 40 * (int)floor((float)item->multiShot.numCannon/2) + i * 40) / (180 / PI);
+        // TraceLog(LOG_INFO, "%d", (int)floor((float)item->multiShoot.numCannon/2));
+        float radian = (player->lastRadian * (180 / PI) - 40 * (int)floor((float)item->multiShoot.numCannon / 2) + i * 40) / (180 / PI);
+        // calcPosRadianX = (calcPosRadianX * (180 / PI) - 40 * (int)floor((float)item->multiShoot.numCannon/2) + i * 40) / (180 / PI);
+        // calcPosRadianY = (calcPosRadianY * (180 / PI) - 40 * (int)floor((float)item->multiShoot.numCannon/2) + i * 40) / (180 / PI);
         player->bullets[player->lastBullet] = (Bullet){
             player->id,
             (Physic){
@@ -56,7 +56,7 @@ void ShootItemMultiShot(Item *item, float calcPosRadianX, float calcPosRadianY, 
     }
 }
 
-void UpdateItemMultiShot(Item *item)
+void UpdateItemMultiShoot(Item *item)
 {
     if (!item->active)
         return;
@@ -67,7 +67,7 @@ void UpdateItemMultiShot(Item *item)
     }
 }
 
-void DrawItemMultiShot(Item *item)
+void DrawItemMultiShoot(Item *item)
 {
     if (!item->active)
         return;
@@ -86,21 +86,21 @@ void DrawItemMultiShot(Item *item)
     }
 
     // Draw BLACK 1 Cannon
-    for (int i = 0; i < item->multiShot.numCannon; i++)
+    for (int i = 0; i < item->multiShoot.numCannon; i++)
     {
-        DrawRectanglePro((Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 33, 14}, (Vector2){0, 7}, player.radian * (180 / PI) - 40 * (int)floor((float)item->multiShot.numCannon / 2) + i * 40, blackColor);
+        DrawRectanglePro((Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 33, 14}, (Vector2){0, 7}, player.radian * (180 / PI) - 40 * (int)floor((float)item->multiShoot.numCannon / 2) + i * 40, blackColor);
     }
     // Draw Border of the Tank
     DrawTextureEx(playerBorderTexture, (Vector2){player.p.pos.x, player.p.pos.y}, 0, 1, whiteColor);
 
     // Draw WHITE 2 and COLOR 3 Cannon
-    for (int i = 0; i < item->multiShot.numCannon; i++)
+    for (int i = 0; i < item->multiShoot.numCannon; i++)
     {
-        DrawRectanglePro((Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 32, 12}, (Vector2){0, 6}, player.radian * (180 / PI) - 40 * (int)floor((float)item->multiShot.numCannon / 2) + i * 40, WHITE);
+        DrawRectanglePro((Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 32, 12}, (Vector2){0, 6}, player.radian * (180 / PI) - 40 * (int)floor((float)item->multiShoot.numCannon / 2) + i * 40, WHITE);
     }
-    for (int i = 0; i < item->multiShot.numCannon; i++)
+    for (int i = 0; i < item->multiShoot.numCannon; i++)
     {
-        DrawRectanglePro((Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 30, 8}, (Vector2){0, 4}, player.radian * (180 / PI) - 40 * (int)floor((float)item->multiShot.numCannon / 2) + i * 40, color);
+        DrawRectanglePro((Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 30, 8}, (Vector2){0, 4}, player.radian * (180 / PI) - 40 * (int)floor((float)item->multiShoot.numCannon / 2) + i * 40, color);
     }
 
     // Draw Body / Template of the tank

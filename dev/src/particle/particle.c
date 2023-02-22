@@ -19,6 +19,8 @@ void InitParticles(Vector2 origin, Vector2 velocity, Color color, Particle *part
 
 void UpdateParticles(Particle *particles, int sizeArray)
 {
+    if (!particles[0].timer)
+        return;
     for (int i = 0; i < sizeArray; i++)
     {
         particles[i].p.pos = Vector2Add(particles[i].p.pos, particles[i].p.vel);
@@ -33,6 +35,8 @@ void UpdateParticles(Particle *particles, int sizeArray)
 
 void DrawParticles(Particle *particles, int sizeArray)
 {
+    if (!particles[0].timer)
+        return;
     for (int i = 0; i < sizeArray; i++)
     {
         DrawCircle(

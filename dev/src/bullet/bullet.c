@@ -29,6 +29,8 @@ void UpdateBullet(Bullet *bullet)
 
 void BulletBounce(Bullet *bullet)
 {
+    if (bullet->inactive)
+        return;
     if (bullet->p.collision[0])
     {
         if (bullet->p.collision[1]) // Top
@@ -70,6 +72,6 @@ void DrawBullet(Bullet bullet)
                 bullet.p.pos.y,
                 bullet.p.size.x * 2.0f,
                 bullet.p.size.y * 2.0f},
-            PURPLE);
+            Fade(PURPLE, 0.5f));
     }
 }

@@ -190,7 +190,7 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 				{
 					tmx_property *displayQrCode = tmx_get_property(head->properties, "displayQrCode");
 					tmx_property *color = tmx_get_property(head->properties, "color");
-					Color boxColor = (Color){124, 124, 124, 255};
+					Color boxColor = (Color){33, 37, 48, 255}; // Default box color 
 					if (color)
 					{
 						boxColor = int_to_color(color->value.color);

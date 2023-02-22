@@ -9,7 +9,7 @@
 #include "../box/box.h"
 #include "../loot/loot.h"
 #include "../item/item.h"
-#include "../item/items/multi_shot/multi_shot.h"
+#include "../item/items/multi_shoot/multi_shoot.h"
 #include "../particle/particle.h"
 #include "../tool/tool.h"
 
@@ -69,9 +69,9 @@ double startTime = 0.0;
 double elapsedTime = 0.0;
 
 // Home Screen
-Texture titlePerfectNightTexture;
-Texture useSameWifiTexture;
-Texture andScanQrTexture;
+Texture2D titlePerfectNightTexture;
+Texture2D useSameWifiTexture;
+Texture2D andScanQrTexture;
 
 // Player
 int lastPlayer = 0;
@@ -115,9 +115,16 @@ Loot loots[4] = {};
 static int lootsLength = sizeof(loots) / sizeof(loots[0]);
 
 // Items
-Texture BonusAmmunitionTexture;
-Texture BonusLifeTexture;
-Texture BonusSpeedTexture;
+Texture2D BonusAmmunitionTexture;
+Texture2D BonusLifeTexture;
+Texture2D BonusLifeWhiteTexture;
+Texture2D BonusSpeedTexture;
+Texture2D NothingTexture;
+
+// Patterns
+Texture2D PattenSlashTexture;
+Texture2D PattenSquareTexture;
+Texture2D PattenCrossTexture;
 
 void InitGameplay(void)
 {
@@ -141,7 +148,14 @@ void InitGameplay(void)
     // Items
     BonusAmmunitionTexture = LoadTexture("resources/bonus_ammunition.png");
     BonusLifeTexture = LoadTexture("resources/bonus_life.png");
+    BonusLifeWhiteTexture = LoadTexture("resources/bonus_life_white.png");
     BonusSpeedTexture = LoadTexture("resources/bonus_speed.png");
+    NothingTexture = LoadTexture("resources/nothing.png");
+
+    // Patterns
+    PattenSlashTexture = LoadTexture("resources/pattern_slash.png");
+    PattenSquareTexture = LoadTexture("resources/pattern_square.png");
+    PattenCrossTexture = LoadTexture("resources/pattern_cross.png");
 
     // Load TMX
     tmx_img_load_func = raylib_tex_loader;
@@ -539,7 +553,7 @@ void DrawGameplay(void)
     BeginMode2D(camera);
     if (outsidePlayer)
     {
-        ClearBackground(DarkenColor(LightenColor(outsidePlayer->color, 0.2f), 1.0f - elapsedTimeOutside / 2.0f));
+        ClearBackground(DarkenColor(DarkenColor(outsidePlayer->color, 0.2f), 1.0f - elapsedTimeOutside / 2.0f));
     }
     else
     {
@@ -547,6 +561,8 @@ void DrawGameplay(void)
             elapsedTimeOutside = elapsedTimeOutside - 0.01;
         ClearBackground(DarkenColor(int_to_color(map->backgroundcolor), 1.0f - elapsedTimeOutside / 2.0f));
     }
+    DrawCircleGradient(arenaSizeX / 2.0f, arenaSizeY / 2.0f, arenaSizeX + 300.0f, Fade(BLACK, 0.6f), Fade(BLACK, 0.0f));
+    DrawRectangle(-2, -2, arenaSizeX + 4, arenaSizeY + 4, Fade(GRAY, 0.5f));
     render_map(map);
     DrawGameArena();
 
@@ -617,7 +633,7 @@ void DrawGameplay(void)
         DrawTexture(titlePerfectNightTexture, centerScreenX - 155.0f * 3.47f, centerScreenY - 125.0f * 3.47f, WHITE);
         DrawTexture(useSameWifiTexture, centerScreenX - 205.0f * 3.47f, centerScreenY + 160.0f, WHITE);
         DrawTexture(andScanQrTexture, centerScreenX + 80.0f * 3.47f, centerScreenY + 180.0f, WHITE);
-        DrawRectangleRec((Rectangle){centerScreenX - qrCodeTexture.width / 2.0f - 5.0f, centerScreenY - qrCodeTexture.height / 2.0f + 275.0f, qrCodeTexture.width + 10.0f, qrCodeTexture.height + 10.0f}, BLACK);
+        DrawRectangleRec((Rectangle){centerScreenX - qrCodeTexture.width / 2.0f - 5.0f, centerScreenY - qrCodeTexture.height / 2.0f + 275.0f, qrCodeTexture.width + 10.0f, qrCodeTexture.height + 10.0f}, BLACKGROUND);
         DrawTexture(qrCodeTexture, centerScreenX - qrCodeTexture.width / 2.0f, centerScreenY - qrCodeTexture.height / 2.0f + 280.0f, WHITE);
     }
 
@@ -643,37 +659,28 @@ void DrawGameplay(void)
 
 void DrawGameArena(void)
 {
-    for (int x = 0; x <= (int)(arenaSizeX * 0.01f); x++)
+    if (activeDev)
     {
-        if (x < (int)(arenaSizeX * 0.01f))
+        for (int x = 0; x <= (int)(arenaSizeX * 0.01f); x++)
         {
-            DrawText(TextFormat("%d", x + 1), x * 100 + 6, 4, 20, LIGHTGRAY);
+            if (x < (int)(arenaSizeX * 0.01f))
+            {
+                DrawText(TextFormat("%d", x + 1), x * 100 + 6, 4, 20, LIGHTGRAY);
+            }
+            Rectangle posViewX = {(float)(x * 100), 0.0f, 2.0f, arenaSizeY};
+            DrawRectangleRec(posViewX, LIGHTGRAY);
         }
-        // Rectangle posViewX = { 0, x * 100, arenaSizeX, 2 };
-        Rectangle posViewX = {(float)(x * 100), 0.0f, 2.0f, arenaSizeY};
-        DrawRectangleRec(posViewX, LIGHTGRAY);
-    }
 
-    for (int y = 0; y <= (int)(arenaSizeY * 0.01f); y++)
-    {
-        if (y < (int)(arenaSizeY * 0.01))
+        for (int y = 0; y <= (int)(arenaSizeY * 0.01f); y++)
         {
-            DrawText(TextFormat("%d", y + 1), 6, y * 100 + 4, 20, LIGHTGRAY);
+            if (y < (int)(arenaSizeY * 0.01))
+            {
+                DrawText(TextFormat("%d", y + 1), 6, y * 100 + 4, 20, LIGHTGRAY);
+            }
+            Rectangle posViewY = {0.0f, (int)(y * 100), arenaSizeX, 2.0f};
+            DrawRectangleRec(posViewY, LIGHTGRAY);
         }
-        // Rectangle posViewY = { y * 100, 0, 2, arenaSizeY };
-        Rectangle posViewY = {0.0f, (int)(y * 100), arenaSizeX, 2.0f};
-        DrawRectangleRec(posViewY, LIGHTGRAY);
     }
-
-    DrawRectangleRec((Rectangle){-2.0f, -2.0f, 5.0f, 5.0f}, BLACK);
-    DrawRectangleRec((Rectangle){arenaSizeX - 1.0f, arenaSizeY - 1.0f, 5.0f, 5.0f}, BLACK);
-    DrawRectangleRec((Rectangle){arenaSizeX - 1.0f, -2.0f, 5.0f, 5.0f}, BLACK);
-    DrawRectangleRec((Rectangle){-2.0f, arenaSizeY - 1.0f, 5.0f, 5.0f}, BLACK);
-
-    DrawRectangleRec((Rectangle){-2.0f, -2.0f, arenaSizeX + 1.0f, 1.0f}, BLACK);
-    DrawRectangleRec((Rectangle){-2.0f, -2.0f, 1.0f, arenaSizeY + 1.0f}, BLACK);
-    DrawRectangleRec((Rectangle){arenaSizeX + 3.0f, -2.0f, 1.0f, arenaSizeY + 1.0f}, BLACK);
-    DrawRectangleRec((Rectangle){-2.0f, arenaSizeY + 3.0f, arenaSizeX + 1.0f, 1.0f}, BLACK);
 }
 
 void DrawPauseGame(void)
@@ -724,12 +731,12 @@ void GenerateQrCode(void)
                                 ((x > qrCodeSize - 10 && y > qrCodeSize - 10) && (x < qrCodeSize - 4 && y < qrCodeSize - 4)))
                             {
                                 // ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, GRAY);
-                                ImageDrawRectangle(&qrCodeImage, x * t + border, y * t + border, t, t, BLACK);
+                                ImageDrawRectangle(&qrCodeImage, x * t + border, y * t + border, t, t, BLACKGROUND);
                             }
                             else
                             {
                                 // ImageDrawRectangle(&qrCodeImage, x*t+border, y*t+border, t, t, themeColor[c]);
-                                ImageDrawRectangle(&qrCodeImage, x * t + border, y * t + border, t, t, BLACK);
+                                ImageDrawRectangle(&qrCodeImage, x * t + border, y * t + border, t, t, BLACKGROUND);
                             }
                         }
                         c++;

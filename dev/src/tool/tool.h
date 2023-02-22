@@ -14,6 +14,8 @@ extern "C"
 
     float LerpCo(float start, float end, float t);
     Color LerpColor(Color colorA, Color colorB, float t);
+    
+    Color MultiplyColor(Color color, Color tint);
 
 #ifdef __cplusplus
 }

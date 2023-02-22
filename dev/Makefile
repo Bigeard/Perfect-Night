@@ -368,7 +368,7 @@ OBJS ?= main.c \
         src/item/items/bonus_life/bonus_life.c \
         src/item/items/bonus_speed/bonus_speed.c \
         src/item/items/laser/laser.c \
-        src/item/items/multi_shot/multi_shot.c \
+        src/item/items/multi_shoot/multi_shoot.c \
         src/item/items/rocket/rocket.c \
         src/item/items/sword/sword.c \
         src/item/items/nothing/nothing.c \

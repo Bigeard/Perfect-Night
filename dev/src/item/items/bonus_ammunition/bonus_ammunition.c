@@ -83,8 +83,6 @@ void DrawItemBonusAmmunition(Item *item)
         return;
     Player player = players[item->player_id - 1];
 
-    double elapsedTime = GetTime() - item->timer;
-
     // Init Color
     Color color = player.color;
     Color whiteColor = WHITE;
@@ -122,15 +120,35 @@ void DrawItemBonusAmmunition(Item *item)
     }
 
     // Draw the progress bar of the charge
-    DrawRectangleRec((Rectangle){player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6}, Fade(WHITE, 0.4));
-    DrawRectangleRec((Rectangle){player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4}, Fade(player.color, 0.8));
+    if (player.charge != 2)
+    {
+        DrawRing(
+            (Vector2){player.p.pos.x + player.p.size.x / 2, player.p.pos.y + player.p.size.y / 2},
+            38.0f,
+            47.0f,
+            player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4 - 2,
+            player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4 + 2,
+            0,
+            Fade(WHITE, 0.6));
 
+        DrawRing(
+            (Vector2){player.p.pos.x + player.p.size.x / 2, player.p.pos.y + player.p.size.y / 2},
+            40.0f,
+            45.0f,
+            player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4,
+            player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4,
+            0,
+            Fade(player.color, 0.8));
+    }
+
+    // Animation pick-up item
+    double elapsedTime = GetTime() - item->timer;
     if (elapsedTime <= 4.0)
     {
         DrawTexture(
             BonusAmmunitionTexture,
-            (player.p.pos.x + player.p.size.x / 2) - 17,
-            player.p.pos.y - 27,
-            Fade(player.color, 1 - (elapsedTime / 4)));
+            (player.p.pos.x + player.p.size.x / 2.0f) - 17.0f,
+            player.p.pos.y - 27.0f,
+            Fade(player.color, 1.0f - ((float)elapsedTime / 4.0f)));
     }
 }
