@@ -1,4 +1,5 @@
 #include "../../../lib/raylib/src/raylib.h"
+#include "../../../lib/raylib/src/raymath.h"
 #include "tool.h"
 
 Color LightenColor(Color color, float percentage)
@@ -47,14 +48,39 @@ Color LerpColor(Color colorA, Color colorB, float t)
     };
 }
 
-Color MultiplyColor(Color color, Color tint)
-{
-    Color result = { 0 };
-
-    result.r = (unsigned char)(((float)color.r / 255.0f) * ((float)tint.r / 255.0f) * 255);
-    result.g = (unsigned char)(((float)color.g / 255.0f) * ((float)tint.g / 255.0f) * 255);
-    result.b = (unsigned char)(((float)color.b / 255.0f) * ((float)tint.b / 255.0f) * 255);
-    result.a = (unsigned char)(((float)color.a / 255.0f) * ((float)tint.a / 255.0f) * 255);
-
-    return result;
+int min(int a, int b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
 }
+
+void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint)
+{
+    if (texture.id <= 0 || scale <= 0.0f || source.width == 0 || source.height == 0 || dest.width < source.width*scale || dest.height < source.height*scale)
+    {
+        return;
+    }
+
+    int tileWidth = (int)(source.width*scale), tileHeight = (int)(source.height*scale);
+
+    for (int dx = 0; dx < dest.width; dx += tileWidth)
+    {
+        int tileWidthClamped = min(dest.width - dx, tileWidth);
+        float sourceWidthClamped = ((float)tileWidthClamped / tileWidth) * source.width;
+
+        for (int dy = 0; dy < dest.height; dy += tileHeight)
+        {
+            int tileHeightClamped = min(dest.height - dy, tileHeight);
+            float sourceHeightClamped = ((float)tileHeightClamped / tileHeight) * source.height;
+
+            Rectangle destTile = (Rectangle){dest.x + dx, dest.y + dy, (float)tileWidthClamped, (float)tileHeightClamped};
+            Rectangle sourceTile = (Rectangle){source.x, source.y, sourceWidthClamped, sourceHeightClamped};
+
+            DrawTexturePro(texture, sourceTile, destTile, origin, rotation, tint);
+        }
+    }
+}
+
+

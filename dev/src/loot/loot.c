@@ -43,8 +43,11 @@ void UpdateLoot(Loot *loot, Player *player)
         enum Types type = loot->type;
         if (RANDOM == loot->type)
         {
-            // type = GetRandomValue(1, 5); // Max = 5 and Min = 1
-            type = 4; // @DEV
+            type = GetRandomValue(1, 5); // Max = 5 and Min = 1
+            if (activeDev)
+            {
+                type = 4; // @DEV
+            }
         }
         switch (type)
         {

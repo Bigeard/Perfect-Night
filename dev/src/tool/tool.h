@@ -14,8 +14,8 @@ extern "C"
 
     float LerpCo(float start, float end, float t);
     Color LerpColor(Color colorA, Color colorB, float t);
-    
-    Color MultiplyColor(Color color, Color tint);
+
+    void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint);
 
 #ifdef __cplusplus
 }
