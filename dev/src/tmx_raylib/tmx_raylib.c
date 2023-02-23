@@ -189,8 +189,9 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 				if (head->visible && head->obj_type == OT_SQUARE && layer->id == 4)
 				{
 					tmx_property *displayQrCode = tmx_get_property(head->properties, "displayQrCode");
+					tmx_property *collision = tmx_get_property(head->properties, "collision");
 					tmx_property *color = tmx_get_property(head->properties, "color");
-					Color boxColor = (Color){33, 37, 48, 255}; // Default box color 
+					Color boxColor = (Color){33, 37, 48, 255}; // Default box color
 					if (color)
 					{
 						boxColor = int_to_color(color->value.color);
@@ -199,7 +200,8 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 						head->id,
 						{{head->x, head->y}, {head->width, head->height}, {0, 0}},
 						boxColor,
-						displayQrCode->value.boolean};
+						displayQrCode->value.boolean,
+						collision->value.boolean};
 					box_number++;
 				}
 				if (head->visible && head->obj_type == OT_SQUARE && layer->id == 5)

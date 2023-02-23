@@ -168,7 +168,8 @@ void InitGameplay(void)
     tmx_img_free_func = raylib_free_tex;
 
     // map = tmx_load("resources/map_vs.tmx");
-    map = tmx_load("resources/map_2_team.tmx");
+    map = tmx_load("resources/map_2_team_v2.tmx");
+    // map = tmx_load("resources/map_2_team.tmx");
     // map = tmx_load("resources/map_4_team.tmx");
     if (!map)
     {
@@ -347,6 +348,8 @@ void UpdateGameplay(void)
             // Collision Bullet and Box
             for (int b = 0; b < boxesLength; b++)
             {
+                if (!boxes[b].id || !boxes[b].collision)
+                    continue;
                 Rectangle envBox = {boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y};
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
             }
@@ -385,7 +388,7 @@ void UpdateGameplay(void)
         // Collision Player and Box
         for (int j = 0; j < boxesLength; j++)
         {
-            if (!boxes[j].id)
+            if (!boxes[j].id || !boxes[j].collision)
                 continue;
             Rectangle envBox = {boxes[j].p.pos.x, boxes[j].p.pos.y, boxes[j].p.size.x, boxes[j].p.size.y};
             CollisionPhysic(&players[i].p, newPlayerRec, envBox);
@@ -401,8 +404,8 @@ void UpdateGameplay(void)
             UpdateParticles(players[i].shootParticle, 20);
         }
 
-        centerPositionX += players[i].p.pos.x;
-        centerPositionY += players[i].p.pos.y;
+        centerPositionX += players[i].p.pos.x + players[i].p.size.x/2;
+        centerPositionY += players[i].p.pos.y + players[i].p.size.y/2;
         // centerDistance += sqrtf(powf(camera.target.x - player.p.pos.x, 2) + powf(camera.target.x - player.p.pos.y, 2));
     }
 
@@ -638,7 +641,6 @@ void DrawGameplay(void)
         // Draw Wins
         if (startTime != 0.0)
         {
-            DrawRectangleRec((Rectangle){0.0f, 0.0f, GetScreenWidth(), GetScreenHeight()}, Fade(BLACK, 0.4f));
             int indexFindColor = 0;
             for (int i = 0; i < numberActiveColor; i++)
             {
@@ -663,7 +665,8 @@ void DrawGameplay(void)
             DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
             DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
             DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
-            DrawRectangle(camera.target.x - qrCodeTexture.width / 2 - 5, camera.target.y - qrCodeTexture.height / 2 + 315, qrCodeTexture.width + 10, qrCodeTexture.height + 10, BLACK);
+            DrawRectangleRounded((Rectangle){ camera.target.x - qrCodeTexture.width / 2 - 10, camera.target.y - qrCodeTexture.height / 2 + 310, qrCodeTexture.width + 20, qrCodeTexture.height + 20 }, 0.14f, 1.0f, BLACKGROUND);
+            DrawRectangleRounded((Rectangle){ camera.target.x - qrCodeTexture.width / 2 - 5, camera.target.y - qrCodeTexture.height / 2 + 315, qrCodeTexture.width + 10, qrCodeTexture.height + 10 }, 0.1f, 1.0f, WHITE);
             DrawTexture(qrCodeTexture, camera.target.x - qrCodeTexture.width / 2, camera.target.y - qrCodeTexture.height / 2 + 320, WHITE);
         }
         EndMode2D();
@@ -725,11 +728,11 @@ void GenerateQrCode(void)
             {
                 int qrCodeSize = qrcodegen_getSize(qrCode);
                 int border = 8;
-                int sizeRec = 256;
+                int sizeRec = 254;
                 sizeRec -= border * 2;
                 int t = sizeRec / qrCodeSize;
                 int c = 0;
-                Image qrCodeImage = GenImageColor(t * qrCodeSize + border * 2, t * qrCodeSize + border * 2, WHITE);
+                Image qrCodeImage = GenImageColor(t * qrCodeSize + border * 2, t * qrCodeSize + border * 2,  (Color){0, 0, 0, 0});
                 for (int x = 0; x < qrCodeSize; x++)
                 {
                     for (int y = 0; y < qrCodeSize; y++)

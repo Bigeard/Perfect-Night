@@ -30,7 +30,6 @@
             <span id="ping">Ping: X</span>
         </div>
         <div class="menuGame">
-            <span>Menu</span>
         </div>
     </div>
 
@@ -39,48 +38,44 @@
         <img class="scrollDownArrow" src="gamepad_resources/images/scroll_down.gif" alt="Scroll Down Gif">
     </div>
 
-    <div id="infoTop">
-        <span id="playerId" onclick="playerIdClick">PLAYER X</span>
-    </div>
-
-    <div id="infoLeft">
-        <span id="playerLife">Life X</span>
-    </div>
-
-    <div id="infoRight">
-        <span id="playerAmmunition">Ammo. X</span>
-    </div>
+    <button id="playerId" onclick="scrollOnTop(event)">PLAYER X</button>
+    <button id="playerLife" onclick="scrollOnTop(event)">Life X</button>
+    <button id="playerAmmunition" onclick="scrollOnTop(event)">Ammo. X</button>
+    <button id="goTop" onclick="scrollOnTop(event)">↑</button>
 
     <div id="joysticks" class="controlInfo">
         <div id="joystickLeft"></div>
         <div id="joystickRight"></div>
     </div>
 
+
     <div id="rotatePhone"></div>
 
     <script type="text/javascript">
-        // IOS disable zoom page
-        const isIOS = /iPad|iPhone|iPod|Safari/.test(navigator.userAgent);
-        if (isIOS) {
-            document.addEventListener("touchend", (event) => {
-                if (event.target.localName != "input") {
-                    event.preventDefault();
-                }
-            }, { passive: false });
-            document.addEventListener("gesturestart", (e) => {
-                e.preventDefault();
-            });
-
-            document.addEventListener("gesturechange", (e) => {
-                e.preventDefault();
-            });
-            document.addEventListener("gestureend", (e) => {
-                e.preventDefault();
-            });
+        const scrollOnTop = (event) => {
+            event.preventDefault();
+            document.documentElement.scrollTop = 0;
         }
+
 
         // NippleJS - Joystick
         var joysticks = document.getElementById("joysticks");
+
+        // IOS disable zoom page
+        if (/iPad|iPhone|iPod|Safari/.test(navigator.userAgent)) {
+            joysticks.addEventListener("touchend", (event) => {
+                event.preventDefault();
+            }, { passive: false });
+            joysticks.addEventListener("gesturestart", (e) => {
+                e.preventDefault();
+            });
+            joysticks.addEventListener("gesturechange", (e) => {
+                e.preventDefault();
+            });
+            joysticks.addEventListener("gestureend", (e) => {
+                e.preventDefault();
+            });
+        }
 
         var joystickLeft = nipplejs.create({
             zone: document.getElementById("joystickLeft"),
@@ -147,6 +142,7 @@
             var playerId = document.getElementById("playerId");
             var playerLife = document.getElementById("playerLife");
             var playerAmmunition = document.getElementById("playerAmmunition");
+            var goTop = document.getElementById("goTop");
 
             var lastPing = 0;
 
@@ -284,9 +280,10 @@
                             joystickRight[0].ui.back.style.background = data.color;
 
                             infoContainer.style.background = data.color;
-                            infoTop.style.background = data.color;
-                            infoLeft.style.background = data.color;
-                            infoRight.style.background = data.color;
+                            playerId.style.background = data.color;
+                            playerLife.style.background = data.color;
+                            playerAmmunition.style.background = data.color;
+                            goTop.style.background = data.color;
                             scrollDown.style.background = data.color;
                         }
                         if (data.index != null) {
@@ -355,6 +352,12 @@
             init();
         })();
     </script>
+    <!-- @DEV - console / debug / inspector -->
+    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+        eruda.init();
+        eruda.position({ x: window.innerWidth, y: window.innerHeight });
+    </script> -->
 </body>
 
 </html>

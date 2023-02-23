@@ -1,7 +1,7 @@
 html {
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
-    color: #292c33;
+    color: #000;
     margin: 0;
     padding: 0;
     -webkit-user-select: none;
@@ -9,7 +9,6 @@ html {
     -ms-user-select: none;
     user-select: none;
     background-color: #414652;
-    cursor: pointer;
 }
 
 body {
@@ -17,6 +16,15 @@ body {
     padding: 0;
     width: 100%;
     height: 100vh;
+}
+
+button {
+    font-weight: bold;
+    color: #000;
+    border: none;
+    font-size: 16px;
+    width: fit-content;
+    cursor: pointer;
 }
 
 #infoContainer {
@@ -40,7 +48,7 @@ body {
     margin: -10px auto auto auto;
     background: #aaa;
     width: fit-content;
-    border-radius: 0px 0px 15px 15px;
+    border-radius: 0 0 15px 15px;
 }
 
 .scrollDownArrow {
@@ -49,12 +57,46 @@ body {
     width: 62px;
 }
 
+#playerId,
+#playerLife,
+#playerAmmunition,
+#goTop {
+    z-index: 100;
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 10px 12px;
+    background: #aaa;
+}
+
+#playerId {
+    margin: -1px auto 0 auto;
+    border-radius: 0 0 15px 15px;
+}
+
+#playerLife {
+    margin: -1px auto 0 0;
+    border-radius: 0 0 15px 0;
+}
+
+#playerAmmunition {
+    margin: -1px 0 0 auto;
+    border-radius: 0 0 0 15px;
+}
+
+#goTop {
+    border-radius: 15px 0 0 15px;
+    margin: 48px 0 0 auto;
+    padding: 8px 4px 8px 8px;
+}
+
 #joysticks {
     width: 100%;
     height: 100%;
     background-color: #212530;
-    border-radius: 0px 0px 35px 35px;
+    border-radius: 0 0 35px 35px;
     touch-action: none;
+    cursor: pointer;
 }
 
 #joystickLeft {
@@ -91,48 +133,12 @@ body {
     image-rendering: pixelated;
 }
 
-#infoTop {
-    z-index: 100;
-    position: absolute;
-    left: 0;
-    right: 0;
-    padding: 8px 10px;
-    margin: -1px auto auto auto;
-    background: #aaa;
-    width: fit-content;
-    border-radius: 0px 0px 15px 15px;
-}
-
-#infoLeft {
-    z-index: 100;
-    position: absolute;
-    left: 0;
-    right: 0;
-    padding: 8px 10px;
-    margin: -1px auto auto 0;
-    background: #aaa;
-    width: fit-content;
-    border-radius: 0px 0px 15px 0;
-}
-
-#infoRight {
-    z-index: 100;
-    position: absolute;
-    left: 0;
-    right: 0;
-    padding: 8px 10px;
-    margin: -1px 0 auto auto;
-    background: #aaa;
-    width: fit-content;
-    border-radius: 0px 0px 0 15px;
-}
-
 #rotatePhone {
     width: 100%;
     height: 430px;
     padding-top: 20px;
     background-color: #212530;
-    border-radius: 0px 0px 35px 35px;
+    border-radius: 0 0 35px 35px;
     background-image: url("images/rotate_phone.png");
     background-repeat: no-repeat;
     background-position: center;
@@ -141,18 +147,29 @@ body {
 }
 
 @media screen and (orientation:portrait) {
-    #joysticks, #infoLeft, #infoRight, #scrollDown, .menuGame {
+
+    #joysticks,
+    #playerLife,
+    #playerAmmunition,
+    #goTop,
+    #scrollDown,
+    .menuGame {
         display: none;
     }
 
     body {
         padding: 0 20px;
         width: auto;
+        height: auto;
     }
 }
 
 @media screen and (orientation:landscape) {
     #rotatePhone {
         display: none;
+    }
+
+    #eruda {
+        display: none !important;
     }
 }
