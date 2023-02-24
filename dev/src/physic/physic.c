@@ -1,56 +1,44 @@
 #include "../../../lib/raylib/src/raylib.h"
 
 #include "physic.h"
-#include "../line_segment/line_segment.h"
+#include "../ray_collisions/ray_collisions.h"
 
-bool CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB)
+void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB)
 {
-    bool collision = false;
+    // Ray Collision
+    Vector2 contact_point = (Vector2){0.0f, 0.0f};
+    Vector2 contact_normal = (Vector2){0.0f, 0.0f};
+    float near_contact_time = 0.0f;
+    Vector2 probableContactPoints[2];
 
-    // Check for collisions between the two objects using a line segment
-    Vector2 start = {recA.x, recA.y};
-    Vector2 end = {recA.x + phyA->vel.x, recA.y + phyA->vel.y};
-    LineSegment segment = {start, end};
-
-    if (CheckCollisionRecs(recB, recA) || CheckCollisionRecSegment(segment, recB))
+    bool detectCollision = DynamicRectVsRect(recA, phyA->vel, recB, &contact_point, &contact_normal, &near_contact_time, probableContactPoints);
+    if (detectCollision && near_contact_time < 1.0f)
     {
         phyA->collision[0] = true;
-        collision = true;
-
         Rectangle intersect = GetCollisionRec(recA, recB);
 
-        // Reposition the objects so they no longer intersect
-        if (intersect.width > intersect.height)
+        if (contact_normal.y == -1) // TOP
         {
-            // Collision occurred on the top or bottom
-            if (recA.y < recB.y)
-            { // Top
-                phyA->collision[1] = true;
-                phyA->pos.y -= intersect.height;
-            }
-            else
-            { // Bottom
-                phyA->collision[2] = true;
-                phyA->pos.y += intersect.height;
-            }
+            phyA->collision[1] = true;
+            phyA->pos.y -= intersect.height;
         }
-        else
+        else if (contact_normal.y == 1) // BOTTOM
         {
-            // Collision occurred on the left or right side
-            if (recA.x < recB.x)
-            { // Left
-                phyA->collision[3] = true;
-                phyA->pos.x -= intersect.width;
-            }
-            else
-            { // Right
-                phyA->collision[4] = true;
-                phyA->pos.x += intersect.width;
-            }
+            phyA->collision[2] = true;
+            phyA->pos.y += intersect.height;
+        }
+        if (contact_normal.x == -1) // LEFT
+        {
+            phyA->collision[3] = true;
+            phyA->pos.x -= intersect.width;
+        }
+        else if (contact_normal.x == 1)
+        { // Right
+            phyA->collision[4] = true;
+            phyA->pos.x += intersect.width;
         }
 
         phyA->vel.x *= 0.8f;
         phyA->vel.y *= 0.8f;
     }
-    return collision;
 }

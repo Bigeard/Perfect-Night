@@ -89,15 +89,12 @@ void UpdatePlayer(Player *player)
     player->p.collision[3] = false;
     player->p.collision[4] = false;
 
-    float delta_x = player->p.vel.x;
-    float delta_y = player->p.vel.y;
-
     // MOBILE CONTROLLER
     if (player->INPUT_TYPE == MOBILE)
     {
         // Move Player
-        delta_x = player->speed.x * GetJoystickMobileLeftX(player->gamepadId);
-        delta_y = player->speed.y * GetJoystickMobileLeftY(player->gamepadId);
+        player->p.vel.x = player->speed.x * GetJoystickMobileLeftX(player->gamepadId);
+        player->p.vel.y = player->speed.y * GetJoystickMobileLeftY(player->gamepadId);
 
         // Move Cannon
         float joystickRightX = GetJoystickMobileRightX(player->gamepadId);
@@ -162,7 +159,7 @@ void UpdatePlayer(Player *player)
                 bool defaultShoot = true;
                 if (player->item.active)
                 {
-                    player->item.ShootItem(&player->item, calcPosRadianX, calcPosRadianY, delta_x, delta_y);
+                    player->item.ShootItem(&player->item, calcPosRadianX, calcPosRadianY, player->p.vel.x, player->p.vel.y);
                     defaultShoot = player->item.defaultShoot;
                 }
                 if (defaultShoot)
@@ -172,9 +169,9 @@ void UpdatePlayer(Player *player)
                         (Physic){
                             {player->p.pos.x + 20.0f + calcPosRadianX * 22.0f - 5.0f, player->p.pos.y + 20.0f + calcPosRadianY * 22.0f - 5.0f},
                             {5.0f, 5.0f},
-                            {cos(player->lastRadian) * player->charge + delta_x * 2.0f, sin(player->lastRadian) * player->charge + delta_y * 2.0f},
+                            {cos(player->lastRadian) * player->charge + player->p.vel.x * 2.0f, sin(player->lastRadian) * player->charge + player->p.vel.y * 2.0f},
                             {false, false, false, false, false}},
-                        {player->charge + delta_x * 2.0f, player->charge + delta_y * 2.0f},
+                        {player->charge + player->p.vel.x * 2.0f, player->charge + player->p.vel.y * 2.0f},
                         player->lastRadian,
                         false,
                         false,
@@ -191,8 +188,8 @@ void UpdatePlayer(Player *player)
         }
     }
 
-    player->p.pos.x = player->p.pos.x + delta_x;
-    player->p.pos.y = player->p.pos.y + delta_y;
+    player->p.pos.x = player->p.pos.x + player->p.vel.x;
+    player->p.pos.y = player->p.pos.y + player->p.vel.y;
 
     if (player->item.active)
     {
@@ -225,7 +222,7 @@ void UpdatePlayer(Player *player)
     }
 }
 
-void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player, Rectangle recPlayer)
+void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer)
 {
     if (bullet->inactive)
         return;
@@ -233,7 +230,7 @@ void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player,
         return;
     if (player->invincible == 0 && ColorToInt(bullet->COLOR) != ColorToInt(player->color))
     {
-        if (bulletCollision)
+        if (bullet->p.collision[0])
         {
             player->life--;
             player->invincible = DELAY_INVINCIBLE;

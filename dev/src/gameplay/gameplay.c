@@ -366,8 +366,8 @@ void UpdateGameplay(void)
                 if (players[p].life <= 0)
                     continue;
                 Rectangle envPlayer = {players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y};
-                bool bulletCollision = CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
-                CollisionBulletPlayer(bulletCollision, &players[i].bullets[j], &players[p], envPlayer);
+                CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
+                CollisionBulletPlayer(&players[i].bullets[j], &players[p], envPlayer);
             }
             BulletBounce(&players[i].bullets[j]);
         }

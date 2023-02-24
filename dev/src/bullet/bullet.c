@@ -38,9 +38,8 @@ void BulletBounce(Bullet *bullet)
         else if (bullet->p.collision[2])
         { // Bottom
             bullet->p.vel.y *= -1.0f;
-            bullet->p.vel.x *= -1.0f;
         }
-        else if (bullet->p.collision[3])
+        if (bullet->p.collision[3])
             bullet->p.vel.x *= -1.0f; // Left
         else if (bullet->p.collision[4])
             bullet->p.vel.x *= -1.0f; // Right

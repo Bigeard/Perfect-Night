@@ -57,7 +57,7 @@ extern "C"
 
     void InitPlayer(void);
     void UpdatePlayer(Player *player);
-    void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player, Rectangle recPlayer);
+    void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer);
     void DrawPlayer(Player player);
     void DrawSpawnPlayer(Player player);
     void DrawStatsPlayer(Player player);

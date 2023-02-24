@@ -46,7 +46,7 @@ void UpdateLoot(Loot *loot, Player *player)
             type = GetRandomValue(1, 5); // Max = 5 and Min = 1
             if (activeDev)
             {
-                type = 4; // @DEV
+                type = 1; // @DEV
             }
         }
         switch (type)

@@ -16,7 +16,7 @@ extern "C"
         bool collision[5]; // Collision: IsCollision, Up, Down, Left, Right
     } Physic;
 
-    bool CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB);
+    void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB);
 
 #ifdef __cplusplus
 }
