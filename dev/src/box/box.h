@@ -15,6 +15,7 @@ extern "C"
 		Physic p;
 		Color color;
 		bool displayQrCode;
+		int score;
 		bool collision;
 	} Box;
 

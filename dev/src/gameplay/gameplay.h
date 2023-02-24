@@ -25,6 +25,7 @@ extern "C"
     extern float arenaSizeX;
     extern float arenaSizeY;
     extern Color themeColor[8];
+    extern int ColorScore[8];
 
     extern Texture2D qrCodeTexture;
 
@@ -51,6 +52,7 @@ extern "C"
     void DrawGameArena(void);
     void DrawPauseGame(void);
     void GenerateQrCode(void);
+    void QrCodeParticleInit(float *qrCodeParticlesAnimationTimer, int *qrCodeParticlesIdColor, Particle *qrCodeParticles);
 
 #ifdef __cplusplus
 }

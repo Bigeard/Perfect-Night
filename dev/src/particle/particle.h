@@ -13,10 +13,11 @@ extern "C"
     {
         Physic p;
         Color color;
-        int timer;
+        float initTimer;
+        float timer;
     } Particle;
 
-    void InitParticles(Vector2 origin, Vector2 originVelocity, Color color, Particle *particles, int sizeArray);
+    void InitParticles(Vector2 origin, Vector2 originVelocity, float speedVelocity, Color color, float timer, Particle *particles, int sizeArray);
     void UpdateParticles(Particle *particles, int sizeArray);
     void DrawParticles(Particle *particles, int sizeArray);
 

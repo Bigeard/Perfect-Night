@@ -178,7 +178,7 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 			{
 				if (head->visible && head->obj_type == OT_SQUARE && layer->id == 3)
 				{
-					tmx_property *id = tmx_get_property(head->properties, "player_id"); // @Todo change name of the key `playerId`
+					tmx_property *id = tmx_get_property(head->properties, "playerId");
 					players[id->value.integer - 1].spawn = (Vector2){head->x, head->y};
 					players[id->value.integer - 1].p.pos = (Vector2){head->x, head->y};
 
@@ -191,16 +191,22 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 					tmx_property *displayQrCode = tmx_get_property(head->properties, "displayQrCode");
 					tmx_property *collision = tmx_get_property(head->properties, "collision");
 					tmx_property *color = tmx_get_property(head->properties, "color");
+					tmx_property *score = tmx_get_property(head->properties, "score");
 					Color boxColor = (Color){33, 37, 48, 255}; // Default box color
 					if (color)
 					{
 						boxColor = int_to_color(color->value.color);
+					}
+					int boxScore = -1;
+					if (score) {
+						boxScore = score->value.integer;
 					}
 					boxes[box_number] = (Box){
 						head->id,
 						{{head->x, head->y}, {head->width, head->height}, {0, 0}},
 						boxColor,
 						displayQrCode->value.boolean,
+						boxScore,
 						collision->value.boolean};
 					box_number++;
 				}

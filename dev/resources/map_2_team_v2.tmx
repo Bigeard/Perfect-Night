@@ -41,49 +41,49 @@
   <object id="7" name="Player 1" class="player_1" x="90" y="442" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
-    <property name="player_id" type="int" value="1"/>
+    <property name="playerId" type="int" value="1"/>
    </properties>
   </object>
   <object id="10" name="Player 2" class="player_2" x="1723" y="440" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
-    <property name="player_id" type="int" value="2"/>
+    <property name="playerId" type="int" value="2"/>
    </properties>
   </object>
   <object id="11" name="Player 3" class="player_3" x="90" y="542" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
-    <property name="player_id" type="int" value="3"/>
+    <property name="playerId" type="int" value="3"/>
    </properties>
   </object>
   <object id="12" name="Player 4" class="player_4" x="1723.41" y="542.536" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
-    <property name="player_id" type="int" value="4"/>
+    <property name="playerId" type="int" value="4"/>
    </properties>
   </object>
   <object id="13" name="Player 5" class="player_5" x="90" y="342" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
-    <property name="player_id" type="int" value="5"/>
+    <property name="playerId" type="int" value="5"/>
    </properties>
   </object>
   <object id="14" name="Player 6" class="player_6" x="1723" y="341" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
-    <property name="player_id" type="int" value="6"/>
+    <property name="playerId" type="int" value="6"/>
    </properties>
   </object>
   <object id="15" name="Player 7" class="player_7" x="90" y="639" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
-    <property name="player_id" type="int" value="7"/>
+    <property name="playerId" type="int" value="7"/>
    </properties>
   </object>
   <object id="16" name="Player 8" class="player_8" x="1723" y="641" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
-    <property name="player_id" type="int" value="8"/>
+    <property name="playerId" type="int" value="8"/>
    </properties>
   </object>
  </objectgroup>
@@ -135,11 +135,13 @@
   <object id="73" x="384.44" y="-31.6179" width="191.936" height="191.994">
    <properties>
     <property name="collision" type="bool" value="true"/>
+    <property name="score" type="int" value="0"/>
    </properties>
   </object>
   <object id="74" x="1278.77" y="-34.9993" width="193.179" height="192.11">
    <properties>
     <property name="collision" type="bool" value="true"/>
+    <property name="score" type="int" value="1"/>
    </properties>
   </object>
   <object id="75" x="1279.89" y="863.894" width="187.486" height="186.417">

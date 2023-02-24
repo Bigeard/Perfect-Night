@@ -235,7 +235,7 @@ void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player,
             player->life--;
             player->invincible = DELAY_INVINCIBLE;
             GamepadPlayerLife(player->gamepadId, player->life);
-            InitParticles(bullet->p.pos, bullet->p.vel, player->color, player->shootParticle, 20);
+            InitParticles(bullet->p.pos, bullet->p.vel, 0.1f, player->color, 120.0f, player->shootParticle, 20);
         }
     }
 }
@@ -288,7 +288,7 @@ void DrawPlayer(Player player)
             float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25.0f * sin(calcRadian);
             DrawCircle(ammunitionPosX, ammunitionPosY, 7.3f, BLACK);
             DrawCircle(ammunitionPosX, ammunitionPosY, 6.5f, WHITE);
-            DrawCircle(ammunitionPosX, ammunitionPosY, 5.0f, DarkenColor(player.color, 0.7f));
+            DrawCircle(ammunitionPosX, ammunitionPosY, 3.0f, DarkenColor(player.color, 0.7f));
         }
 
         // Draw the progress bar of the charge

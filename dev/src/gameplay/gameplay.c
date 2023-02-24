@@ -63,6 +63,7 @@ float arenaSizeY = 0.0f;
 bool activeDev = false;
 double lastSecond = 0.0;
 static Camera2D camera = {0};
+float cameraZoomScreenSize = 0;
 static bool pauseGame = false;
 
 double startTime = 0.0;
@@ -105,6 +106,17 @@ double elapsedTimeOutside = 0.0;
 // QrCode
 bool qrCodeOk = false;
 Texture2D qrCodeTexture;
+
+// QrCode Particles
+float qrCodeParticlesAnimationTimer1 = 0.5f;
+float qrCodeParticlesAnimationTimer2 = 0.3f;
+float qrCodeParticlesAnimationTimer3 = 0.1f;
+Particle qrCodeParticles1[20];
+Particle qrCodeParticles2[20];
+Particle qrCodeParticles3[20];
+int qrCodeParticlesIdColor1 = 1;
+int qrCodeParticlesIdColor2 = 2;
+int qrCodeParticlesIdColor3 = 3;
 
 // Boxes
 Box boxes[40] = {};
@@ -188,13 +200,14 @@ void InitGameplay(void)
     camera.offset = (Vector2){0.0f, 0.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
+    cameraZoomScreenSize = 1.0f;
 }
 
 void UpdateGameplay(void)
 {
-    int centerPositionX = 0;
-    int centerPositionY = 0;
-    // int centerDistance = 0;
+    float centerPositionX = 0.0f;
+    float centerPositionY = 0.0f;
+    // float centerDistance = 0.0f;
 
     playerAlive = 0;
     playerAliveId = 0;
@@ -204,17 +217,16 @@ void UpdateGameplay(void)
     if ((int)time == lastSecond)
     {
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
-        camera.target = (Vector2){0.0f, 0.0f};
         camera.offset = (Vector2){GetScreenWidth() - arenaSizeX / 2.0f - GetScreenWidth() / 2.0f, GetScreenHeight() - arenaSizeY / 2.0f - GetScreenHeight() / 2.0f};
         lastSecond += 1;
     }
-    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (camera.zoom / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (camera.zoom / 1.0001f))
+    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (cameraZoomScreenSize / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (cameraZoomScreenSize / 1.0001f))
     {
-        camera.zoom -= 0.001f;
+        cameraZoomScreenSize -= 0.001f;
     }
     if (GetScreenWidth() > (arenaSizeX + 120.0f) || GetScreenHeight() > (arenaSizeY + 120.0f))
     {
-        camera.zoom += 0.001f;
+        cameraZoomScreenSize += 0.001f;
     }
 
     numberPlayer = GetNumberPlayer(); // +2
@@ -281,7 +293,7 @@ void UpdateGameplay(void)
     GenerateQrCode();
 
     // Zoom out / zoom in with the mouse wheel
-    camera.zoom += ((float)GetMouseWheelMove() * 0.01f);
+    cameraZoomScreenSize += ((float)GetMouseWheelMove() * 0.01f);
 
     // Active developer mode
     if (IsKeyPressed(KEY_O))
@@ -314,6 +326,16 @@ void UpdateGameplay(void)
     }
     if (pauseGame)
         return;
+
+    if (numberPlayer == 0 && camera.target.x != 0.0f && camera.target.y != 0.0f)
+    {
+        QrCodeParticleInit(&qrCodeParticlesAnimationTimer1, &qrCodeParticlesIdColor1, qrCodeParticles1);
+        QrCodeParticleInit(&qrCodeParticlesAnimationTimer2, &qrCodeParticlesIdColor2, qrCodeParticles2);
+        QrCodeParticleInit(&qrCodeParticlesAnimationTimer3, &qrCodeParticlesIdColor3, qrCodeParticles3);
+        UpdateParticles(qrCodeParticles1, 20);
+        UpdateParticles(qrCodeParticles2, 20);
+        UpdateParticles(qrCodeParticles3, 20);
+    }
 
     // Update Players / Bullets
     for (int i = 0; i < PLAYERS_LENGTH; i++)
@@ -407,23 +429,41 @@ void UpdateGameplay(void)
             UpdateParticles(players[i].shootParticle, 20);
         }
 
-        centerPositionX += players[i].p.pos.x + players[i].p.size.x / 2;
-        centerPositionY += players[i].p.pos.y + players[i].p.size.y / 2;
-        // centerDistance += sqrtf(powf(camera.target.x - player.p.pos.x, 2) + powf(camera.target.x - player.p.pos.y, 2));
+        if (players[i].life > 0)
+        {
+            centerPositionX += players[i].p.pos.x + players[i].p.size.x / 2.0f;
+            centerPositionY += players[i].p.pos.y + players[i].p.size.y / 2.0f;
+            // centerDistance += sqrtf(powf(camera.target.x - players[i].p.pos.x, 2.0f) + powf(camera.target.x - players[i].p.pos.y, 2.0f));
+        }
     }
 
     if (lastPlayer >= 2)
     {
+        if(playerAlive <= 1) {
+            centerPositionX += arenaSizeX / 2;
+            centerPositionY += arenaSizeY / 2;
+        }
         camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
         centerPositionX = centerPositionX / numberPlayer;
         centerPositionY = centerPositionY / numberPlayer;
-        camera.target = (Vector2){centerPositionX, centerPositionY};
+        camera.target = Vector2Lerp(
+            camera.target,
+            (Vector2){centerPositionX, centerPositionY},
+            GetFrameTime() * (sqrtf(powf(camera.target.x - centerPositionX, 2.0f) + powf(camera.target.x - centerPositionY, 2.0f))) / 100);
+
+        // float newZoom = 1.0f - ((centerDistance - (arenaSizeX - 300)) / centerDistance);
+        // if (fabs(newZoom) >= 1.1f || fabs(newZoom) <= 0.8f)
+        // {
+        //     newZoom = camera.zoom;
+        // }
+        // camera.zoom = Lerp(camera.zoom, newZoom - cameraZoomScreenSize, GetFrameTime() * 10);
     }
     else
     {
         camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
         camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
     }
+    camera.zoom = cameraZoomScreenSize;
 
     if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
     {
@@ -487,10 +527,20 @@ void UpdateGameplay(void)
         startTimeOutside = 0.0;
     }
 
-    if (((playerAlive <= 1 || !OtherColorAlive) && lastPlayer > 1) || playerAlive == 0)
+    if ((!OtherColorAlive && lastPlayer > 1) || playerAlive == 0)
     {
         if (startTime == 0.0 && numberPlayer > 1)
         {
+            for (int i = 0; i < PLAYERS_LENGTH; i++)
+            {
+                if (playerSpace[i])
+                {
+                    for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+                    {
+                        players[i].bullets[j].inactive = true;
+                    }
+                }
+            }
             for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
             {
                 if (ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].color))
@@ -500,16 +550,6 @@ void UpdateGameplay(void)
                         ColorScore[c]++;
                     }
                     break;
-                }
-            }
-            for (int i = 0; i < PLAYERS_LENGTH; i++)
-            {
-                if (playerSpace[i])
-                {
-                    for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
-                    {
-                        players[i].bullets[j].inactive = true;
-                    }
                 }
             }
             startTime = GetTime();
@@ -658,19 +698,22 @@ void DrawGameplay(void)
             }
             DrawCircle(camera.target.x, camera.target.y - 100.0f, 50.0f, BLACK);
             DrawCircle(camera.target.x, camera.target.y - 100.0f, 48.0f, WHITE);
-            DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, players[playerAliveId].color);
-            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, players[playerAliveId].color);
+            DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, ColorAlive);
+            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, ColorAlive);
         }
 
         // Draw title
         if (numberPlayer == 0)
         {
-            DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
-            DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
-            DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
+            DrawParticles(qrCodeParticles1, 20);
+            DrawParticles(qrCodeParticles2, 20);
+            DrawParticles(qrCodeParticles3, 20);
             DrawRectangleRounded((Rectangle){camera.target.x - qrCodeTexture.width / 2 - 10, camera.target.y - qrCodeTexture.height / 2 + 310, qrCodeTexture.width + 20, qrCodeTexture.height + 20}, 0.14f, 1.0f, BLACKGROUND);
             DrawRectangleRounded((Rectangle){camera.target.x - qrCodeTexture.width / 2 - 5, camera.target.y - qrCodeTexture.height / 2 + 315, qrCodeTexture.width + 10, qrCodeTexture.height + 10}, 0.1f, 1.0f, WHITE);
             DrawTexture(qrCodeTexture, camera.target.x - qrCodeTexture.width / 2, camera.target.y - qrCodeTexture.height / 2 + 320, WHITE);
+            DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
+            DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
+            DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
         }
         EndMode2D();
     }
@@ -767,5 +810,27 @@ void GenerateQrCode(void)
                 TraceLog(LOG_INFO, "Generate QrCode Ok.");
             }
         }
+    }
+}
+
+void QrCodeParticleInit(float *qrCodeParticlesAnimationTimer, int *qrCodeParticlesIdColor, Particle *qrCodeParticles)
+{
+    *qrCodeParticlesAnimationTimer += 0.004f;
+    if (*qrCodeParticlesAnimationTimer >= 0.4f)
+    {
+        *qrCodeParticlesIdColor += 1;
+        if (*qrCodeParticlesIdColor >= 8)
+            *qrCodeParticlesIdColor = 0;
+
+        *qrCodeParticlesAnimationTimer = 0.0f;
+        InitParticles(
+            (Vector2){camera.target.x,
+                      camera.target.y + 316},
+            (Vector2){0, 0},
+            0.3f,
+            themeColor[*qrCodeParticlesIdColor],
+            90.0f,
+            qrCodeParticles,
+            20);
     }
 }
