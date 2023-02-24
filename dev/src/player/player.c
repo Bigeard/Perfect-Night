@@ -222,7 +222,7 @@ void UpdatePlayer(Player *player)
     }
 }
 
-void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer)
+void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player, Rectangle recPlayer)
 {
     if (bullet->inactive)
         return;
@@ -230,7 +230,7 @@ void CollisionBulletPlayer(Bullet *bullet, Player *player, Rectangle recPlayer)
         return;
     if (player->invincible == 0 && ColorToInt(bullet->COLOR) != ColorToInt(player->color))
     {
-        if (bullet->p.collision[0])
+        if (bulletCollision)
         {
             player->life--;
             player->invincible = DELAY_INVINCIBLE;

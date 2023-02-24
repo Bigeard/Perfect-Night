@@ -3,7 +3,7 @@
 #include "physic.h"
 #include "../ray_collisions/ray_collisions.h"
 
-void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB)
+bool CollisionPhysic(Physic *phyA, const Rectangle recA, const Rectangle recB)
 {
     // Ray Collision
     Vector2 contact_point = (Vector2){0.0f, 0.0f};
@@ -11,9 +11,12 @@ void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB)
     float near_contact_time = 0.0f;
     Vector2 probableContactPoints[2];
 
-    bool detectCollision = DynamicRectVsRect(recA, phyA->vel, recB, &contact_point, &contact_normal, &near_contact_time, probableContactPoints);
+    bool collision = false;
+
+    const bool detectCollision = DynamicRectVsRect(recA, phyA->vel, recB, &contact_point, &contact_normal, &near_contact_time, probableContactPoints);
     if (detectCollision && near_contact_time < 1.0f)
     {
+        collision = true;
         phyA->collision[0] = true;
         Rectangle intersect = GetCollisionRec(recA, recB);
 
@@ -41,4 +44,5 @@ void CollisionPhysic(Physic *phyA, Rectangle recA, Rectangle recB)
         phyA->vel.x *= 0.8f;
         phyA->vel.y *= 0.8f;
     }
+    return collision;
 }

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/Bigeard/Perfect-Night/blob/main/dev/resources/title_perfect_night.png?raw=true" alt="Image Title: Perfect Night"/>
+</p>
+
 # Perfect Night
 
 With the game Perfect Night you don't need to have multiple controllers lying around. All you need is your trusty smartphone 📱 and a QR code ! Simply scan the QR code on the main screen 📺 and watch as your phone transforms into a controller, giving you the chance to unleash your inner fighter and take down your opponents.  
@@ -7,7 +11,16 @@ Don’t wait grab your phone, call your friends, and get ready to rumble in the 
 Are you ready to become the champion of the ring? ⚔️. 
 
 Click on this link to play ! 👾  
-🔗 - https://bigeard.github.io/Perfect-Night 
+🔗 - https://bigeard.github.io/Perfect-Night
+
+<br/>  
+
+[Link of the Discord 💬](https://discord.com/channels/1074855981508472923/1074855981986619474)
+
+<p align="center">
+  <img src="https://github.com/Bigeard/Perfect-Night/blob/main/design/screenshot/2023_02_24.png?raw=true" alt="Image Title: Perfect Night"/>
+</p>
+
 
 ## RUN / COMPILE THE GAME :
 

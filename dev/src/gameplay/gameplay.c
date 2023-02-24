@@ -344,13 +344,13 @@ void UpdateGameplay(void)
 
             UpdateBullet(&players[i].bullets[j]);
 
-            Rectangle newBulletRec = {players[i].bullets[j].p.pos.x + 2.0f, players[i].bullets[j].p.pos.y + 2.0f, players[i].bullets[j].p.size.x * 2.0f - 5.0f, players[i].bullets[j].p.size.y * 2.0f - 5.0f};
+            const Rectangle newBulletRec = {players[i].bullets[j].p.pos.x + 2.0f, players[i].bullets[j].p.pos.y + 2.0f, players[i].bullets[j].p.size.x * 2.0f - 5.0f, players[i].bullets[j].p.size.y * 2.0f - 5.0f};
             // Collision Bullet and Box
             for (int b = 0; b < boxesLength; b++)
             {
                 if (!boxes[b].id || !boxes[b].collision)
                     continue;
-                Rectangle envBox = {boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y};
+                const Rectangle envBox = {boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y};
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
             }
             // Stops the ball if it hits the wall when it is created
@@ -365,22 +365,25 @@ void UpdateGameplay(void)
             {
                 if (players[p].life <= 0)
                     continue;
-                Rectangle envPlayer = {players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y};
-                CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer);
-                CollisionBulletPlayer(&players[i].bullets[j], &players[p], envPlayer);
+                const Rectangle envPlayer = {players[p].p.pos.x, players[p].p.pos.y, players[p].p.size.x, players[p].p.size.y};
+                CollisionBulletPlayer(
+                    CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envPlayer),
+                    &players[i].bullets[j],
+                    &players[p],
+                    envPlayer);
             }
             BulletBounce(&players[i].bullets[j]);
         }
 
         // Collision Player and Player
-        Rectangle newPlayerRec = {players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y};
+        const Rectangle newPlayerRec = {players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y};
         for (int j = 0; j < PLAYERS_LENGTH; j++)
         {
             if (players[j].life <= 0 || !players[i].id || !players[j].id)
                 continue;
             if (players[i].id != players[j].id)
             {
-                Rectangle envPlayer = {players[j].p.pos.x, players[j].p.pos.y, players[j].p.size.x, players[j].p.size.y};
+                const Rectangle envPlayer = {players[j].p.pos.x, players[j].p.pos.y, players[j].p.size.x, players[j].p.size.y};
                 CollisionPhysic(&players[i].p, newPlayerRec, envPlayer);
             }
         }
@@ -390,7 +393,7 @@ void UpdateGameplay(void)
         {
             if (!boxes[j].id || !boxes[j].collision)
                 continue;
-            Rectangle envBox = {boxes[j].p.pos.x, boxes[j].p.pos.y, boxes[j].p.size.x, boxes[j].p.size.y};
+            const Rectangle envBox = {boxes[j].p.pos.x, boxes[j].p.pos.y, boxes[j].p.size.x, boxes[j].p.size.y};
             CollisionPhysic(&players[i].p, newPlayerRec, envBox);
         }
 
@@ -404,8 +407,8 @@ void UpdateGameplay(void)
             UpdateParticles(players[i].shootParticle, 20);
         }
 
-        centerPositionX += players[i].p.pos.x + players[i].p.size.x/2;
-        centerPositionY += players[i].p.pos.y + players[i].p.size.y/2;
+        centerPositionX += players[i].p.pos.x + players[i].p.size.x / 2;
+        centerPositionY += players[i].p.pos.y + players[i].p.size.y / 2;
         // centerDistance += sqrtf(powf(camera.target.x - player.p.pos.x, 2) + powf(camera.target.x - player.p.pos.y, 2));
     }
 
@@ -665,8 +668,8 @@ void DrawGameplay(void)
             DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
             DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
             DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
-            DrawRectangleRounded((Rectangle){ camera.target.x - qrCodeTexture.width / 2 - 10, camera.target.y - qrCodeTexture.height / 2 + 310, qrCodeTexture.width + 20, qrCodeTexture.height + 20 }, 0.14f, 1.0f, BLACKGROUND);
-            DrawRectangleRounded((Rectangle){ camera.target.x - qrCodeTexture.width / 2 - 5, camera.target.y - qrCodeTexture.height / 2 + 315, qrCodeTexture.width + 10, qrCodeTexture.height + 10 }, 0.1f, 1.0f, WHITE);
+            DrawRectangleRounded((Rectangle){camera.target.x - qrCodeTexture.width / 2 - 10, camera.target.y - qrCodeTexture.height / 2 + 310, qrCodeTexture.width + 20, qrCodeTexture.height + 20}, 0.14f, 1.0f, BLACKGROUND);
+            DrawRectangleRounded((Rectangle){camera.target.x - qrCodeTexture.width / 2 - 5, camera.target.y - qrCodeTexture.height / 2 + 315, qrCodeTexture.width + 10, qrCodeTexture.height + 10}, 0.1f, 1.0f, WHITE);
             DrawTexture(qrCodeTexture, camera.target.x - qrCodeTexture.width / 2, camera.target.y - qrCodeTexture.height / 2 + 320, WHITE);
         }
         EndMode2D();
@@ -732,7 +735,7 @@ void GenerateQrCode(void)
                 sizeRec -= border * 2;
                 int t = sizeRec / qrCodeSize;
                 int c = 0;
-                Image qrCodeImage = GenImageColor(t * qrCodeSize + border * 2, t * qrCodeSize + border * 2,  (Color){0, 0, 0, 0});
+                Image qrCodeImage = GenImageColor(t * qrCodeSize + border * 2, t * qrCodeSize + border * 2, (Color){0, 0, 0, 0});
                 for (int x = 0; x < qrCodeSize; x++)
                 {
                     for (int y = 0; y < qrCodeSize; y++)
