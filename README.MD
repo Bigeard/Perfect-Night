@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/Bigeard/Perfect-Night/blob/main/dev/resources/title_perfect_night.png?raw=true" alt="Image Title: Perfect Night"/>
+  <img src="https://github.com/Bigeard/Perfect-Night/blob/main/dev/resources/title_perfect_night.png?raw=true" alt="Image Title: Perfect Night" style="width: 100%; image-rendering: pixelated;"/>
 </p>
 
 # Perfect Night
@@ -18,7 +18,7 @@ Click on this link to play ! 👾
 [Link of the Discord 💬](https://discord.com/channels/1074855981508472923/1074855981986619474)
 
 <p align="center">
-  <img src="https://github.com/Bigeard/Perfect-Night/blob/main/design/screenshot/2023_02_24.png?raw=true" alt="Image Title: Perfect Night"/>
+  <img src="https://github.com/Bigeard/Perfect-Night/blob/main/design/screenshot/2023_02_24.png?raw=true" alt="Image Gameplay" style="image-rendering: pixelated; border-radius: 20px"/>
 </p>
 
 
