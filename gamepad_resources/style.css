@@ -182,12 +182,15 @@ button {
 #informationGame {
     z-index: 1100;
     width: 80%;
-    height: 50vh;
+    height: 60vh;
     padding: 12px;
     overflow-y: scroll;
     background: #ffffffa1;
 }
 
+.thankYou {
+    margin-top: 60px;
+}
 
 @media screen and (orientation:portrait) {
 
