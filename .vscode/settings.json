@@ -6,7 +6,6 @@
 	"cSpell.words": [
 		"Bigeard",
 		"BLACKGROUND",
-		"CHANGECOLOR",
 		"CLITERAL",
 		"DARKGRAY",
 		"DARKGREEN",
@@ -27,5 +26,8 @@
 	"files.associations": {
 		"*.h": "c",
 		"*.c": "c",
+		"__locale": "c",
+		"locale": "c",
+		"thread": "c"
 	},
 }

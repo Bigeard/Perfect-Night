@@ -48,22 +48,26 @@ Color LerpColor(Color colorA, Color colorB, float t)
     };
 }
 
-int min(int a, int b) {
-    if (a < b) {
+int min(int a, int b)
+{
+    if (a < b)
+    {
         return a;
-    } else {
+    }
+    else
+    {
         return b;
     }
 }
 
 void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint)
 {
-    if (texture.id <= 0 || scale <= 0.0f || source.width == 0 || source.height == 0 || dest.width < source.width*scale || dest.height < source.height*scale)
+    if (texture.id <= 0 || scale <= 0.0f || source.width == 0 || source.height == 0 || dest.width < source.width * scale || dest.height < source.height * scale)
     {
         return;
     }
 
-    int tileWidth = (int)(source.width*scale), tileHeight = (int)(source.height*scale);
+    int tileWidth = (int)(source.width * scale), tileHeight = (int)(source.height * scale);
 
     for (int dx = 0; dx < dest.width; dx += tileWidth)
     {
@@ -83,4 +87,12 @@ void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vecto
     }
 }
 
-
+int CalculateFontSizeWithMaxSize(const char* text, Vector2 maxSize, int margin)
+{
+    int fontSize = maxSize.x;
+    while (maxSize.x - margin <= MeasureText(text, fontSize) || maxSize.y - margin <= fontSize)
+    {
+        fontSize--;
+    }
+    return fontSize;
+}

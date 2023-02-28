@@ -17,6 +17,8 @@ extern "C"
 
     void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint);
 
+    int CalculateFontSizeWithMaxSize(const char *text, Vector2 maxSize, int margin);
+
 #ifdef __cplusplus
 }
 #endif

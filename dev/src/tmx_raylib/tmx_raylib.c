@@ -3,6 +3,7 @@
 #include "../../../lib/raylib/src/raylib.h"
 #include "../../../lib/tmx/src/tmx.h"
 
+#include "../gameplay/gameplay.h"
 #include "../player/player.h"
 #include "../box/box.h"
 #include "../loot/loot.h"
@@ -179,8 +180,10 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 				if (head->visible && head->obj_type == OT_SQUARE && layer->id == 3)
 				{
 					tmx_property *id = tmx_get_property(head->properties, "playerId");
-					players[id->value.integer - 1].spawn = (Vector2){head->x, head->y};
-					players[id->value.integer - 1].p.pos = (Vector2){head->x, head->y};
+					players[id->value.integer - 1].spawn.x = (float)head->x;
+					players[id->value.integer - 1].spawn.y = (float)head->y;
+					players[id->value.integer - 1].p.pos.x = (float)head->x;
+					players[id->value.integer - 1].p.pos.y = (float)head->y;
 
 					tmx_property *color = tmx_get_property(head->properties, "color");
 					Color playerColor = int_to_color(color->value.color);
@@ -200,14 +203,17 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 					int boxScore = -1;
 					if (score) {
 						boxScore = score->value.integer;
+						BoxesScoreSize[boxScore].x = (int)head->width;
+						BoxesScoreSize[boxScore].y = (int)head->height;
 					}
 					boxes[box_number] = (Box){
 						head->id,
-						{{head->x, head->y}, {head->width, head->height}, {0, 0}},
+						{{(float)head->x, (float)head->y}, {(float)head->width, (float)head->height}, {0, 0}},
 						boxColor,
 						displayQrCode->value.boolean,
 						boxScore,
 						collision->value.boolean};
+
 					box_number++;
 				}
 				if (head->visible && head->obj_type == OT_SQUARE && layer->id == 5)
@@ -216,7 +222,7 @@ void tmx_init_object(tmx_layer *layer, Player *players, Box *boxes, Loot *loots)
 					tmx_property *delay = tmx_get_property(head->properties, "delay");
 					loots[loot_number] = (Loot){
 						head->id,
-						{{head->x, head->y}, {head->width, head->height}, {0, 0}},
+						{{(float)head->x, (float)head->y}, {(float)head->width, (float)head->height}, {0, 0}},
 						true,
 						type->value.integer,
 						0.0,

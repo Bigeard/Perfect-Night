@@ -13,7 +13,7 @@ Item InitItemNothing(int player_id)
         "Nothing",
         true,
         GetTime(),
-        10.0,
+        6.0,
         false,
         false,
         ShootItemNothing,

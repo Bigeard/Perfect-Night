@@ -16,28 +16,46 @@ void DrawBox(Box box)
 
 	if (box.collision)
 	{
-		DrawRectangle(box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y, GRAY); // or LIGHTGREY what is the best 🤔
+		// float time = GetTime();
+		// BeginShaderMode(neonShader);
+		DrawRectangle(box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y, (Color){143, 151, 160, 255}); // or LIGHTGREY what is the best 🤔
 		DrawRectangle(box.p.pos.x + 3, box.p.pos.y + 3, box.p.size.x - 6, box.p.size.y - 6, box.color);
+		// EndShaderMode();
 
 		// @FPS take a lot of performance
 		DrawTextureTiled(PattenSlashTexture, (Rectangle){0.0f, 0.0f, 16.0f, 16.0f}, (Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
 						 (Vector2){0.0f, 0.0f}, 0.0f, 1.0f, Fade(box.color, 0.4f));
 	}
 
-	if (box.score != -1 && ColorScore[box.score] != -1) {
-		const char *text = TextFormat("%d", ColorScore[box.score]);
-		int sizeText = MeasureText(text, box.p.size.x);
+	if (box.score != -1 && colorScore[box.score] != -1)
+	{
+		const char *text = TextFormat("%d", colorScore[box.score]);
 		DrawRectangleLinesEx((Rectangle){box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y}, 2.5f, Fade(themeColor[box.score], 0.4f));
-		DrawText(text, box.p.pos.x + box.p.size.x / 2 - sizeText / 2, box.p.pos.y + 8, box.p.size.x, Fade(themeColor[box.score], 0.4f));
-
-		// @TODO Resize the score
-		// DrawText(text, box.p.pos.x + box.p.size.x / 2 - sizeText / 3.1, box.p.pos.y + 8, box.p.size.x - sizeText / 4, Fade(themeColor[box.score], 0.4f));
+		DrawText(
+			text,
+			box.p.pos.x + box.p.size.x / 2.0f - MeasureText(text, BoxesScoreFontSize[box.score]) / 2.0f,
+			box.p.pos.y + box.p.size.y / 2.0f - BoxesScoreFontSize[box.score] / 2.0f + MeasureText(text, BoxesScoreFontSize[box.score]) * 0.1,
+			BoxesScoreFontSize[box.score],
+			Fade(themeColor[box.score], 0.4f));
 	}
 
 	// Draw QrCode
 	if (box.displayQrCode)
 	{
-		DrawRectangle(box.p.pos.x + 16.0f + 1, box.p.pos.y + 16.0f, box.p.size.x-32 - 2, box.p.size.y-32 - 2, (Color){116, 116, 116, 255});
+		float margin = 0;
+		if (box.collision)
+		{
+			margin = 10;
+		}
+		DrawRectangleRounded(
+			(Rectangle){
+				box.p.pos.x + 1 + margin,
+				box.p.pos.y + margin,
+				box.p.size.x - 2 - margin * 2,
+				box.p.size.y - 2 - margin * 2},
+			0.08f,
+			1.0f,
+			(Color){116, 116, 116, 255});
 		DrawTexture(qrCodeTexture, box.p.pos.x + 8.0f + 1, box.p.pos.y + 8.0f, WHITE);
 	}
 

@@ -1,6 +1,8 @@
 #include "../../../lib/raylib/src/raylib.h"
 #include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "gameplay.h"
 #include "../physic/physic.h"
@@ -17,8 +19,6 @@
 #include "../tmx_raylib/tmx_raylib.h"
 
 #include "../../../lib/qrcode/c/qrcodegen.h"
-
-#define PLAYERS_LENGTH 8
 
 // Interaction with Javascript
 // More info https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html
@@ -54,9 +54,21 @@ EM_JS(int, GamepadPlayerColor, (char *p_id, int color_r, int color_g, int color_
     listGamepad.set(id, gamepad);
     return 1;
 });
+EM_JS(int, GetMenuAction, (), {
+    return menuAction;
+});
+EM_JS(int, SetMenuAction, (int action), {
+    menuAction = action;
+    return 1;
+});
 
 // Gameplay
 tmx_map *map;
+int idMap = 0;
+char *listMap[3] = {
+    "resources/map_2_team_v2.tmx",
+    "resources/map_vs.tmx",
+    "resources/map_4_team.tmx"};
 
 float arenaSizeX = 0.0f;
 float arenaSizeY = 0.0f;
@@ -76,8 +88,8 @@ Texture2D andScanQrTexture;
 
 // Player
 int lastPlayer = 0;
-bool playerSpace[8] = {0};
-Color themeColor[8] = {
+bool playerSpace[NUMBER_EIGHT] = {0};
+Color themeColor[NUMBER_EIGHT] = {
     {35, 235, 141, 255},  // GREEN
     {241, 82, 91, 255},   // RED
     {64, 230, 230, 255},  // BLUE
@@ -87,15 +99,20 @@ Color themeColor[8] = {
     {255, 149, 229, 255}, // PINK
     {101, 126, 255, 255}  // DISCORD COLOR x)
 };
-int ColorScore[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
-int numberActiveColor = 0;
 
+// Score
+int colorScore[NUMBER_EIGHT] = {-1, -1, -1, -1, -1, -1, -1, -1};
+int BoxesScoreFontSize[NUMBER_EIGHT] = {0};
+Vector2 BoxesScoreSize[NUMBER_EIGHT] = {0};
+
+// PLayer Alive
+int numberActiveColor = 0;
 int playerAlive = 0;
 int playerAliveId = 0;
-Color ColorAlive;
-bool OtherColorAlive = false;
+Color colorAlive;
+bool otherColorAlive = false;
 
-Player players[PLAYERS_LENGTH] = {{}, {}, {}, {}, {}, {}, {}, {}};
+Player players[NUMBER_EIGHT] = {{}, {}, {}, {}, {}, {}, {}, {}};
 int numberPlayer = 0;
 
 Player *outsidePlayer;
@@ -138,6 +155,24 @@ Texture2D PattenSlashTexture;
 Texture2D PattenSquareTexture;
 Texture2D PattenCrossTexture;
 
+// // Shaders
+// @TODO try retro neon
+// const char *neonShaderCode =
+//     "#version 330\n"
+//     "in vec2 fragCoord;\n"
+//     "uniform float time;\n"
+//     "void main()\n"
+//     "{\n"
+//     "   vec2 uv = fragCoord.xy / vec2(1920, 1080);\n"
+//     "   vec3 color = vec3(0.0);\n"
+//     "   float t = time * 0.1;\n"
+//     "   float d = length(uv - vec2(0.5, 0.5));\n"
+//     "   float v = sin(d * 200.0 + t) + sin(d * 100.0 - t) + sin(d * 300.0 + t);\n"
+//     "   color = vec3(v * 0.2 + 0.8);\n"
+//     "   gl_FragColor = vec4(color, 1.0);\n"
+//     "}";
+// Shader neonShader;
+
 void InitGameplay(void)
 {
     // Home Screen
@@ -147,21 +182,15 @@ void InitGameplay(void)
     titlePerfectNightTexture = LoadTextureFromImage(titlePerfectNightImage);
     UnloadImage(titlePerfectNightImage);
 
-    // titlePerfectNightTexture = LoadTexture("resources/title_perfect_night.png");
-
     Image useSameWifiImage = LoadImage("resources/use_the_same_wifi.png");
     ImageResizeNN(&useSameWifiImage, 159 * 2.5, 119 * 2.5);
     useSameWifiTexture = LoadTextureFromImage(useSameWifiImage);
     UnloadImage(useSameWifiImage);
 
-    // useSameWifiTexture = LoadTexture("resources/use_the_same_wifi.png");
-
     Image andScanQrImage = LoadImage("resources/and_scan.png");
     ImageResizeNN(&andScanQrImage, 162 * 2.5, 112 * 2.5);
     andScanQrTexture = LoadTextureFromImage(andScanQrImage);
     UnloadImage(andScanQrImage);
-
-    // andScanQrTexture = LoadTexture("resources/and_scan.png");
 
     // Items
     BonusAmmunitionTexture = LoadTexture("resources/bonus_ammunition.png");
@@ -175,25 +204,8 @@ void InitGameplay(void)
     PattenSquareTexture = LoadTexture("resources/pattern_square.png");
     PattenCrossTexture = LoadTexture("resources/pattern_cross.png");
 
-    // Load TMX
-    tmx_img_load_func = raylib_tex_loader;
-    tmx_img_free_func = raylib_free_tex;
-
-    // map = tmx_load("resources/map_vs.tmx");
-    map = tmx_load("resources/map_2_team_v2.tmx");
-    // map = tmx_load("resources/map_2_team.tmx");
-    // map = tmx_load("resources/map_4_team.tmx");
-    if (!map)
-    {
-        tmx_perror("Cannot load map");
-    }
-    arenaSizeX = map->tile_width * map->width;
-    arenaSizeY = map->tile_height * map->height;
-    tmx_init_object(map->ly_head, players, boxes, loots);
-
-    // Init
-    InitPlayer();
-    InitLoot();
+    // Shaders
+    // neonShader = LoadShaderFromMemory(NULL, neonShaderCode);
 
     // Init Camera
     camera.target = (Vector2){0.0f, 0.0f};
@@ -201,24 +213,95 @@ void InitGameplay(void)
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
     cameraZoomScreenSize = 1.0f;
+
+    // Init
+    InitPlayer();
+    InitLoot();
+
+    // Init / Load TMX
+    tmx_img_load_func = raylib_tex_loader;
+    tmx_img_free_func = raylib_free_tex;
+    InitMap();
+}
+
+void InitMap(void)
+{
+    if (idMap >= sizeof(listMap) / sizeof(listMap[0]))
+    {
+        idMap = 0;
+    }
+    map = tmx_load(listMap[idMap]);
+    if (!map)
+    {
+        tmx_perror("Cannot load map");
+    }
+    arenaSizeX = map->tile_width * map->width;
+    arenaSizeY = map->tile_height * map->height;
+    tmx_init_object(map->ly_head, players, boxes, loots);
 }
 
 void UpdateGameplay(void)
 {
-    float centerPositionX = 0.0f;
-    float centerPositionY = 0.0f;
+    float centerPositionX = 0;
+    float centerPositionY = 0;
     // float centerDistance = 0.0f;
 
     playerAlive = 0;
     playerAliveId = 0;
-    OtherColorAlive = false;
+    otherColorAlive = false;
 
     double time = GetTime();
     if ((int)time == lastSecond)
     {
+        // Resize Canvas
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
         camera.offset = (Vector2){GetScreenWidth() - arenaSizeX / 2.0f - GetScreenWidth() / 2.0f, GetScreenHeight() - arenaSizeY / 2.0f - GetScreenHeight() / 2.0f};
         lastSecond += 1;
+
+        // Menu Action
+        int menuAction = GetMenuAction();
+        if (menuAction != 0)
+        {
+            switch (menuAction)
+            {
+            case 1: // Restart Game
+                for (size_t i = 0; i < NUMBER_EIGHT; i++)
+                {
+                    if (colorScore[i] != -1)
+                    {
+                        colorScore[i] = 0;
+                    }
+                }
+                ResetGame();
+                startTime = 0.0;
+                break;
+            case 2: // Change Map
+                idMap++;
+                // free(map);
+                // tmx_img_load_func = raylib_tex_loader;
+                // tmx_img_free_func = raylib_free_tex;
+                memset(boxes, 0, sizeof boxes);
+                memset(loots, 0, sizeof loots);
+                map = NULL;
+                InitMap();
+                numberActiveColor = 0;
+                for (int i = 0; i < lastPlayer; i++)
+                {
+                    for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
+                    {
+                        if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
+                        {
+                            numberActiveColor++;
+                            colorScore[c] = 0;
+                            BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
+                        }
+                    }
+                }
+                ResetGame();
+                startTime = 0.0;
+            }
+            SetMenuAction(0);
+        }
     }
     if (GetScreenWidth() < (arenaSizeX + 60.0f) * (cameraZoomScreenSize / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (cameraZoomScreenSize / 1.0001f))
     {
@@ -232,7 +315,7 @@ void UpdateGameplay(void)
     numberPlayer = GetNumberPlayer(); // +2
     if (lastPlayer < numberPlayer)
     {
-        for (int i = 0; i < PLAYERS_LENGTH; i++)
+        for (int i = 0; i < NUMBER_EIGHT; i++)
         {
             if (!playerSpace[i])
             {
@@ -246,7 +329,7 @@ void UpdateGameplay(void)
                     DELAY_AMMUNITION,                                                                  // ammunitionLoad: Ammunition loading
                     {{0.0f, 0.0f}, {40.0f, 40.0f}, {0.0f, 0.0f}, {false, false, false, false, false}}, // p: Physic
                     {0.0f, 0.0f},                                                                      // spawn: Spawn position
-                    {3.5f, 3.5f},                                                                      // speed: Speed of the tank
+                    {3.05f, 3.05f},                                                                    // speed: Speed of the tank
                     // Bullet
                     0.0f, // charge: Charge delay
                     true, // canShoot: Can Shoot
@@ -268,15 +351,16 @@ void UpdateGameplay(void)
                 {
                     if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
                     {
-                        if (ColorScore[c] < 0)
+                        if (colorScore[c] < 0)
                         {
                             numberActiveColor++;
-                            ColorScore[c] = 0;
+                            colorScore[c] = 0;
+                            BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
                         }
                         break;
                     }
                 }
-                i = PLAYERS_LENGTH;
+                i = NUMBER_EIGHT;
                 lastPlayer++;
             }
         }
@@ -302,9 +386,9 @@ void UpdateGameplay(void)
     // Press R to reset
     if (IsKeyPressed(KEY_R))
     {
-        for (int i = 0; i < PLAYERS_LENGTH; i++)
+        for (int i = 0; i < NUMBER_EIGHT; i++)
         {
-            ColorScore[i] = -1;
+            colorScore[i] = -1;
         };
         ResetGame();
     }
@@ -338,7 +422,7 @@ void UpdateGameplay(void)
     }
 
     // Update Players / Bullets
-    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    for (int i = 0; i < NUMBER_EIGHT; i++)
     {
         // If player not exist continue
         if (!players[i].id)
@@ -349,11 +433,11 @@ void UpdateGameplay(void)
         {
             playerAlive++;
             playerAliveId = i;
-            if (ColorToInt(players[i].color) != ColorToInt(ColorAlive))
+            if (ColorToInt(players[i].color) != ColorToInt(colorAlive))
             {
-                OtherColorAlive = true;
+                otherColorAlive = true;
             }
-            ColorAlive = players[i].color;
+            colorAlive = players[i].color;
         }
 
         UpdatePlayer(&players[i]);
@@ -399,7 +483,7 @@ void UpdateGameplay(void)
 
         // Collision Player and Player
         const Rectangle newPlayerRec = {players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y};
-        for (int j = 0; j < PLAYERS_LENGTH; j++)
+        for (int j = 0; j < NUMBER_EIGHT; j++)
         {
             if (players[j].life <= 0 || !players[i].id || !players[j].id)
                 continue;
@@ -429,7 +513,7 @@ void UpdateGameplay(void)
             UpdateParticles(players[i].shootParticle, 20);
         }
 
-        if (players[i].life > 0)
+        if (players[i].life >= 1)
         {
             centerPositionX += players[i].p.pos.x + players[i].p.size.x / 2.0f;
             centerPositionY += players[i].p.pos.y + players[i].p.size.y / 2.0f;
@@ -439,13 +523,20 @@ void UpdateGameplay(void)
 
     if (lastPlayer >= 2)
     {
-        if(playerAlive <= 1) {
+        if (playerAlive == 1)
+        {
             centerPositionX += arenaSizeX / 2;
             centerPositionY += arenaSizeY / 2;
         }
+        if (playerAlive >= 1) {
+            centerPositionX = centerPositionX / playerAlive;
+            centerPositionY = centerPositionY / playerAlive;
+        }
+        else {
+            centerPositionX = arenaSizeX / 2;
+            centerPositionY = arenaSizeY / 2;
+        }
         camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
-        centerPositionX = centerPositionX / numberPlayer;
-        centerPositionY = centerPositionY / numberPlayer;
         camera.target = Vector2Lerp(
             camera.target,
             (Vector2){centerPositionX, centerPositionY},
@@ -469,7 +560,7 @@ void UpdateGameplay(void)
     {
         if (lastOutsidePlayer && ColorToInt(outsidePlayer->color) != ColorToInt(lastOutsidePlayer->color))
         {
-            for (int i = 0; i < PLAYERS_LENGTH; i++)
+            for (int i = 0; i < NUMBER_EIGHT; i++)
             {
                 if (ColorToInt(players[i].color) != ColorToInt(outsidePlayer->color))
                 {
@@ -498,7 +589,7 @@ void UpdateGameplay(void)
     }
     if (elapsedTimeOutside > 2.0)
     {
-        for (int i = 0; i < PLAYERS_LENGTH; i++)
+        for (int i = 0; i < NUMBER_EIGHT; i++)
         {
             if (ColorToInt(players[i].color) == ColorToInt(outsidePlayer->color))
             {
@@ -527,11 +618,11 @@ void UpdateGameplay(void)
         startTimeOutside = 0.0;
     }
 
-    if ((!OtherColorAlive && lastPlayer > 1) || playerAlive == 0)
+    if ((!otherColorAlive && lastPlayer > 1) || playerAlive == 0)
     {
         if (startTime == 0.0 && numberPlayer > 1)
         {
-            for (int i = 0; i < PLAYERS_LENGTH; i++)
+            for (int i = 0; i < NUMBER_EIGHT; i++)
             {
                 if (playerSpace[i])
                 {
@@ -545,9 +636,10 @@ void UpdateGameplay(void)
             {
                 if (ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].color))
                 {
-                    if (ColorScore[c] > -1)
+                    if (colorScore[c] > -1)
                     {
-                        ColorScore[c]++;
+                        colorScore[c]++;
+                        BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
                     }
                     break;
                 }
@@ -576,7 +668,7 @@ void UpdateGameplay(void)
 void ResetGame(void)
 {
     tmx_init_object(map->ly_head, players, boxes, loots);
-    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    for (int i = 0; i < NUMBER_EIGHT; i++)
     {
         if (playerSpace[i])
         {
@@ -586,8 +678,8 @@ void ResetGame(void)
             players[i].invincible = DELAY_INVINCIBLE;
             players[i].charge = 0.0f;
             players[i].item.active = false;
-            players[i].speed.x = 3.5f;
-            players[i].speed.y = 3.5f;
+            players[i].speed.x = 3.05f;
+            players[i].speed.y = 3.05f;
             for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
             {
                 players[i].bullets[j].inactive = true;
@@ -625,7 +717,7 @@ void DrawGameplay(void)
     }
 
     // Draw Players / Bullets
-    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    for (int i = 0; i < NUMBER_EIGHT; i++)
     {
         if (!players[i].id)
             continue;
@@ -658,7 +750,7 @@ void DrawGameplay(void)
         DrawRectangle(0.0f, 0.0f, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.4f));
     }
 
-    for (int i = 0; i < PLAYERS_LENGTH; i++)
+    for (int i = 0; i < NUMBER_EIGHT; i++)
     {
         if (!players[i].id)
             continue;
@@ -687,10 +779,10 @@ void DrawGameplay(void)
             int indexFindColor = 0;
             for (int i = 0; i < numberActiveColor; i++)
             {
-                if (ColorScore[i] > -1)
+                if (colorScore[i] > -1)
                 {
                     // @TODO fix display if multi color team
-                    DrawText(TextFormat("%d", ColorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 80.0f) + 320 * indexFindColor, (int)(camera.target.y - 80.0f), 80, themeColor[indexFindColor]);
+                    DrawText(TextFormat("%d", colorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 80.0f) + 320 * indexFindColor, (int)(camera.target.y - 80.0f), 80, themeColor[indexFindColor]);
                 }
                 else
                     i--;
@@ -698,8 +790,8 @@ void DrawGameplay(void)
             }
             DrawCircle(camera.target.x, camera.target.y - 100.0f, 50.0f, BLACK);
             DrawCircle(camera.target.x, camera.target.y - 100.0f, 48.0f, WHITE);
-            DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, ColorAlive);
-            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, ColorAlive);
+            DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, colorAlive);
+            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, colorAlive);
         }
 
         // Draw title

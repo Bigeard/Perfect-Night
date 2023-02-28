@@ -37,7 +37,14 @@ button {
     justify-content: space-between;
 }
 
-#scrollDown {
+.btn {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: solid 2px #ffffff;
+}
+
+#scrollUp {
     text-align: center;
     width: 100px;
     z-index: 120;
@@ -47,11 +54,10 @@ button {
     padding: 8px 10px 0 10px;
     margin: -10px auto auto auto;
     background: #aaa;
-    width: fit-content;
     border-radius: 0 0 15px 15px;
 }
 
-.scrollDownArrow {
+.scrollUpArrow {
     display: block;
     margin: auto;
     width: 62px;
@@ -146,14 +152,50 @@ button {
     image-rendering: pixelated;
 }
 
+#menuGame, #informationGame {
+    position: fixed;
+    z-index: 1000;
+    top: 10%;
+    display: none; /* display: flex; */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    left: 0;
+    right: 0;
+    width: 180px;
+    margin: 0 auto;
+    border-radius: 15px;
+    padding: 12px;
+    border: solid 2px #ffffff7e;
+}
+
+#menuGame .btn {
+    margin: 10px;
+}
+
+.menuExit {
+    background: #ffc5c5cb;
+}
+
+#informationGame {
+    z-index: 1100;
+    width: 80%;
+    height: 50vh;
+    padding: 12px;
+    overflow-y: scroll;
+    background: #ffffffa1;
+}
+
+
 @media screen and (orientation:portrait) {
 
     #joysticks,
     #playerLife,
     #playerAmmunition,
     #goTop,
-    #scrollDown,
-    .menuGame {
+    #scrollUp {
         display: none;
     }
 

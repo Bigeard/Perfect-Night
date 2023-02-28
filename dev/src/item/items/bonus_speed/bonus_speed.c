@@ -18,7 +18,7 @@ Item InitItemBonusSpeed(int player_id)
         ShootItemBonusSpeed,
         UpdateItemBonusSpeed,
         DrawItemBonusSpeed,
-        {0, 2.1}};
+        {0, 0.9}};
     Player *player = &players[player_id - 1];
     player->speed.x = player->speed.x + item.bonusSpeed.speed;
     player->speed.y = player->speed.y + item.bonusSpeed.speed;
@@ -35,10 +35,10 @@ void UpdateItemBonusSpeed(Item *item)
     if (!item->active)
     {
         Player *player = &players[item->player_id - 1];
-        if (player->speed.x > 3.5 || player->speed.y > 3.5)
+        if (player->speed.x > 3.05f || player->speed.y > 3.05f)
         {
-            player->speed.x = 3.5;
-            player->speed.y = 3.5;
+            player->speed.x = 3.05f;
+            player->speed.y = 3.05f;
         }
         return;
     };
@@ -48,7 +48,7 @@ void UpdateItemBonusSpeed(Item *item)
         item->active = false;
     }
     Player *player = &players[item->player_id - 1];
-    if (player->speed.x <= 3.5 && player->speed.y <= 3.5)
+    if (player->speed.x <= 3.05f && player->speed.y <= 3.05f)
     {
         player->speed.x = player->speed.x + item->bonusSpeed.speed;
         player->speed.y = player->speed.y + item->bonusSpeed.speed;

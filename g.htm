@@ -29,13 +29,14 @@
             <span>Status: <span id="status"></span></span><br>
             <span id="ping">Ping: X</span>
         </div>
-        <div class="menuGame">
+        <div>
+            <button class="btn menuButton" onclick="menuAction(event)">Menu ⠸</button>
         </div>
     </div>
 
-    <div id="scrollDown">
-        <span class="scrollDownText">Scroll down</span><br>
-        <img class="scrollDownArrow" src="gamepad_resources/images/scroll_down.gif" alt="Scroll Down Gif">
+    <div id="scrollUp">
+        <span class="scrollUpText">Scroll Up</span><br>
+        <img class="scrollUpArrow" src="gamepad_resources/images/scroll_up.gif" alt="Scroll Up Gif">
     </div>
 
     <button id="playerId" onclick="scrollOnTop(event)">PLAYER X</button>
@@ -48,15 +49,92 @@
         <div id="joystickRight"></div>
     </div>
 
-
     <div id="rotatePhone"></div>
 
+    <div id="menuGame">
+        <button class="btn menuRestart" onclick="menuRestart(event)">Restart Game</button>
+        <button class="btn menuMap" onclick="menuChangeMap(event)">Change Map</button>
+        <button class="btn menuInformation" onclick="menuInformation(event)">Information</button>
+        <button class="btn menuExit" onclick="menuExit(event)">✖</button>
+    </div>
+
+    <div id="informationGame">
+        <br /><br /><br /><br /><br /><br /><br />
+        <span>Thank you for playing Perfect Night :)</span>
+        <span>The game is open source and free !</span>
+        <br />
+        <span>Feel free to <a href="https://discord.com/channels/1074855981508472923/1074855981986619474">join the
+                Discord</a></span>
+        <span>And to <a href="https://bigeard.github.io/Perfect-Night">participate in the GitHub</a></span>
+        <br />
+        <span>Thanks to <a href="https://www.raylib.com">raylib</a> for this game engine that I love ♥️</span>
+        <span>I also thank the people who made <a href="https://www.mapeditor.org/">Tiled</a>, the QrCode and the
+            compatibility libraries !</span>
+        <br />
+        <span>Last but not least, thanks to all the contributors who helped make this game possible :</span>
+        <br />
+        <span>Mikhail St-Denis - My first contributor thanks you a lot ! art Twitter: @oneSaint</span>
+        <span>Bigeard - Me :)</span>
+        <br />
+        <button class="btn menuExit" onclick="menuExit(event)">✖</button>
+        <br />
+    </div>
+
     <script type="text/javascript">
+        var menuGameActive = false;
+        var menuGame = document.getElementById("menuGame");
+        var informationGameActive = false;
+        var informationGame = document.getElementById("informationGame");
+
+        const menuAction = (event) => {
+            event.preventDefault();
+            menuGameActive = !menuGameActive;
+            if (menuGameActive) menuGame.style.display = "flex";
+            else menuGame.style.display = "none";
+        }
+
+        const menuExit = (event) => {
+            menuGameActive = false;
+            menuGame.style.display = "none";
+            informationGameActive = false;
+            informationGame.style.display = "none";
+        }
+
+        const menuRestart = () => {
+            conn.send({
+                t: new Date().getTime(), // Time
+                ma: 1, // Menu Action
+            });
+        }
+
+        const menuChangeMap = () => {
+            conn.send({
+                t: new Date().getTime(), // Time
+                ma: 2, // Menu Action
+            });
+        }
+
+        const menuInformation = (event) => {
+            event.preventDefault();
+            informationGameActive = !informationGameActive;
+            if (informationGameActive) informationGame.style.display = "flex";
+            else informationGame.style.display = "none";
+        }
+
+        ['click', 'touchstart'].forEach(evt =>
+            window.addEventListener(evt, event => {
+                event.preventDefault();
+                if (!menuGame.contains(event.target) &&
+                    !informationGame.contains(event.target) &&
+                    !event.target.classList.contains("menuButton"))
+                    menuExit(event);
+            })
+        );
+
         const scrollOnTop = (event) => {
             event.preventDefault();
             document.documentElement.scrollTop = 0;
         }
-
 
         // NippleJS - Joystick
         var joysticks = document.getElementById("joysticks");
@@ -113,10 +191,10 @@
             this.frontPosition.y = 0;
         };
 
-        // Display none scroll down indicator
+        // Display none scroll up indicator
         document.addEventListener("scroll", () => {
             if (joysticks.offsetHeight + joysticks.scrollTop >= joysticks.scrollHeight) {
-                scrollDown.style.display = "none";
+                scrollUp.style.display = "none";
             }
         });
 
@@ -284,7 +362,7 @@
                             playerLife.style.background = data.color;
                             playerAmmunition.style.background = data.color;
                             goTop.style.background = data.color;
-                            scrollDown.style.background = data.color;
+                            scrollUp.style.background = data.color;
                         }
                         if (data.index != null) {
                             playerId.innerText = "PLAYER " + data.index;
@@ -332,7 +410,7 @@
             }
 
             const loop = (timestamp) => {
-                if (lastPing != 0 && new Date().getTime() - lastPing > 3000) {
+                if (lastPing != 0 && new Date().getTime() - lastPing > 5000) {
                     lastPing = 0;
                     peer.disconnect();
                     conn = peer.connect(conn.peer, { reliable: true });

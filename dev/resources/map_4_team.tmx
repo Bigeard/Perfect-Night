@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#f5f5f5" nextlayerid="6" nextobjectid="94">
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#212530" nextlayerid="6" nextobjectid="94">
  <tileset firstgid="1" source="grass.tsx"/>
  <layer id="1" name="Background" width="32" height="32">
   <data encoding="csv">
@@ -41,57 +41,49 @@
   <object id="7" name="Player 1" class="player_1" x="226.191" y="54.125" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="1"/>
+    <property name="playerId" type="int" value="1"/>
    </properties>
   </object>
   <object id="10" name="Player 2" class="player_2" x="757.733" y="928.649" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="2"/>
+    <property name="playerId" type="int" value="2"/>
    </properties>
   </object>
   <object id="11" name="Player 3" class="player_3" x="227.115" y="929.799" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff40e6e6"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="3"/>
+    <property name="playerId" type="int" value="3"/>
    </properties>
   </object>
   <object id="12" name="Player 4" class="player_4" x="756.911" y="51.6906" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff7f66f2"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="4"/>
+    <property name="playerId" type="int" value="4"/>
    </properties>
   </object>
   <object id="13" name="Player 5" class="player_5" x="342.27" y="53.4029" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="5"/>
+    <property name="playerId" type="int" value="5"/>
    </properties>
   </object>
   <object id="14" name="Player 6" class="player_6" x="640.819" y="930.445" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="6"/>
+    <property name="playerId" type="int" value="6"/>
    </properties>
   </object>
   <object id="15" name="Player 7" class="player_7" x="340.643" y="926.529" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff40e6e6"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="7"/>
+    <property name="playerId" type="int" value="7"/>
    </properties>
   </object>
   <object id="16" name="Player 8" class="player_8" x="641.305" y="52.6248" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff7f66f2"/>
-    <property name="obj_type" type="int" value="1"/>
-    <property name="player_id" type="int" value="8"/>
+    <property name="playerId" type="int" value="8"/>
    </properties>
   </object>
  </objectgroup>
@@ -112,22 +104,83 @@
  <objectgroup id="4" name="Boxes">
   <object id="62" x="384" y="384" width="256" height="256">
    <properties>
+    <property name="collision" type="bool" value="true"/>
     <property name="displayQrCode" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="64" x="607.75" y="600" width="174.379" height="40"/>
-  <object id="65" x="723.902" y="381.696" width="170.998" height="34.2136"/>
-  <object id="66" x="494.434" y="-34.8112" width="34.2136" height="169.033"/>
-  <object id="68" x="127.232" y="380.627" width="176.691" height="34.2136"/>
-  <object id="69" x="245.088" y="600" width="174.262" height="40"/>
-  <object id="71" x="494.434" y="863.581" width="34.2136" height="181.142"/>
-  <object id="73" x="-31.56" y="59.6596" width="191.936" height="100.717"/>
-  <object id="74" x="862.767" y="95.2506" width="193.179" height="61.8601"/>
-  <object id="75" x="863.894" y="863.894" width="187.486" height="64.3718"/>
-  <object id="76" x="-28.1785" y="864.963" width="188.555" height="65.4408"/>
-  <object id="77" x="481.085" y="736.692" width="59.8738" height="62.5081"/>
-  <object id="78" x="991.126" y="478.991" width="63.5772" height="64.1505"/>
-  <object id="80" x="-31.56" y="480.06" width="62.5661" height="63.0814"/>
-  <object id="81" x="481.439" y="219.55" width="63.0814" height="63.7511"/>
+  <object id="64" x="607.75" y="600" width="174.379" height="40">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="65" x="723.902" y="381.696" width="170.998" height="34.2136">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="66" x="494.434" y="-34.8112" width="34.2136" height="169.033">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="68" x="127.232" y="380.627" width="176.691" height="34.2136">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="69" x="245.088" y="600" width="174.262" height="40">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="71" x="494.434" y="863.581" width="34.2136" height="181.142">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="73" x="-30.2358" y="64.0823" width="192" height="96">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+    <property name="score" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="74" x="862.767" y="64.2428" width="192" height="96">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+    <property name="score" type="int" value="3"/>
+   </properties>
+  </object>
+  <object id="75" x="863.894" y="863.894" width="192" height="96">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+    <property name="score" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="76" x="-30.3473" y="863.68" width="192" height="96">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+    <property name="score" type="int" value="2"/>
+   </properties>
+  </object>
+  <object id="77" x="481.085" y="736.692" width="59.8738" height="62.5081">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="78" x="991.126" y="478.991" width="63.5772" height="64.1505">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="80" x="-31.56" y="480.06" width="62.5661" height="63.0814">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="81" x="481.439" y="219.55" width="63.0814" height="63.7511">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

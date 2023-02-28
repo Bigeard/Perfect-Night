@@ -10,22 +10,21 @@ extern "C"
 #include "../../../lib/raylib/src/raylib.h"
 #include "../player/player.h"
 
+#define NUMBER_EIGHT 8
 #define BLACKGROUND     \
     CLITERAL(Color)     \
     {                   \
         33, 37, 48, 255 \
     }
-#define CHANGECOLOR        \
-    CLITERAL(Color)        \
-    {                      \
-        255, 100, 255, 255 \
-    }
 
     extern bool activeDev;
     extern float arenaSizeX;
     extern float arenaSizeY;
-    extern Color themeColor[8];
-    extern int ColorScore[8];
+    extern Color themeColor[NUMBER_EIGHT];
+    extern int colorScore[NUMBER_EIGHT];
+
+    extern int BoxesScoreFontSize[NUMBER_EIGHT];
+    extern Vector2 BoxesScoreSize[NUMBER_EIGHT];
 
     extern Texture2D qrCodeTexture;
 
@@ -39,13 +38,16 @@ extern "C"
     extern Texture2D PattenSquareTexture;
     extern Texture2D PattenCrossTexture;
 
-    extern Player players[8];
+    extern Shader neonShader;
+
+    extern Player players[NUMBER_EIGHT];
     extern int numberPlayer;
 
     extern Player *outsidePlayer;
     extern Player *lastOutsidePlayer;
 
     void InitGameplay(void);
+    void InitMap(void);
     void UpdateGameplay(void);
     void ResetGame(void);
     void DrawGameplay(void);

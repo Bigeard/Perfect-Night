@@ -1,3 +1,4 @@
+let menuAction = 0;
 const listGamepad = new Map([]);
 const disconnectGamepad = [];
 
@@ -43,6 +44,9 @@ class VirtualGamepad {
                     dataSend.life = this.life;
                     dataSend.ammunition = this.ammunition;
                     this.edit = false;
+                }
+                if (data.ma) { // Menu Action
+                    menuAction = data.ma;
                 }
                 this.conn.send(dataSend);
             }
