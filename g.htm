@@ -288,13 +288,13 @@
                         PeerPlayerId = peerConnection.PeerPlayerId
                     }
                     // @DEV_MODE
-                    // if (!PeerPlayerId) {
-                    //     // Store connection player
-                    //     localStorage.setItem("peerConnection", JSON.stringify({
-                    //         PeerServerId,
-                    //         PeerPlayerId: NewPeerPlayerId
-                    //     }));
-                    // }
+                    if (!PeerPlayerId) {
+                        // Store connection player
+                        localStorage.setItem("peerConnection", JSON.stringify({
+                            PeerServerId,
+                            PeerPlayerId: NewPeerPlayerId
+                        }));
+                    }
 
                     // Join the connection
                     if (PeerServerId) {
