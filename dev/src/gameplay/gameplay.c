@@ -65,10 +65,11 @@ EM_JS(int, SetMenuAction, (int action), {
 // Gameplay
 tmx_map *map;
 int idMap = 0;
-char *listMap[3] = {
+char *listMap[4] = {
     "resources/map_2_team_v2.tmx",
     "resources/map_vs.tmx",
-    "resources/map_4_team.tmx"};
+    "resources/map_4_team.tmx",
+    "resources/map_vs_big.tmx"};
 
 float arenaSizeX = 0.0f;
 float arenaSizeY = 0.0f;
@@ -781,16 +782,16 @@ void DrawGameplay(void)
                 if (colorScore[i] > -1)
                 {
                     // @TODO fix display if multi color team
-                    DrawText(TextFormat("%d", colorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 80.0f) + 320 * indexFindColor, (int)(camera.target.y - 80.0f), 80, themeColor[indexFindColor]);
+                    DrawText(TextFormat("%d", colorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 80.0f) + (320 - 10 * (numberPlayer-2)) - (320 - 20 * (numberPlayer-2)) * (indexFindColor - numberPlayer/2) * -1, (int)camera.target.y, 80, themeColor[indexFindColor]);
                 }
                 else
                     i--;
                 indexFindColor++;
             }
-            DrawCircle(camera.target.x, camera.target.y - 100.0f, 50.0f, BLACK);
-            DrawCircle(camera.target.x, camera.target.y - 100.0f, 48.0f, WHITE);
-            DrawCircle(camera.target.x, camera.target.y - 100.0f, 40.0f, colorAlive);
-            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y + 40.0f), 80, colorAlive);
+            DrawCircle(camera.target.x, camera.target.y - 300.0f, 50.0f, BLACK);
+            DrawCircle(camera.target.x, camera.target.y - 300.0f, 48.0f, WHITE);
+            DrawCircle(camera.target.x, camera.target.y - 300.0f, 40.0f, colorAlive);
+            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y - 200.0f), 80, colorAlive);
         }
 
         // Draw title
