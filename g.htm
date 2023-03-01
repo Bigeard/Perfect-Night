@@ -81,6 +81,11 @@
     </div>
 
     <script type="text/javascript">
+        // Ping / Latency Test
+        // var pings = [0];
+        // var w = 0; // Loop 500
+
+
         var menuGameActive = false;
         var menuGame = document.getElementById("menuGame");
         var informationGameActive = false;
@@ -228,6 +233,7 @@
                 status.innerText = "No connection";
 
                 const Config = {
+                    // reliable: false, // Low Latency (not sure...)
                     //// ONLINE
                     secure: true,
                     host: "perfect-night-374900.oa.r.appspot.com",
@@ -379,6 +385,15 @@
                         if (data.ammunition != null || data.ammunition === 0) {
                             playerAmmunition.innerText = "Ammu. " + data.ammunition;
                         }
+
+                        //// Ping / Latency Test
+                        // if (data.t) {
+                        //     if (w >= 1000) w = 0;
+                        //     pings[w] = new Date().getTime() - data.t;
+                        //     w++
+                        // } 
+                        // var sum = pings.reduce((p, a) => p + a, 0);
+                        // ping.innerText = "Ping: " + (new Date().getTime() - data.t) + "- Total: " + (sum/pings.length);
                         ping.innerText = "Ping: " + (new Date().getTime() - data.t);
                         lastPing = data.t;
                     }
@@ -410,7 +425,7 @@
             }
 
             const loop = (timestamp) => {
-                if (lastPing != 0 && new Date().getTime() - lastPing > 5000) {
+                if (lastPing != 0 && new Date().getTime() - lastPing > 500) {
                     lastPing = 0;
                     peer.disconnect();
                     conn = peer.connect(conn.peer, { reliable: true });

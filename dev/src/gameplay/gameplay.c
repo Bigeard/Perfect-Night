@@ -523,14 +523,13 @@ void UpdateGameplay(void)
 
     if (lastPlayer >= 2)
     {
-        if (playerAlive == 1)
-        {
-            centerPositionX += arenaSizeX / 2;
-            centerPositionY += arenaSizeY / 2;
-        }
-        if (playerAlive >= 1) {
+        if (playerAlive >= 2) {
             centerPositionX = centerPositionX / playerAlive;
             centerPositionY = centerPositionY / playerAlive;
+        }
+        else if (playerAlive == 1) {
+            centerPositionX = players[playerAliveId].p.pos.x;
+            centerPositionY = players[playerAliveId].p.pos.y - 220;
         }
         else {
             centerPositionX = arenaSizeX / 2;

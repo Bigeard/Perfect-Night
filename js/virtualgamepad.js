@@ -30,6 +30,9 @@ class VirtualGamepad {
     connect() {
         this.conn.on('data', (data) => {
             if (data != null && (typeof data === 'object' || typeof data === 'function')) {
+                if (this.lastUpdate > data.t) return; // Out of date
+                this.lastUpdate = data.t;
+
                 this.axes[0] = data.lx || 0;
                 this.axes[1] = data.ly || 0;
                 this.axes[2] = data.rx || 0;
