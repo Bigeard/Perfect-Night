@@ -18,7 +18,7 @@ body {
     height: 100vh;
 }
 
-button {
+button, input {
     font-weight: bold;
     color: #000;
     border: none;
@@ -42,6 +42,13 @@ button {
     padding: 10px 15px;
     border-radius: 10px;
     border: solid 2px #ffffff;
+}
+
+.btn:disabled {
+    background: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.5);
+    border: solid 2px rgba(255, 255, 255, 0.5);
+
 }
 
 #scrollUp {
@@ -105,6 +112,25 @@ button {
     cursor: pointer;
 }
 
+#buttonShoot {
+    z-index: 1000;
+    position: absolute;
+    right: 0;
+    top: calc(100vh - 30px);
+    width: 120px;
+    height: 120px;
+    border-radius: 34px 0px;
+    color: #212530;
+    background: gray;
+    opacity: 0.25;
+
+    background-image: url("images/target.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 70%;
+    image-rendering: pixelated;
+}
+
 #joystickLeft {
     position: absolute;
     left: 0;
@@ -124,11 +150,11 @@ button {
 }
 
 .deadBackground {
-    background-image: url("images/dead_face.png"), url("images/dead_background.png");
-    background-repeat: no-repeat, repeat;
-    background-position: center;
-    background-size: 90vh, 30px;
-    image-rendering: pixelated;
+    background-image: url("images/dead_face.png"), url("images/dead_background.png") !important;
+    background-repeat: no-repeat, repeat !important;
+    background-position: center !important;
+    background-size: 90vh, 30px !important;
+    image-rendering: pixelated !important;
 }
 
 .controlInfo {
@@ -193,12 +219,12 @@ button {
 }
 
 @media screen and (orientation:portrait) {
-
     #joysticks,
     #playerLife,
     #playerAmmunition,
     #goTop,
-    #scrollUp {
+    #scrollUp,
+    .optionButton {
         display: none;
     }
 

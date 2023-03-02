@@ -63,7 +63,7 @@ void UpdateLoot(Loot *loot, Player *player)
         case LASER:
             // @TODO add feature laser
             // player->item = InitItemLaser(player->id);
-            player->item = InitItemNothing(player->id);
+            player->item = InitItemMultiShoot(player->id);
             break;
         case MULTI_SHOOT:
             player->item = InitItemMultiShoot(player->id);

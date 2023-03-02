@@ -16,8 +16,17 @@ extern "C"
     {                   \
         33, 37, 48, 255 \
     }
+#define GRAYDARK     \
+    CLITERAL(Color)     \
+    {                   \
+        86, 86, 86, 255 \
+    }
+
+
+    
 
     extern bool activeDev;
+    extern bool activePerf;
     extern float arenaSizeX;
     extern float arenaSizeY;
     extern Color themeColor[NUMBER_EIGHT];
@@ -38,7 +47,7 @@ extern "C"
     extern Texture2D PattenSquareTexture;
     extern Texture2D PattenCrossTexture;
 
-    extern Shader neonShader;
+    // extern Shader neonShader;
 
     extern Player players[NUMBER_EIGHT];
     extern int numberPlayer;

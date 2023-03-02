@@ -23,8 +23,11 @@ void DrawBox(Box box)
 		// EndShaderMode();
 
 		// @FPS take a lot of performance
-		DrawTextureTiled(PattenSlashTexture, (Rectangle){0.0f, 0.0f, 16.0f, 16.0f}, (Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
-						 (Vector2){0.0f, 0.0f}, 0.0f, 1.0f, Fade(box.color, 0.4f));
+		if (!activePerf)
+		{
+			DrawTextureTiled(PattenSlashTexture, (Rectangle){0.0f, 0.0f, 16.0f, 16.0f}, (Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
+							 (Vector2){0.0f, 0.0f}, 0.0f, 1.0f, Fade(box.color, 0.4f));
+		}
 	}
 
 	if (box.score != -1 && colorScore[box.score] != -1)

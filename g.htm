@@ -30,6 +30,7 @@
             <span id="ping">Ping: X</span>
         </div>
         <div>
+            <button disabled class="btn optionButton" onclick="optionAction(event)">Option ⚙</button>
             <button class="btn menuButton" onclick="menuAction(event)">Menu ⠸</button>
         </div>
     </div>
@@ -45,6 +46,7 @@
     <button id="goTop" onclick="scrollOnTop(event)">↑</button>
 
     <div id="joysticks" class="controlInfo">
+        <input id="buttonShoot" type="button">
         <div id="joystickLeft"></div>
         <div id="joystickRight"></div>
     </div>
@@ -85,6 +87,10 @@
         // var pings = [0];
         // var w = 0; // Loop 500
 
+        // Find Peer Server Id (in URL)
+        const params = new URLSearchParams(document.location.search);
+        let PeerServerId = params.get("i");
+        console.info("Peer Server (Main) Id:", PeerServerId);
 
         var menuGameActive = false;
         var menuGame = document.getElementById("menuGame");
@@ -143,6 +149,8 @@
 
         // NippleJS - Joystick
         var joysticks = document.getElementById("joysticks");
+        var onShoot = false;
+        var buttonShoot = document.getElementById("buttonShoot");
 
         // IOS disable zoom page
         if (/iPad|iPhone|iPod|Safari/.test(navigator.userAgent)) {
@@ -159,6 +167,16 @@
                 e.preventDefault();
             });
         }
+
+        // On click shoot !
+        buttonShoot.addEventListener("pointerdown", () => {
+            onShoot = true;
+            buttonShoot.style.opacity = 0.5;
+        });
+        buttonShoot.addEventListener("pointerout", () => {
+            onShoot = false;
+            buttonShoot.style.opacity = 0.25;
+        });
 
         var joystickLeft = nipplejs.create({
             zone: document.getElementById("joystickLeft"),
@@ -205,10 +223,10 @@
 
         // Display / Disable control information
         const controlInfo = localStorage.getItem("controlInfo");
-        if (controlInfo) {
+        if (controlInfo && controlInfo != PeerServerId) {
             joysticks.classList.remove("controlInfo");
         } else {
-            localStorage.setItem("controlInfo", true);
+            localStorage.setItem("controlInfo", PeerServerId);
         }
 
         var conn = null;
@@ -234,6 +252,7 @@
 
                 const Config = {
                     // reliable: false, // Low Latency (not sure...)
+                    reliable: true,
                     //// ONLINE
                     secure: true,
                     host: "perfect-night-374900.oa.r.appspot.com",
@@ -276,12 +295,6 @@
                     } else {
                         lastPeerId = peer.id;
                     }
-
-                    // Find Peer Server Id (in URL)
-                    const params = new URLSearchParams(document.location.search);
-                    let PeerServerId = params.get("i");
-                    console.info("Peer Server (Main) Id:", PeerServerId);
-
                     // Manage Peer Player Id to reconnect easily
                     const peerConnection = JSON.parse(localStorage.getItem("peerConnection"));
                     if (peerConnection?.PeerServerId === PeerServerId) {
@@ -355,6 +368,8 @@
                 conn.on("data", (data) => {
                     if (data != null && (typeof data === "object" || typeof data === "function")) {
                         if (data.color != null) {
+                            buttonShoot.style.backgroundColor = data.color;
+
                             joystickLeft[0].options.color = data.color;
                             joystickLeft[0].ui.front.style.background = data.color;
                             joystickLeft[0].ui.back.style.background = data.color;
@@ -428,15 +443,23 @@
                 if (lastPing != 0 && new Date().getTime() - lastPing > 500) {
                     lastPing = 0;
                     peer.disconnect();
-                    conn = peer.connect(conn.peer, { reliable: true });
+                    conn = peer.connect(conn.peer,
+                        // { reliable: true }
+                    );
+                }
+                var rx = (Math.round(joystickRight[0].frontPosition.x) / 50);
+                var ry = (Math.round(joystickRight[0].frontPosition.y) / 50)
+                if (onShoot) {
+                    rx = 0.05;
+                    ry = 0.05;
                 }
                 if (joystickLeft && joystickRight && peer.id && conn) {
                     conn.send({
                         t: new Date().getTime(), // Time
                         lx: (Math.round(joystickLeft[0].frontPosition.x) / 50),
                         ly: (Math.round(joystickLeft[0].frontPosition.y) / 50),
-                        rx: (Math.round(joystickRight[0].frontPosition.x) / 50),
-                        ry: (Math.round(joystickRight[0].frontPosition.y) / 50)
+                        rx: rx,
+                        ry: ry
                     })
                 }
                 window.requestAnimationFrame(loop)
@@ -446,11 +469,11 @@
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script> -->
+    </script>
 </body>
 
 </html>

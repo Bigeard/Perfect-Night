@@ -74,6 +74,7 @@ char *listMap[4] = {
 float arenaSizeX = 0.0f;
 float arenaSizeY = 0.0f;
 bool activeDev = false;
+bool activePerf = false;
 double lastSecond = 0.0;
 static Camera2D camera = {0};
 float cameraZoomScreenSize = 0;
@@ -252,6 +253,16 @@ void UpdateGameplay(void)
     otherColorAlive = false;
 
     double time = GetTime();
+
+    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (cameraZoomScreenSize / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (cameraZoomScreenSize / 1.0001f))
+    {
+        cameraZoomScreenSize -= 0.001f;
+    }
+    if (GetScreenWidth() > (arenaSizeX + 120.0f) || GetScreenHeight() > (arenaSizeY + 120.0f))
+    {
+        cameraZoomScreenSize += 0.001f;
+    }
+
     if ((int)time == lastSecond)
     {
         // Resize Canvas
@@ -299,18 +310,11 @@ void UpdateGameplay(void)
                     }
                 }
                 ResetGame();
+                cameraZoomScreenSize = 1.0f;
                 startTime = 0.0;
             }
             SetMenuAction(0);
         }
-    }
-    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (cameraZoomScreenSize / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (cameraZoomScreenSize / 1.0001f))
-    {
-        cameraZoomScreenSize -= 0.001f;
-    }
-    if (GetScreenWidth() > (arenaSizeX + 120.0f) || GetScreenHeight() > (arenaSizeY + 120.0f))
-    {
-        cameraZoomScreenSize += 0.001f;
     }
 
     numberPlayer = GetNumberPlayer(); // +2
@@ -363,6 +367,7 @@ void UpdateGameplay(void)
                 }
                 i = NUMBER_EIGHT;
                 lastPlayer++;
+                startTime = 0.0;
             }
         }
     }
@@ -524,15 +529,18 @@ void UpdateGameplay(void)
 
     if (lastPlayer >= 2)
     {
-        if (playerAlive >= 2) {
+        if (playerAlive >= 2)
+        {
             centerPositionX = centerPositionX / playerAlive;
             centerPositionY = centerPositionY / playerAlive;
         }
-        else if (playerAlive == 1) {
+        else if (playerAlive == 1)
+        {
             centerPositionX = players[playerAliveId].p.pos.x;
             centerPositionY = players[playerAliveId].p.pos.y - 220;
         }
-        else {
+        else
+        {
             centerPositionX = arenaSizeX / 2;
             centerPositionY = arenaSizeY / 2;
         }
@@ -707,7 +715,14 @@ void DrawGameplay(void)
     }
     DrawCircleGradient(arenaSizeX / 2.0f, arenaSizeY / 2.0f, arenaSizeX + 300.0f, Fade(BLACK, 0.6f), Fade(BLACK, 0.0f));
     DrawRectangle(-2, -2, arenaSizeX + 4, arenaSizeY + 4, Fade(GRAY, 0.5f));
-    render_map(map);
+    if (activePerf)
+    {
+        DrawRectangle(0, 0, arenaSizeX, arenaSizeY, BLACKGROUND);
+    }
+    else
+    {
+        render_map(map);
+    }
     DrawGameArena();
 
     // Draw Boxes
@@ -776,17 +791,23 @@ void DrawGameplay(void)
         // Draw Wins
         if (startTime != 0.0)
         {
-            int indexFindColor = 0;
+            DrawRectangle(camera.target.x - arenaSizeX, camera.target.y - 10, arenaSizeX * 2, 110, Fade(BLACKGROUND, 0.9));
             for (int i = 0; i < numberActiveColor; i++)
             {
                 if (colorScore[i] > -1)
                 {
-                    // @TODO fix display if multi color team
-                    DrawText(TextFormat("%d", colorScore[indexFindColor]), (int)(camera.target.x - 50.0f * 2.0f - 80.0f) + (320 - 10 * (numberPlayer-2)) - (320 - 20 * (numberPlayer-2)) * (indexFindColor - numberPlayer/2) * -1, (int)camera.target.y, 80, themeColor[indexFindColor]);
+                    const char *textScore = TextFormat("%d", colorScore[i]);
+                    int textScoreSize = MeasureText(textScore, 100);
+                    int centerIfOdd = 160;
+                    if (numberActiveColor % 2)
+                    {
+                        centerIfOdd = 320;
+                    }
+                    DrawText(
+                        textScore,
+                        (int)camera.target.x + (320 - 10 * (numberActiveColor - 2)) - (320 - 20 * (numberActiveColor - 2)) * (i - numberActiveColor / 2) * -1 - centerIfOdd - textScoreSize / 2,
+                        (int)camera.target.y, 100, themeColor[i]);
                 }
-                else
-                    i--;
-                indexFindColor++;
             }
             DrawCircle(camera.target.x, camera.target.y - 300.0f, 50.0f, BLACK);
             DrawCircle(camera.target.x, camera.target.y - 300.0f, 48.0f, WHITE);
@@ -813,26 +834,26 @@ void DrawGameplay(void)
 
 void DrawGameArena(void)
 {
-    if (activeDev)
+    if (activeDev || activePerf)
     {
         for (int x = 0; x <= (int)(arenaSizeX * 0.01f); x++)
         {
             if (x < (int)(arenaSizeX * 0.01f))
             {
-                DrawText(TextFormat("%d", x + 1), x * 100 + 6, 4, 20, LIGHTGRAY);
+                DrawText(TextFormat("%d", x + 1), x * 100 + 6, 4, 20, GRAYDARK);
             }
             Rectangle posViewX = {(float)(x * 100), 0.0f, 2.0f, arenaSizeY};
-            DrawRectangleRec(posViewX, LIGHTGRAY);
+            DrawRectangleRec(posViewX, GRAYDARK);
         }
 
         for (int y = 0; y <= (int)(arenaSizeY * 0.01f); y++)
         {
             if (y < (int)(arenaSizeY * 0.01))
             {
-                DrawText(TextFormat("%d", y + 1), 6, y * 100 + 4, 20, LIGHTGRAY);
+                DrawText(TextFormat("%d", y + 1), 6, y * 100 + 4, 20, GRAYDARK);
             }
             Rectangle posViewY = {0.0f, (int)(y * 100), arenaSizeX, 2.0f};
-            DrawRectangleRec(posViewY, LIGHTGRAY);
+            DrawRectangleRec(posViewY, GRAYDARK);
         }
     }
 }

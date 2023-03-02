@@ -110,25 +110,25 @@ void UpdatePlayer(Player *player)
             player->radian = atan2f(joystickLeftY, joystickLeftX);
         }
 
-        if ((joystickRightX != 0.0f || joystickRightY != 0.0f) && distance > 1.0f)
+        if ((joystickRightX != 0.0f || joystickRightY != 0.0f) && distance >= 0.1f)
         {
             player->radian = atan2f(joystickRightY, joystickRightX);
             player->lastRadian = atan2f(joystickRightY, joystickRightX);
         }
-        if (distance < 1.0f && distance > 0.01f)
+        if (distance <= 0.1f && distance > 0.01f)
         {
             player->lastRadian = player->radian;
         }
 
         // Charge / Shoot Bullet
-        if (distance > 0.1 && player->ammunition > 0)
+        if (distance > 0.001 && player->ammunition > 0)
         {
             player->timeShoot += 2;
-            player->speed = (Vector2){1.2f, 1.2f};
             if (player->charge < 15 && ((int)(player->timeShoot * delta * 10) % 2) == 1 && player->life > 0)
             {
                 player->charge = player->charge + 0.5f;
                 player->timeShoot = 0;
+                player->speed = (Vector2){1.2f, 1.2f};
             }
         }
         else
