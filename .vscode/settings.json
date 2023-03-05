@@ -31,6 +31,7 @@
 		"__locale": "c",
 		"locale": "c",
 		"thread": "c",
-		"*.inc": "c"
+		"*.inc": "c",
+		"*.m": "c"
 	},
 }

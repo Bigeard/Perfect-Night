@@ -60,34 +60,22 @@ int min(int a, int b)
     }
 }
 
-void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint)
+void DrawTextureTiled(const Texture2D texture, const Vector2 source, const Rectangle dest, const Color tint)
 {
-    if (texture.id <= 0 || scale <= 0.0f || source.width == 0 || source.height == 0 || dest.width < source.width * scale || dest.height < source.height * scale)
+    for (float dx = 0; dx < dest.width; dx += source.x)
     {
-        return;
-    }
-
-    int tileWidth = (int)(source.width * scale), tileHeight = (int)(source.height * scale);
-
-    for (int dx = 0; dx < dest.width; dx += tileWidth)
-    {
-        int tileWidthClamped = min(dest.width - dx, tileWidth);
-        float sourceWidthClamped = ((float)tileWidthClamped / tileWidth) * source.width;
-
-        for (int dy = 0; dy < dest.height; dy += tileHeight)
+        const int tileWidthClamped = min(dest.width - dx, source.x);
+        for (float dy = 0; dy < dest.height; dy += source.y)
         {
-            int tileHeightClamped = min(dest.height - dy, tileHeight);
-            float sourceHeightClamped = ((float)tileHeightClamped / tileHeight) * source.height;
-
-            Rectangle destTile = (Rectangle){dest.x + dx, dest.y + dy, (float)tileWidthClamped, (float)tileHeightClamped};
-            Rectangle sourceTile = (Rectangle){source.x, source.y, sourceWidthClamped, sourceHeightClamped};
-
-            DrawTexturePro(texture, sourceTile, destTile, origin, rotation, tint);
+            const int tileHeightClamped = min(dest.height - dy, source.y);
+            const Rectangle s = {0, 0, tileWidthClamped, tileHeightClamped};
+            const Vector2 p = {dest.x + dx, dest.y + dy};
+            DrawTextureRec(texture, s, p, tint);
         }
     }
 }
 
-int CalculateFontSizeWithMaxSize(const char* text, Vector2 maxSize, int margin)
+int CalculateFontSizeWithMaxSize(const char *text, Vector2 maxSize, int margin)
 {
     int fontSize = maxSize.x;
     while (maxSize.x - margin <= MeasureText(text, fontSize) || maxSize.y - margin <= fontSize)

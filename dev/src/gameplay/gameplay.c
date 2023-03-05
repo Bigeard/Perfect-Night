@@ -160,11 +160,6 @@ Texture2D BonusLifeWhiteTexture;
 Texture2D BonusSpeedTexture;
 Texture2D NothingTexture;
 
-// Patterns
-Texture2D PattenSlashTexture;
-// Texture2D PattenSquareTexture;
-// Texture2D PattenCrossTexture;
-
 // // Shaders
 // @TODO try retro neon
 // const char *neonShaderCode =
@@ -209,11 +204,6 @@ void InitGameplay(void)
     BonusSpeedTexture = LoadTexture("resources/bonus_speed.png");
     NothingTexture = LoadTexture("resources/nothing.png");
 
-    // Patterns
-    PattenSlashTexture = LoadTexture("resources/pattern_slash.png");
-    // PattenSquareTexture = LoadTexture("resources/pattern_square.png");
-    // PattenCrossTexture = LoadTexture("resources/pattern_cross.png");
-
     // Shaders
     // neonShader = LoadShaderFromMemory(NULL, neonShaderCode);
 
@@ -225,8 +215,9 @@ void InitGameplay(void)
     cameraZoomScreenSize = 1.0f;
 
     // Init
-    InitPlayer();
+    InitBox();
     InitLoot();
+    InitPlayer();
 
     // Init / Load TMX
     tmx_img_load_func = raylib_tex_loader;
@@ -341,15 +332,19 @@ void UpdateGameplay(void)
             {
                 playerSpace[i] = true;
                 players[i] = (Player){
-                    i + 1,                                                                             // id: Identifier
-                    GetIdGamepad(i),                                                                   // gamepadId: Gamepad identifier
-                    1,                                                                                 // life: Number of life
-                    DELAY_INVINCIBLE,                                                                  // invincible: Time of invincibility
-                    MAX_AMMUNITION,                                                                    // ammunition: Ammunition
-                    DELAY_AMMUNITION,                                                                  // ammunitionLoad: Ammunition loading
-                    {{0.0f, 0.0f}, {40.0f, 40.0f}, {0.0f, 0.0f}, {false, false, false, false, false}}, // p: Physic
-                    {0.0f, 0.0f},                                                                      // spawn: Spawn position
-                    {3.05f, 3.05f},                                                                    // speed: Speed of the tank
+                    i + 1,            // id: Identifier
+                    GetIdGamepad(i),  // gamepadId: Gamepad identifier
+                    1,                // life: Number of life
+                    DELAY_INVINCIBLE, // invincible: Time of invincibility
+                    MAX_AMMUNITION,   // ammunition: Ammunition
+                    DELAY_AMMUNITION, // ammunitionLoad: Ammunition loading
+                    {
+                        {0.0f, 0.0f},
+                        {40.0f, 40.0f},
+                        {0.0f, 0.0f},
+                        {false, false, false, false, false}}, // p: Physic
+                    {0.0f, 0.0f},                             // spawn: Spawn position
+                    {3.05f, 3.05f},                      // speed: Speed of the tank
                     // Bullet
                     0.0f, // charge: Charge delay
                     true, // canShoot: Can Shoot
@@ -784,31 +779,35 @@ void DrawGameplay(void)
     EndMode2D();
 
     // DRAW STAT LOG INFO MENU SCREEN
-    BeginDrawing();
-
-    if (numberPlayer == 0 || startTime != 0.0 || pauseGame) // Background for title / win
+    if (numberPlayer == 0 || startTime != 0.0 || pauseGame || activeDev)
     {
-        DrawRectangle(0.0f, 0.0f, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.4f));
-    }
+        BeginDrawing();
 
-    for (int i = 0; i < NUMBER_EIGHT; i++)
-    {
-        if (!players[i].id)
-            continue;
-        DrawStatsPlayer(players[i]);
-    }
+        if (numberPlayer == 0 || startTime != 0.0 || pauseGame) // Background for title / win
+        {
+            DrawRectangle(0.0f, 0.0f, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.4f));
+        }
 
-    if (activeDev)
-    {
-        // DISPLAY FPS
-        DrawFPS(10, 10);
+        // @DEV
+        if (activeDev)
+        {
+            // for (int i = 0; i < NUMBER_EIGHT; i++)
+            // {
+            //     if (!players[i].id)
+            //         continue;
+            //     DrawStatsPlayer(players[i]);
+            // }
 
-        // DISPLAY INFO
-        DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, WHITE);
-        DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, WHITE);
-        DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, WHITE);
+            // DISPLAY FPS
+            DrawFPS(10, 10);
+
+            // DISPLAY INFO
+            // DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, WHITE);
+            // DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, WHITE);
+            // DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, WHITE);
+        }
+        EndDrawing();
     }
-    EndDrawing();
 
     if (numberPlayer == 0 || startTime != 0.0 || pauseGame)
     {
@@ -858,16 +857,18 @@ void DrawGameplay(void)
             DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
             DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
 
-            DrawRectangle(10, 20, 300, 144, Fade(BLACKGROUND, 0.6f));
-            DrawText("- Don't use a VPN", 40, 40, 24, WHITE);
-            DrawText("- Chromium browser", 40, 80, 24, WHITE);
-            DrawText("  is recommended :S", 40, 120, 24, WHITE);
+            DrawRectangle(0, 18, 300, 144, Fade(BLACKGROUND, 0.6f));
+            DrawText("- Don't use a VPN", 30, 40, 24, WHITE);
+            DrawText("- Chromium browser", 30, 80, 24, WHITE);
+            DrawText("  is recommended :S", 30, 120, 24, WHITE);
 
-            DrawRectangle(camera.target.x*2 - 200, 20, 200, 220, Fade(BLACKGROUND, 0.6f));
-            DrawRectangle(camera.target.x*2 - 180, 60, 160, 160, BLACK);
-            DrawRectangle(camera.target.x*2 - 170, 70, 140, 140, RAYWHITE);
-            DrawText("raylib", camera.target.x*2 - 128, 166, 31, BLACK);
-            DrawText("Powered with", camera.target.x*2 - 176, 30, 24, WHITE);
+            DrawRectangle(camera.target.x * 2 - 200, 20, 200, 220, Fade(BLACKGROUND, 0.6f));
+            DrawRectangle(camera.target.x * 2 - 180, 60, 160, 160, BLACK);
+            DrawRectangle(camera.target.x * 2 - 170, 70, 140, 140, RAYWHITE);
+            DrawText("raylib", camera.target.x * 2 - 128, 166, 31, BLACK);
+            DrawText("Powered with", camera.target.x * 2 - 176, 30, 24, WHITE);
+
+            DrawText("Free Open-Source Game", camera.target.x * 2 - 203, 250, 18, WHITE);
         }
         EndMode2D();
     }

@@ -1,5 +1,4 @@
 #include "../../../lib/raylib/src/raylib.h"
-#include "../../../lib/raylib/src/raymath.h"
 
 #include "loot.h"
 #include "../gameplay/gameplay.h"

@@ -1,5 +1,4 @@
 #include "../../../lib/raylib/src/raylib.h"
-#include "../../../lib/raylib/src/raymath.h"
 
 /*
  * https://gist.github.com/Pikachuxxxx/0dda4b70bf71b794b08923df34961844

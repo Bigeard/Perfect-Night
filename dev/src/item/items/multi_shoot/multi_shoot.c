@@ -40,7 +40,7 @@ void ShootItemMultiShoot(Item *item, float calcPosRadianX, float calcPosRadianY,
             (Physic){
                 {player->p.pos.x + 20 + calcPosRadianX * 22 - 5, player->p.pos.y + 20 + calcPosRadianY * 22 - 5},
                 {5, 5},
-                {cos(radian) * player->charge + delta_x * 2, sin(radian) * player->charge + delta_y * 2},
+                {cosf(radian) * player->charge + delta_x * 2, sinf(radian) * player->charge + delta_y * 2},
                 {0, 0, 0, 0, 0}},
             {player->charge + delta_x * 2, player->charge + delta_y * 2},
             radian,
@@ -110,8 +110,8 @@ void DrawItemMultiShoot(Item *item)
     for (int a = 0; a < player.ammunition; a++)
     {
         float calcRadian = player.radian + PI + (a * 0.7 + 0.7 / 2 - (player.ammunition * 0.7 / 2));
-        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
-        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
+        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cosf(calcRadian);
+        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sinf(calcRadian);
         DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, BLACK);
         DrawCircle(ammunitionPosX, ammunitionPosY, 6.5, WHITE);
         DrawCircle(ammunitionPosX, ammunitionPosY, 5, DarkenColor(player.color, 0.7));

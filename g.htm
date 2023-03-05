@@ -249,7 +249,7 @@
                 status.innerText = "No connection";
 
                 const Config = {
-                    reliable: false, // Low Latency (not sure...)
+                    reliable: true, // Low Latency (not sure...)
                     //// ONLINE
                     secure: true,
                     host: "perfect-night.aventu.re",
@@ -411,7 +411,7 @@
                     metadata: {
                         id: PeerPlayerId,
                     },
-                    reliable: false,
+                    reliable: true,
                     serialization: 'none'
                 });
                 conn.on("open", () => {
@@ -499,7 +499,7 @@
             let ry = 0;
 
             const loop = (timestamp) => {
-                if (lastPing != 0 && Date.now() - lastPing > 2000) {
+                if (lastPing != 0 && Date.now() - lastPing > 3000) {
                     lastPing = 0;
                     peer.disconnect();
                     conn = peer.connect(conn.peer,
@@ -507,16 +507,14 @@
                     );
                 }
                 if (joystickLeft && joystickRight && peer.id && conn) {
-                    // Max 1.85
                     if (onShoot) {
-                        rx = 0.050;
-                        ry = 0.050;
+                        rx, ry = 2.5;
                     } else {
-                        rx = (joystickRight[0].frontPosition.x * 0.02);
-                        ry = (joystickRight[0].frontPosition.y * 0.02);
+                        rx = joystickRight[0].frontPosition.x.toFixed(2);
+                        ry = joystickRight[0].frontPosition.y.toFixed(2);
                     }
                     // Time, lx, ly, rx, ry
-                    conn.send(`${Date.now()},${(joystickLeft[0].frontPosition.x * 0.02)},${(joystickLeft[0].frontPosition.y * 0.02)},${rx},${ry}`);
+                    conn.send(`${Date.now()},${joystickLeft[0].frontPosition.x.toFixed(2)},${joystickLeft[0].frontPosition.y.toFixed(2)},${rx},${ry}`);
                 }
                 window.requestAnimationFrame(loop);
             }
@@ -525,11 +523,11 @@
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script> -->
+    </script>
 </body>
 
 </html>

@@ -1,4 +1,5 @@
 // Management of the mobile gamepad
+let perf = false;
 let menuAction = 0;
 const listGamepad = new Map([]);
 const disconnectGamepad = [];
@@ -41,12 +42,12 @@ class VirtualGamepad {
                 if (this.lastUpdate > t) return; // Out of date
                 this.lastUpdate = t;
 
-                this.axes[0] = parseFloat(data[1]) || 0;
-                this.axes[1] = parseFloat(data[2]) || 0;
-                this.axes[2] = parseFloat(data[3]) || 0;
-                this.axes[3] = parseFloat(data[4]) || 0;
+                this.axes[0] = parseFloat(data[1]);
+                this.axes[1] = parseFloat(data[2]);
+                this.axes[2] = parseFloat(data[3]);
+                this.axes[3] = parseFloat(data[4]);
 
-                this.conn.send(t); // -> Pong
+                if(!perf) this.conn.send(t); // -> Pong
                 // Edit
                 if (this.edit) this.conn.send(JSON.stringify(this.checkEdit({ t: data.t })));
             }
@@ -58,6 +59,7 @@ class VirtualGamepad {
                 // Or if the customer needs to have the latest edit.
                 if (data.ma) { // Menu Action
                     menuAction = data.ma;
+                    if (menuAction === 4) perf = !perf;
                 }
                 // Edit
                 if (data.e) dataSend = this.checkEdit(dataSend);

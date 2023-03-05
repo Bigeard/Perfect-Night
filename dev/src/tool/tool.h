@@ -15,7 +15,7 @@ extern "C"
     float LerpCo(float start, float end, float t);
     Color LerpColor(Color colorA, Color colorB, float t);
 
-    void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint);
+    void DrawTextureTiled(const Texture2D texture, const Vector2 source, const Rectangle dest, const Color tint);
 
     int CalculateFontSizeWithMaxSize(const char *text, Vector2 maxSize, int margin);
 

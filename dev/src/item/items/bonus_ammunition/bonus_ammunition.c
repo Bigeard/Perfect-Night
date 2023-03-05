@@ -112,8 +112,8 @@ void DrawItemBonusAmmunition(Item *item)
     for (int a = 0; a < player.ammunition; a++)
     {
         float calcRadian = player.radian + PI + (a * 0.7 + 0.7 / 2 - (player.ammunition * 0.7 / 2));
-        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
-        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
+        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cosf(calcRadian);
+        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sinf(calcRadian);
         DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, BLACK);
         DrawCircle(ammunitionPosX, ammunitionPosY, 6.5, WHITE);
         DrawCircle(ammunitionPosX, ammunitionPosY, 5, LerpColor(themeColor[item->bonusAmmunition.idColorA], themeColor[item->bonusAmmunition.idColorB], item->bonusAmmunition.animationTimer));

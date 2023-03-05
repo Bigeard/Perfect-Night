@@ -92,19 +92,17 @@ void UpdatePlayer(Player *player)
     // MOBILE CONTROLLER
     if (player->INPUT_TYPE == MOBILE)
     {
+        const float joystickLeftX = GetJoystickMobileLeftX(player->gamepadId) * 0.02f;
+        const float joystickLeftY = GetJoystickMobileLeftY(player->gamepadId) * 0.02f;
+        const float joystickRightX = GetJoystickMobileRightX(player->gamepadId) * 0.02f;
+        const float joystickRightY = GetJoystickMobileRightY(player->gamepadId) * 0.02f;
+        const float distance = sqrtf(powf(joystickRightY, 2.0f) + powf(joystickRightX, 2.0f));
+
         // Move Player
-        player->p.vel.x = player->speed.x * GetJoystickMobileLeftX(player->gamepadId);
-        player->p.vel.y = player->speed.y * GetJoystickMobileLeftY(player->gamepadId);
+        player->p.vel.x = player->speed.x * joystickLeftX;
+        player->p.vel.y = player->speed.y * joystickLeftY;
 
         // Move Cannon
-        float joystickRightX = GetJoystickMobileRightX(player->gamepadId);
-        float joystickRightY = GetJoystickMobileRightY(player->gamepadId);
-
-        float joystickLeftX = GetJoystickMobileLeftX(player->gamepadId);
-        float joystickLeftY = GetJoystickMobileLeftY(player->gamepadId);
-
-        float distance = sqrt(pow(joystickRightY, 2) + pow(joystickRightX, 2));
-
         if (joystickLeftX != 0.0f || joystickLeftY != 0.0f)
         {
             player->radian = atan2f(joystickLeftY, joystickLeftX);
@@ -142,18 +140,18 @@ void UpdatePlayer(Player *player)
                     player->lastBullet = 0;
                 }
 
-                float calcPosRadianX = cos(player->lastRadian);
-                float calcPosRadianY = sin(player->lastRadian);
+                float calcPosRadianX = cosf(player->lastRadian);
+                float calcPosRadianY = sinf(player->lastRadian);
 
                 if ((calcPosRadianX > 0.6f && calcPosRadianX < 0.8f) ||
                     (calcPosRadianX < -0.6f && calcPosRadianX > -0.8f))
                 {
-                    calcPosRadianX = lround(cos(player->lastRadian));
+                    calcPosRadianX = lroundf(cosf(player->lastRadian));
                 }
                 if ((calcPosRadianY > 0.6f && calcPosRadianY < 0.8f) ||
                     (calcPosRadianY < -0.6f && calcPosRadianY > -0.8f))
                 {
-                    calcPosRadianY = lround(sin(player->lastRadian));
+                    calcPosRadianY = lroundf(sinf(player->lastRadian));
                 }
 
                 bool defaultShoot = true;
@@ -169,7 +167,7 @@ void UpdatePlayer(Player *player)
                         (Physic){
                             {player->p.pos.x + 20.0f + calcPosRadianX * 22.0f - 5.0f, player->p.pos.y + 20.0f + calcPosRadianY * 22.0f - 5.0f},
                             {5.0f, 5.0f},
-                            {cos(player->lastRadian) * player->charge + player->p.vel.x * 2.0f, sin(player->lastRadian) * player->charge + player->p.vel.y * 2.0f},
+                            {cosf(player->lastRadian) * player->charge + player->p.vel.x * 2.0f, sinf(player->lastRadian) * player->charge + player->p.vel.y * 2.0f},
                             {false, false, false, false, false}},
                         {player->charge + player->p.vel.x * 2.0f, player->charge + player->p.vel.y * 2.0f},
                         player->lastRadian,
@@ -188,8 +186,8 @@ void UpdatePlayer(Player *player)
         }
     }
 
-    player->p.pos.x = player->p.pos.x + player->p.vel.x;
-    player->p.pos.y = player->p.pos.y + player->p.vel.y;
+    player->p.pos.x += player->p.vel.x;
+    player->p.pos.y += player->p.vel.y;
 
     if (player->item.active)
     {
@@ -284,8 +282,8 @@ void DrawPlayer(Player player)
         for (int a = 0; a < player.ammunition; a++)
         {
             float calcRadian = player.radian + PI + ((float)a * 0.7f + 0.7f / 2.0f - ((float)player.ammunition * 0.7f / 2.0f));
-            float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25.0f * cos(calcRadian);
-            float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25.0f * sin(calcRadian);
+            float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25.0f * cosf(calcRadian);
+            float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25.0f * sinf(calcRadian);
             DrawCircle(ammunitionPosX, ammunitionPosY, 7.3f, BLACK);
             DrawCircle(ammunitionPosX, ammunitionPosY, 6.5f, WHITE);
             DrawCircle(ammunitionPosX, ammunitionPosY, 3.0f, DarkenColor(player.color, 0.7f));
@@ -335,51 +333,48 @@ void DrawSpawnPlayer(Player player)
 
 void DrawStatsPlayer(Player player)
 {
-    if (activeDev)
+    Color colorDisplay = player.color;
+    if (player.life < 1)
     {
-        Color colorDisplay = player.color;
-        if (player.life < 1)
-        {
-            colorDisplay = Fade(player.color, 0.2f);
-        }
-        if (player.id % 2)
-        {
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 64.0f, 72.0f}, (Vector2){66.0f, 6.0f}, -270.0f, WHITE);
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 210.0f, 110.0f}, (Vector2){205.0f, 5.0f}, 20.0f, WHITE);
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 210.0f, 110.0f}, (Vector2){205.0f, 5.0f}, 25.0f, WHITE);
+        colorDisplay = Fade(player.color, 0.2f);
+    }
+    if (player.id % 2)
+    {
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 64.0f, 72.0f}, (Vector2){66.0f, 6.0f}, -270.0f, WHITE);
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 210.0f, 110.0f}, (Vector2){205.0f, 5.0f}, 20.0f, WHITE);
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 210.0f, 110.0f}, (Vector2){205.0f, 5.0f}, 25.0f, WHITE);
 
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 60.0f, 60.0f}, (Vector2){60.0f, 0.0f}, -270.0f, colorDisplay);
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 200.0f, 100.0f}, (Vector2){200.0f, 0.0f}, 20.0f, colorDisplay);
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 200.0f, 100.0f}, (Vector2){200.0f, 0.0f}, 25.0f, colorDisplay);
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 60.0f, 60.0f}, (Vector2){60.0f, 0.0f}, -270.0f, colorDisplay);
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 200.0f, 100.0f}, (Vector2){200.0f, 0.0f}, 20.0f, colorDisplay);
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * (float)player.id, 200.0f, 100.0f}, (Vector2){200.0f, 0.0f}, 25.0f, colorDisplay);
 
-            if (player.id == 1)
-                DrawText(TextFormat("P%d", player.id), 256, 30 + 120 * player.id, 30, WHITE);
-            else
-                DrawText(TextFormat("P%d", player.id), 253, 30 + 120 * player.id, 30, WHITE);
-
-            DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * player.id, 190.0f, 90.0f}, (Vector2){195.0f, -5.0f}, 20.0f, WHITE);
-
-            DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){180.0f, 185.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, 20.0f, 60.0f, 10.0f, colorDisplay);
-            DrawTextPro(GetFontDefault(), TextFormat("%.1f", player.ammunitionLoad), (Vector2){250.0f, 190.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, 20.0f, 40.0f, 10.0f, colorDisplay);
-            DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){180.0f, 100.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, 20.0f, 40.0f, 10.0f, colorDisplay);
-        }
+        if (player.id == 1)
+            DrawText(TextFormat("P%d", player.id), 256, 30 + 120 * player.id, 30, WHITE);
         else
-        {
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 64.0f, 72.0f}, (Vector2){-2.0f, 6.0f}, 270.0f, WHITE);
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 210.0f, 110.0f}, (Vector2){5.0f, 5.0f}, -20.0f, WHITE);
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 210.0f, 110.0f}, (Vector2){5.0f, 5.0f}, -25.0f, WHITE);
+            DrawText(TextFormat("P%d", player.id), 253, 30 + 120 * player.id, 30, WHITE);
 
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 60.0f, 60.0f}, (Vector2){0.0f, 0.0f}, 270.0f, colorDisplay);
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 200.0f, 100.0f}, (Vector2){0.0f, 0.0f}, -20.0f, colorDisplay);
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 200.0f, 100.0f}, (Vector2){0.0f, 0.0f}, -25.0f, colorDisplay);
+        DrawRectanglePro((Rectangle){300.0f, 80.0f + 120.0f * player.id, 190.0f, 90.0f}, (Vector2){195.0f, -5.0f}, 20.0f, WHITE);
 
-            DrawText(TextFormat("P%d", player.id), GetScreenWidth() - 288, 30 + 120 * (player.id - 1), 30, WHITE);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){180.0f, 185.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, 20.0f, 60.0f, 10.0f, colorDisplay);
+        DrawTextPro(GetFontDefault(), TextFormat("%.1f", player.ammunitionLoad), (Vector2){250.0f, 190.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, 20.0f, 40.0f, 10.0f, colorDisplay);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){180.0f, 100.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, 20.0f, 40.0f, 10.0f, colorDisplay);
+    }
+    else
+    {
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 64.0f, 72.0f}, (Vector2){-2.0f, 6.0f}, 270.0f, WHITE);
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 210.0f, 110.0f}, (Vector2){5.0f, 5.0f}, -20.0f, WHITE);
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 210.0f, 110.0f}, (Vector2){5.0f, 5.0f}, -25.0f, WHITE);
 
-            DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 190.0f, 90.0f}, (Vector2){-5.0f, -5.0f}, -20.0f, WHITE);
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 60.0f, 60.0f}, (Vector2){0.0f, 0.0f}, 270.0f, colorDisplay);
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 200.0f, 100.0f}, (Vector2){0.0f, 0.0f}, -20.0f, colorDisplay);
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 200.0f, 100.0f}, (Vector2){0.0f, 0.0f}, -25.0f, colorDisplay);
 
-            DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){GetScreenWidth() - 130.0f, 45.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 60.0f, 10.0f, colorDisplay);
-            DrawTextPro(GetFontDefault(), TextFormat("%.1f", player.ammunitionLoad), (Vector2){GetScreenWidth() - 250.0f, 70.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 40.0f, 10.0f, colorDisplay);
-            DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){GetScreenWidth() - 130.0f, -40.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 40.0f, 10.0f, colorDisplay);
-        }
+        DrawText(TextFormat("P%d", player.id), GetScreenWidth() - 288, 30 + 120 * (player.id - 1), 30, WHITE);
+
+        DrawRectanglePro((Rectangle){GetScreenWidth() - 300.0f, 80.0f + 120.0f * (float)(player.id - 1), 190.0f, 90.0f}, (Vector2){-5.0f, -5.0f}, -20.0f, WHITE);
+
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.ammunition), (Vector2){GetScreenWidth() - 130.0f, 45.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 60.0f, 10.0f, colorDisplay);
+        DrawTextPro(GetFontDefault(), TextFormat("%.1f", player.ammunitionLoad), (Vector2){GetScreenWidth() - 250.0f, 70.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 40.0f, 10.0f, colorDisplay);
+        DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){GetScreenWidth() - 130.0f, -40.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 40.0f, 10.0f, colorDisplay);
     }
 }

@@ -79,8 +79,8 @@ void DrawItemRocket(Item *item)
         // if (a >= player.ammunition) {
         //     loadColor = (DELAY_AMMUNITION - player.ammunitionLoad) / DELAY_AMMUNITION;
         // }
-        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cos(calcRadian);
-        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sin(calcRadian);
+        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cosf(calcRadian);
+        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sinf(calcRadian);
         DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, Fade(BLACK, loadColor + 0.3));
         DrawCircle(ammunitionPosX, ammunitionPosY, 6.5, WHITE);
         DrawCircle(ammunitionPosX, ammunitionPosY, 5, ReverseColor(player.color, loadColor));

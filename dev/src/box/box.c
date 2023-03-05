@@ -5,7 +5,13 @@
 #include "../physic/physic.h"
 #include "../tool/tool.h"
 
-void InitBox(void) {}
+// Patterns
+Texture2D PattenSlashTexture;
+
+void InitBox(void) {
+	// Patterns
+    PattenSlashTexture = LoadTexture("resources/pattern_slash.png");
+}
 
 void UpdateBox(Box *box) {}
 
@@ -25,9 +31,14 @@ void DrawBox(Box box)
 		if (!activePerf)
 		{
 			DrawRectangle(box.p.pos.x + 3, box.p.pos.y + 3, box.p.size.x - 6, box.p.size.y - 6, box.color);
-			DrawTextureTiled(PattenSlashTexture, (Rectangle){0.0f, 0.0f, 16.0f, 16.0f}, (Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
-							 (Vector2){0.0f, 0.0f}, 0.0f, 1.0f, Fade(box.color, 0.4f));
-		} else {
+			DrawTextureTiled(
+				PattenSlashTexture,
+				(Vector2){16.0f, 16.0f},
+				(Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
+				Fade(box.color, 0.4f));
+		}
+		else
+		{
 			DrawRectangle(box.p.pos.x + 3, box.p.pos.y + 3, box.p.size.x - 6, box.p.size.y - 6, DarkenColor(box.color, 0.8f));
 		}
 	}

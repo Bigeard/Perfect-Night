@@ -66,7 +66,7 @@
         (() => {
             const init = () => {
                 const Config = {
-                    reliable: false, // Low Latency (not sure...)
+                    reliable: true, // Low Latency (not sure...)
                     //// ONLINE
                     secure: true,
                     host: "perfect-night.aventu.re",
@@ -153,7 +153,7 @@
                         // },
                     ],
                     serialization: 'none',
-                    debug: 0
+                    debug: 3
                 };
                 peer = new Peer(Config);
                 console.info(peer);
