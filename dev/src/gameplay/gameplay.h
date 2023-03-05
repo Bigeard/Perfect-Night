@@ -22,9 +22,6 @@ extern "C"
         86, 86, 86, 255 \
     }
 
-
-    
-
     extern bool activeDev;
     extern bool activePerf;
     extern float arenaSizeX;
@@ -44,8 +41,8 @@ extern "C"
     extern Texture2D NothingTexture;
 
     extern Texture2D PattenSlashTexture;
-    extern Texture2D PattenSquareTexture;
-    extern Texture2D PattenCrossTexture;
+    // extern Texture2D PattenSquareTexture;
+    // extern Texture2D PattenCrossTexture;
 
     // extern Shader neonShader;
 
@@ -61,7 +58,6 @@ extern "C"
     void ResetGame(void);
     void DrawGameplay(void);
     void DrawGameArena(void);
-    void DrawPauseGame(void);
     void GenerateQrCode(void);
     void QrCodeParticleInit(float *qrCodeParticlesAnimationTimer, int *qrCodeParticlesIdColor, Particle *qrCodeParticles);
 

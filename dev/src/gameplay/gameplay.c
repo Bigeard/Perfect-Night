@@ -62,6 +62,11 @@ EM_JS(int, SetMenuAction, (int action), {
     return 1;
 });
 
+// @TODO
+// EM_JS(bool, GetEditSettings, (), {
+//     return settings.edit;
+// });
+
 // Gameplay
 tmx_map *map;
 int idMap = 0;
@@ -78,15 +83,18 @@ bool activePerf = false;
 double lastSecond = 0.0;
 static Camera2D camera = {0};
 float cameraZoomScreenSize = 0;
+float centerPositionX = 0;
+float centerPositionY = 0;
 static bool pauseGame = false;
 
 double startTime = 0.0;
 double elapsedTime = 0.0;
 
-// Home Screen
+// Homepage
 Texture2D titlePerfectNightTexture;
 Texture2D useSameWifiTexture;
 Texture2D andScanQrTexture;
+bool unloadHomepage = false;
 
 // Player
 int lastPlayer = 0;
@@ -154,8 +162,8 @@ Texture2D NothingTexture;
 
 // Patterns
 Texture2D PattenSlashTexture;
-Texture2D PattenSquareTexture;
-Texture2D PattenCrossTexture;
+// Texture2D PattenSquareTexture;
+// Texture2D PattenCrossTexture;
 
 // // Shaders
 // @TODO try retro neon
@@ -203,8 +211,8 @@ void InitGameplay(void)
 
     // Patterns
     PattenSlashTexture = LoadTexture("resources/pattern_slash.png");
-    PattenSquareTexture = LoadTexture("resources/pattern_square.png");
-    PattenCrossTexture = LoadTexture("resources/pattern_cross.png");
+    // PattenSquareTexture = LoadTexture("resources/pattern_square.png");
+    // PattenCrossTexture = LoadTexture("resources/pattern_cross.png");
 
     // Shaders
     // neonShader = LoadShaderFromMemory(NULL, neonShaderCode);
@@ -224,6 +232,8 @@ void InitGameplay(void)
     tmx_img_load_func = raylib_tex_loader;
     tmx_img_free_func = raylib_free_tex;
     InitMap();
+
+    // lastSecond = GetTime();
 }
 
 void InitMap(void)
@@ -244,15 +254,13 @@ void InitMap(void)
 
 void UpdateGameplay(void)
 {
-    float centerPositionX = 0;
-    float centerPositionY = 0;
+    centerPositionX = 0;
+    centerPositionY = 0;
     // float centerDistance = 0.0f;
 
     playerAlive = 0;
     playerAliveId = 0;
     otherColorAlive = false;
-
-    double time = GetTime();
 
     if (GetScreenWidth() < (arenaSizeX + 60.0f) * (cameraZoomScreenSize / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (cameraZoomScreenSize / 1.0001f))
     {
@@ -263,12 +271,12 @@ void UpdateGameplay(void)
         cameraZoomScreenSize += 0.001f;
     }
 
-    if ((int)time == lastSecond)
+    if (GetTime() > lastSecond)
     {
         // Resize Canvas
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
         camera.offset = (Vector2){GetScreenWidth() - arenaSizeX / 2.0f - GetScreenWidth() / 2.0f, GetScreenHeight() - arenaSizeY / 2.0f - GetScreenHeight() / 2.0f};
-        lastSecond += 1;
+        lastSecond += 0.5;
 
         // Menu Action
         int menuAction = GetMenuAction();
@@ -312,6 +320,13 @@ void UpdateGameplay(void)
                 ResetGame();
                 cameraZoomScreenSize = 1.0f;
                 startTime = 0.0;
+                break;
+            case 3: // Dev
+                activeDev = !activeDev;
+                break;
+            case 4: // Perf
+                activePerf = !activePerf;
+                break;
             }
             SetMenuAction(0);
         }
@@ -419,12 +434,24 @@ void UpdateGameplay(void)
 
     if (numberPlayer == 0 && camera.target.x != 0.0f && camera.target.y != 0.0f)
     {
+        // Particle effect on the homepage
         QrCodeParticleInit(&qrCodeParticlesAnimationTimer1, &qrCodeParticlesIdColor1, qrCodeParticles1);
         QrCodeParticleInit(&qrCodeParticlesAnimationTimer2, &qrCodeParticlesIdColor2, qrCodeParticles2);
         QrCodeParticleInit(&qrCodeParticlesAnimationTimer3, &qrCodeParticlesIdColor3, qrCodeParticles3);
         UpdateParticles(qrCodeParticles1, 20);
         UpdateParticles(qrCodeParticles2, 20);
         UpdateParticles(qrCodeParticles3, 20);
+    }
+    else if (numberPlayer != 0 && !unloadHomepage)
+    {
+        unloadHomepage = true;
+        // Unload the homepage
+        memset(qrCodeParticles1, 0, sizeof(qrCodeParticles1));
+        memset(qrCodeParticles2, 0, sizeof(qrCodeParticles2));
+        memset(qrCodeParticles3, 0, sizeof(qrCodeParticles3));
+        UnloadTexture(titlePerfectNightTexture);
+        UnloadTexture(useSameWifiTexture);
+        UnloadTexture(andScanQrTexture);
     }
 
     // Update Players / Bullets
@@ -759,8 +786,7 @@ void DrawGameplay(void)
     // DRAW STAT LOG INFO MENU SCREEN
     BeginDrawing();
 
-    DrawPauseGame();
-    if (numberPlayer == 0 || startTime != 0.0) // Background for title / win
+    if (numberPlayer == 0 || startTime != 0.0 || pauseGame) // Background for title / win
     {
         DrawRectangle(0.0f, 0.0f, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.4f));
     }
@@ -784,7 +810,7 @@ void DrawGameplay(void)
     }
     EndDrawing();
 
-    if (numberPlayer == 0 || startTime != 0.0)
+    if (numberPlayer == 0 || startTime != 0.0 || pauseGame)
     {
         BeginMode2D(camera);
 
@@ -814,9 +840,13 @@ void DrawGameplay(void)
             DrawCircle(camera.target.x, camera.target.y - 300.0f, 40.0f, colorAlive);
             DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y - 200.0f), 80, colorAlive);
         }
-
-        // Draw title
-        if (numberPlayer == 0)
+        // Draw Pause
+        else if (pauseGame)
+        {
+            DrawText("PAUSE", (int)(camera.target.x - MeasureText("PAUSE", 100) / 2), (int)(camera.target.y - 200), 100, BLACK);
+        }
+        // Draw Title
+        else if (numberPlayer == 0)
         {
             DrawParticles(qrCodeParticles1, 20);
             DrawParticles(qrCodeParticles2, 20);
@@ -827,6 +857,17 @@ void DrawGameplay(void)
             DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
             DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
             DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
+
+            DrawRectangle(10, 20, 300, 144, Fade(BLACKGROUND, 0.6f));
+            DrawText("- Don't use a VPN", 40, 40, 24, WHITE);
+            DrawText("- Chromium browser", 40, 80, 24, WHITE);
+            DrawText("  is recommended :S", 40, 120, 24, WHITE);
+
+            DrawRectangle(camera.target.x*2 - 200, 20, 200, 220, Fade(BLACKGROUND, 0.6f));
+            DrawRectangle(camera.target.x*2 - 180, 60, 160, 160, BLACK);
+            DrawRectangle(camera.target.x*2 - 170, 70, 140, 140, RAYWHITE);
+            DrawText("raylib", camera.target.x*2 - 128, 166, 31, BLACK);
+            DrawText("Powered with", camera.target.x*2 - 176, 30, 24, WHITE);
         }
         EndMode2D();
     }
@@ -855,18 +896,6 @@ void DrawGameArena(void)
             Rectangle posViewY = {0.0f, (int)(y * 100), arenaSizeX, 2.0f};
             DrawRectangleRec(posViewY, GRAYDARK);
         }
-    }
-}
-
-void DrawPauseGame(void)
-{
-    if (pauseGame)
-    {
-        DrawRectangleRec((Rectangle){camera.target.x - 480.0f / 2.0f, camera.target.y - 240.0f, 480.0f, 400.0f}, Fade(LIGHTGRAY, 0.6f));
-        DrawText("RESTART (R)", (int)(camera.target.x - 8 * 11), (int)(camera.target.y - 200), 30, BLACK);
-        DrawText("CONTROLLER (C)", (int)(camera.target.x - 8 * 14), (int)(camera.target.y - 100), 30, BLACK);
-        DrawText("CHANGE MAP (E)", (int)(camera.target.x - 8 * 16), (int)(camera.target.y), 30, BLACK);
-        DrawText("CONTINUE (P)", (int)(camera.target.x - 8 * 12), (int)(camera.target.y + 100), 30, BLACK);
     }
 }
 

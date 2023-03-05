@@ -1,3 +1,4 @@
+// Management of the mobile gamepad
 let menuAction = 0;
 const listGamepad = new Map([]);
 const disconnectGamepad = [];
@@ -29,32 +30,38 @@ class VirtualGamepad {
 
     connect() {
         this.conn.on('data', (data) => {
-            if (data != null && (typeof data === 'object' || typeof data === 'function')) {
-                if (this.lastUpdate > data.t) return; // Out of date
-                this.lastUpdate = data.t;
+            if (parseInt(data[0])) {
+                data = data.split(",");
+                // data 0 = time (int)
+                // data 1 = lx (float)
+                // data 2 = ly (float)
+                // data 3 = rx (float)
+                // data 4 = ry (float)
+                const t = parseInt(data[0]);
+                if (this.lastUpdate > t) return; // Out of date
+                this.lastUpdate = t;
 
-                this.axes[0] = data.lx || 0;
-                this.axes[1] = data.ly || 0;
-                this.axes[2] = data.rx || 0;
-                this.axes[3] = data.ry || 0;
-                const dataSend = { t: data.t };
+                this.axes[0] = parseFloat(data[1]) || 0;
+                this.axes[1] = parseFloat(data[2]) || 0;
+                this.axes[2] = parseFloat(data[3]) || 0;
+                this.axes[3] = parseFloat(data[4]) || 0;
+
+                this.conn.send(t); // -> Pong
+                // Edit
+                if (this.edit) this.conn.send(JSON.stringify(this.checkEdit({ t: data.t })));
+            }
+            else {
+                data = JSON.parse(data);
+                let dataSend = { t: data.t };
 
                 // See if there have been any edit.
                 // Or if the customer needs to have the latest edit.
-                if (this.edit || data.e) {
-                    dataSend.index = this.index;
-                    dataSend.color = this.color;
-                    dataSend.life = this.life;
-                    dataSend.ammunition = this.ammunition;
-                    this.edit = false;
-                }
                 if (data.ma) { // Menu Action
                     menuAction = data.ma;
                 }
-                this.conn.send(dataSend);
-            }
-            else {
-                console.info("Peer:", data);
+                // Edit
+                if (data.e) dataSend = this.checkEdit(dataSend);
+                this.conn.send(JSON.stringify(dataSend));
             }
         });
         this.conn.on('disconnect', () => {
@@ -68,5 +75,15 @@ class VirtualGamepad {
             // disconnectGamepad.push(this.id)
             // listGamepad.delete(this.id);
         });
+    }
+
+    checkEdit(dataSend) {
+        this.edit = false;
+        dataSend.index = this.index;
+        dataSend.color = this.color;
+        dataSend.life = this.life;
+        dataSend.ammunition = this.ammunition;
+        // dataSend.settings = settings;
+        return dataSend;
     }
 }

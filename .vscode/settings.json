@@ -17,6 +17,7 @@
 		"peerjs",
 		"perfectnight",
 		"RAYLIB",
+		"RAYWHITE",
 		"SKYBLUE",
 		"videogame"
 	],
@@ -29,6 +30,7 @@
 		"*.c": "c",
 		"__locale": "c",
 		"locale": "c",
-		"thread": "c"
+		"thread": "c",
+		"*.inc": "c"
 	},
 }

@@ -24,10 +24,10 @@ Click on this link to play ! 👾
 
 ## RUN / COMPILE THE GAME :
 
-> make PLATFORM=PLATFORM_WEB -B
-> make PLATFORM=PLATFORM_WEB BUILD_MODE=DEBUG -B
+> cd dev && make
 
 ### TURN SERVER
+
 > turnserver --log-file stdout
 
 ### PEERJS SERVER
@@ -69,20 +69,8 @@ cd ..
 
 > Go to the project task list in `Projects` to see everything.
 
-- Fix bug of collision (need review)
-- Improve the design
-    - Add design for the collision boxes
-    - (optional) customization of the player (color, appearance)
-    - Change UI/UX of the phone gamepad (add info game play / p2p button)
-    - Create the design of the pages
-    - Design the background limit
-    - Add the player's reaction (happy, sad, angry)
-- Add the pages
-    - title page (menu)
-    - Games Page
-    - Versus Page (select player)
-    - Map Page
-    - Game Page
+- (optional) customization of the player (color, appearance)
+- Add the player's reaction (happy, sad, angry)
 - Add different types of weapons (proximity, explosion)
 - Create new maps
 - A custom map loader/upload

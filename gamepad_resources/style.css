@@ -178,7 +178,7 @@ button, input {
     image-rendering: pixelated;
 }
 
-#menuGame, #informationGame {
+#menuGame, #informationGame, #optionGame {
     position: fixed;
     z-index: 1000;
     top: 10%;
@@ -197,11 +197,11 @@ button, input {
     border: solid 2px #ffffff7e;
 }
 
-#menuGame .btn {
+#menuGame .btn, #optionGame .btn {
     margin: 10px;
 }
 
-.menuExit {
+.windowClose {
     background: #ffc5c5cb;
 }
 

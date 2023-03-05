@@ -30,8 +30,8 @@
             <span id="ping">Ping: X</span>
         </div>
         <div>
-            <button disabled class="btn optionButton" onclick="optionAction(event)">Option ⚙</button>
-            <button class="btn menuButton" onclick="menuAction(event)">Menu ⠸</button>
+            <button class="btn optionButton" onclick="windowOpen(event, optionGame)">Option ⚙</button>
+            <button class="btn menuButton" onclick="windowOpen(event, menuGame)">Menu ⠸</button>
         </div>
     </div>
 
@@ -54,10 +54,17 @@
     <div id="rotatePhone"></div>
 
     <div id="menuGame">
-        <button class="btn menuRestart" onclick="menuRestart(event)">Restart Game</button>
-        <button class="btn menuMap" onclick="menuChangeMap(event)">Change Map</button>
-        <button class="btn menuInformation" onclick="menuInformation(event)">Information</button>
-        <button class="btn menuExit" onclick="menuExit(event)">✖</button>
+        <button class="btn menuRestart" onclick="menuAction(event, 1)">Restart Game</button>
+        <button class="btn menuMap" onclick="menuAction(event, 2)">Change Map</button>
+        <button class="btn menuInformation" onclick="windowOpen(event, informationGame)">Information</button>
+        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
+    </div>
+
+    <div id="optionGame">
+        <button class="btn optionBoostFps" onclick="menuAction(event, 4)">Boost FPS</button>
+        <button class="btn optionDevMode" onclick="menuAction(event, 3)">Dev Mode</button>
+        <button disabled class="btn optionGameSettings" onclick="windowClose(event)">Game Settings</button>
+        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
     </div>
 
     <div id="informationGame">
@@ -70,7 +77,8 @@
         <span>And to <a href="https://bigeard.github.io/Perfect-Night">participate in the GitHub</a></span>
         <br />
         <span>Thanks to <a href="https://www.raylib.com">raylib</a> for this game engine that I love ♥️</span>
-        <span>I also thank the people who made <a href="https://www.mapeditor.org/">Tiled</a>, the QrCode and the
+        <span>I also thank the people who made <a href="https://www.mapeditor.org/">Tiled</a>, <a
+                href="https://peerjs.com/">PeerJs</a>, the QrCode and the
             compatibility libraries !</span>
         <br />
         <span>Last but not least, thanks to all the contributors who helped make this game possible :</span>
@@ -78,67 +86,57 @@
         <span>Mikhail St-Denis - My first contributor thanks you a lot ! art Twitter: @oneSaint</span>
         <span>Bigeard - Me :)</span>
         <br />
-        <button class="btn menuExit" onclick="menuExit(event)">✖</button>
+        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
         <br />
     </div>
 
     <script type="text/javascript">
         // Ping / Latency Test
-        // var pings = [0];
-        // var w = 0; // Loop 500
+        // let pings = [0];
+        // let w = 0; // Loop 500
 
         // Find Peer Server Id (in URL)
         const params = new URLSearchParams(document.location.search);
-        let PeerServerId = params.get("i");
+        const PeerServerId = params.get("i");
         console.info("Peer Server (Main) Id:", PeerServerId);
 
-        var menuGameActive = false;
-        var menuGame = document.getElementById("menuGame");
-        var informationGameActive = false;
-        var informationGame = document.getElementById("informationGame");
+        // Menu of the gamepad
+        const menuGame = document.getElementById("menuGame");
+        const optionGame = document.getElementById("optionGame");
+        const informationGame = document.getElementById("informationGame");
+        const listWindow = ["menuGame", "optionGame", "informationGame"];
 
-        const menuAction = (event) => {
-            event.preventDefault();
-            menuGameActive = !menuGameActive;
-            if (menuGameActive) menuGame.style.display = "flex";
-            else menuGame.style.display = "none";
-        }
-
-        const menuExit = (event) => {
-            menuGameActive = false;
-            menuGame.style.display = "none";
-            informationGameActive = false;
-            informationGame.style.display = "none";
-        }
-
-        const menuRestart = () => {
-            conn.send({
-                t: new Date().getTime(), // Time
-                ma: 1, // Menu Action
+        const windowOpen = (event, doc) => {
+            listWindow.forEach(d => {
+                const node = window[d];
+                if (node != doc) node.style.display = "none";
             });
+            if (doc.style.display != "flex") doc.style.display = "flex";
+            else doc.style.display = "none";
         }
 
-        const menuChangeMap = () => {
-            conn.send({
-                t: new Date().getTime(), // Time
-                ma: 2, // Menu Action
-            });
+        const windowClose = (event) => {
+            event.target.parentNode.style.display = "none";
         }
 
-        const menuInformation = (event) => {
-            event.preventDefault();
-            informationGameActive = !informationGameActive;
-            if (informationGameActive) informationGame.style.display = "flex";
-            else informationGame.style.display = "none";
+        const menuAction = (event, action) => {
+            conn.send(JSON.stringify({
+                t: Date.now(), // Time
+                ma: action, // Menu Action
+            }));
         }
 
         ['click', 'touchstart'].forEach(evt =>
             window.addEventListener(evt, event => {
-                event.preventDefault();
-                if (!menuGame.contains(event.target) &&
-                    !informationGame.contains(event.target) &&
-                    !event.target.classList.contains("menuButton"))
-                    menuExit(event);
+                listWindow.forEach(doc => {
+                    const node = window[doc];
+                    if (!node.contains(event.target) &&
+                        !event.target.classList.contains("menuButton") &&
+                        !event.target.classList.contains("optionButton") &&
+                        !event.target.classList.contains("menuInformation")) {
+                        node.style.display = "none";
+                    }
+                })
             })
         );
 
@@ -148,9 +146,9 @@
         }
 
         // NippleJS - Joystick
-        var joysticks = document.getElementById("joysticks");
-        var onShoot = false;
-        var buttonShoot = document.getElementById("buttonShoot");
+        const joysticks = document.getElementById("joysticks");
+        const buttonShoot = document.getElementById("buttonShoot");
+        let onShoot = false;
 
         // IOS disable zoom page
         if (/iPad|iPhone|iPod|Safari/.test(navigator.userAgent)) {
@@ -178,7 +176,7 @@
             buttonShoot.style.opacity = 0.25;
         });
 
-        var joystickLeft = nipplejs.create({
+        const joystickLeft = nipplejs.create({
             zone: document.getElementById("joystickLeft"),
             mode: "static",
             position: { left: "50%", top: "50%" },
@@ -186,7 +184,7 @@
             size: 185
         });
 
-        var joystickRight = nipplejs.create({
+        const joystickRight = nipplejs.create({
             zone: document.getElementById("joystickRight"),
             mode: "static",
             position: { right: "50%", top: "50%" },
@@ -229,34 +227,33 @@
             localStorage.setItem("controlInfo", PeerServerId);
         }
 
-        var conn = null;
-        var peer = {};
+        let conn = null;
+        let peer = {};
 
         // PeerJS - Communication with main screen
         (() => {
-            var PeerPlayerId = false;
-            var lastPeerId = null;
-            var status = document.getElementById("status");
-            var ping = document.getElementById("ping");
-            var infoContainer = document.getElementById("infoContainer");
-            var infoBottom = document.getElementById("infoBottom");
-            var playerId = document.getElementById("playerId");
-            var playerLife = document.getElementById("playerLife");
-            var playerAmmunition = document.getElementById("playerAmmunition");
-            var goTop = document.getElementById("goTop");
+            let PeerPlayerId = false;
+            let lastPeerId = null;
+            const status = document.getElementById("status");
+            const ping = document.getElementById("ping");
+            const infoContainer = document.getElementById("infoContainer");
+            const infoBottom = document.getElementById("infoBottom");
+            const playerId = document.getElementById("playerId");
+            const playerLife = document.getElementById("playerLife");
+            const playerAmmunition = document.getElementById("playerAmmunition");
+            const goTop = document.getElementById("goTop");
 
-            var lastPing = 0;
+            let lastPing = 0;
 
             const init = () => {
                 status.innerText = "No connection";
 
                 const Config = {
-                    // reliable: false, // Low Latency (not sure...)
-                    reliable: true,
+                    reliable: false, // Low Latency (not sure...)
                     //// ONLINE
-                    secure: true,
-                    host: "perfect-night-374900.oa.r.appspot.com",
-                    port: 443,
+                    secure: false,
+                    host: "57.128.169.96",
+                    port: 9000,
 
                     //// LOCAL
                     // secure: false,
@@ -264,26 +261,82 @@
                     // port: 9000,
 
                     path: "/peer",
-                    iceServers: [
-                        {
-                            urls: [
-                                //// ONLINE
-                                "stun:stun3.l.google.com:19302",
-                                "stun:stun4.l.google.com:19302",
+                    config: {
+                        iceServers: [
+                            {
+                                urls: [ // UK
+                                    "turn:57.128.169.96:3478",
+                                    "stun:57.128.169.96:3478",
+                                ],
+                                username: "perfectnight",
+                                credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
+                            },
+                            // {
+                            //     urls: [
+                            //         "stun:stun4.l.google.com:19302",
+                            //     ]
+                            // }
+                            // {
+                            //     urls: [
+                            // //         //// ONLINE
+                            // //         "stun:stun.l.google.com:19302",
+                            // //         "stun:stun3.l.google.com:19302",
+                            // //         "stun:stun4.l.google.com:19302",
 
-                                //// LOCAL
-                                // "192.168.12.1:5349"
-                            ]
+                            //     //     //// LOCAL
+                            //     //     "192.168.12.1:5349",
+                            //     //     "192.168.12.1:3478"
+                            //     // ]
+                            // },
+                            // {
+                            //     urls: [
+                            //         "turn:eu-0.turn.peerjs.com:3478",
+                            //         // "turn:us-0.turn.peerjs.com:3478",
+                            //     ],
+                            //     username: "peerjs",
+                            //     credential: "peerjsp"
+                            // }
+                        ],
+                    },
+                    iceServers: [
+                        // {
+                        //     urls: [
+                        //         //// ONLINE
+                        //         "stun:stun3.l.google.com:19302",
+                        //         "stun:stun4.l.google.com:19302",
+                        //     ]
+                        // },
+                        {
+                            urls: [ // UK
+                                "turn:57.128.169.96:3478",
+                                "stun:57.128.169.96:3478",
+                            ],
+                            username: "perfectnight",
+                            credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
                         },
-                        // { urls: [
+                        // {
+                        //     urls: [
+                        //         "stun:stun4.l.google.com:19302",
+                        //     ]
+                        // }
+                        // {
+                        //     urls: [
                         //         "turn:eu-0.turn.peerjs.com:3478",
-                        //         // "turn:us-0.turn.peerjs.com:3478", 
+                        //         // "turn:us-0.turn.peerjs.com:3478",
                         //     ],
                         //     username: "peerjs",
                         //     credential: "peerjsp"
-                        // }
+                        // },
+                        // {
+                        //     urls: [
+                        //         //// LOCAL
+                        //         "192.168.12.1:3478",
+                        //         "192.168.12.1:5349"
+                        //     ]
+                        // },
                     ],
-                    debug: 2
+                    serialization: 'none',
+                    debug: 0,
                 };
                 peer = new Peer(Config);
 
@@ -358,62 +411,65 @@
                     metadata: {
                         id: PeerPlayerId,
                     },
-                    reliable: true,
+                    reliable: false,
+                    serialization: 'none'
                 });
                 conn.on("open", () => {
                     status.innerText = "Connected";
-                    conn.send({ e: 1 }) // Get last edit
+                    conn.send(JSON.stringify({ e: 1 })) // Get last edit
                     console.info("Connected to ", conn.peer)
                 });
                 conn.on("data", (data) => {
-                    if (data != null && (typeof data === "object" || typeof data === "function")) {
-                        if (data.color != null) {
-                            buttonShoot.style.backgroundColor = data.color;
-
-                            joystickLeft[0].options.color = data.color;
-                            joystickLeft[0].ui.front.style.background = data.color;
-                            joystickLeft[0].ui.back.style.background = data.color;
-
-                            joystickRight[0].options.color = data.color;
-                            joystickRight[0].ui.front.style.background = data.color;
-                            joystickRight[0].ui.back.style.background = data.color;
-
-                            infoContainer.style.background = data.color;
-                            playerId.style.background = data.color;
-                            playerLife.style.background = data.color;
-                            playerAmmunition.style.background = data.color;
-                            goTop.style.background = data.color;
-                            scrollUp.style.background = data.color;
-                        }
-                        if (data.index != null) {
-                            playerId.innerText = "PLAYER " + data.index;
-                        }
-                        if (data.life != null || data.life === 0) {
-                            playerLife.innerText = "Life " + data.life;
-                            if (data.life <= 0) {
-                                joysticks.classList.add("deadBackground");
-                            }
-                            else {
-                                joysticks.classList.remove("deadBackground");
-                            }
-                        }
-                        if (data.ammunition != null || data.ammunition === 0) {
-                            playerAmmunition.innerText = "Ammu. " + data.ammunition;
-                        }
-
+                    if (parseInt(data)) {
                         //// Ping / Latency Test
-                        // if (data.t) {
+                        // if (data) {
                         //     if (w >= 1000) w = 0;
-                        //     pings[w] = new Date().getTime() - data.t;
+                        //     pings[w] = Date.now() - data;
                         //     w++
-                        // } 
+                        // }
                         // var sum = pings.reduce((p, a) => p + a, 0);
-                        // ping.innerText = "Ping: " + (new Date().getTime() - data.t) + "- Total: " + (sum/pings.length);
-                        ping.innerText = "Ping: " + (new Date().getTime() - data.t);
-                        lastPing = data.t;
+                        // ping.innerText = "Ping: " + (Date.now() - data) + "- T: " + (sum / pings.length);
+                        ping.innerText = "Ping: " + (Date.now() - data);
+                        lastPing = data;
                     }
                     else {
-                        console.info("Peer:", data);
+                        data = JSON.parse(data);
+                        // console.info("Peer:", data);
+                        if (data != null && (typeof data === "object" || typeof data === "function")) {
+                            if (data.color != null) {
+                                buttonShoot.style.backgroundColor = data.color;
+
+                                joystickLeft[0].options.color = data.color;
+                                joystickLeft[0].ui.front.style.background = data.color;
+                                joystickLeft[0].ui.back.style.background = data.color;
+
+                                joystickRight[0].options.color = data.color;
+                                joystickRight[0].ui.front.style.background = data.color;
+                                joystickRight[0].ui.back.style.background = data.color;
+
+                                infoContainer.style.background = data.color;
+                                playerId.style.background = data.color;
+                                playerLife.style.background = data.color;
+                                playerAmmunition.style.background = data.color;
+                                goTop.style.background = data.color;
+                                scrollUp.style.background = data.color;
+                            }
+                            if (data.index != null) {
+                                playerId.innerText = "PLAYER " + data.index;
+                            }
+                            if (data.life != null || data.life === 0) {
+                                playerLife.innerText = "Life " + data.life;
+                                if (data.life <= 0) {
+                                    joysticks.classList.add("deadBackground");
+                                }
+                                else {
+                                    joysticks.classList.remove("deadBackground");
+                                }
+                            }
+                            if (data.ammunition != null || data.ammunition === 0) {
+                                playerAmmunition.innerText = "Ammu. " + data.ammunition;
+                            }
+                        }
                     }
                 });
                 conn.on("disconnected", () => {
@@ -432,48 +488,48 @@
 
             const signal = (sigName) => {
                 if (conn && conn.open) {
-                    conn.send(sigName);
+                    conn.send(JSON.stringify({ sigName }));
                     console.info(sigName, "signal sent");
                 } else {
                     console.info("Connection is closed");
                 }
             }
 
+            let rx = 0;
+            let ry = 0;
+
             const loop = (timestamp) => {
-                if (lastPing != 0 && new Date().getTime() - lastPing > 500) {
+                if (lastPing != 0 && Date.now() - lastPing > 2000) {
                     lastPing = 0;
                     peer.disconnect();
                     conn = peer.connect(conn.peer,
-                        // { reliable: true }
+                        { reliable: true }
                     );
                 }
-                var rx = (Math.round(joystickRight[0].frontPosition.x) / 50);
-                var ry = (Math.round(joystickRight[0].frontPosition.y) / 50)
-                if (onShoot) {
-                    rx = 0.05;
-                    ry = 0.05;
-                }
                 if (joystickLeft && joystickRight && peer.id && conn) {
-                    conn.send({
-                        t: new Date().getTime(), // Time
-                        lx: (Math.round(joystickLeft[0].frontPosition.x) / 50),
-                        ly: (Math.round(joystickLeft[0].frontPosition.y) / 50),
-                        rx: rx,
-                        ry: ry
-                    })
+                    // Max 1.85
+                    if (onShoot) {
+                        rx = 0.050;
+                        ry = 0.050;
+                    } else {
+                        rx = (joystickRight[0].frontPosition.x * 0.02);
+                        ry = (joystickRight[0].frontPosition.y * 0.02);
+                    }
+                    // Time, lx, ly, rx, ry
+                    conn.send(`${Date.now()},${(joystickLeft[0].frontPosition.x * 0.02)},${(joystickLeft[0].frontPosition.y * 0.02)},${rx},${ry}`);
                 }
-                window.requestAnimationFrame(loop)
+                window.requestAnimationFrame(loop);
             }
-            window.requestAnimationFrame(loop)
+            window.requestAnimationFrame(loop);
             init();
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script>
+    </script> -->
 </body>
 
 </html>

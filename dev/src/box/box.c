@@ -19,14 +19,16 @@ void DrawBox(Box box)
 		// float time = GetTime();
 		// BeginShaderMode(neonShader);
 		DrawRectangle(box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y, (Color){143, 151, 160, 255}); // or LIGHTGREY what is the best 🤔
-		DrawRectangle(box.p.pos.x + 3, box.p.pos.y + 3, box.p.size.x - 6, box.p.size.y - 6, box.color);
 		// EndShaderMode();
 
-		// @FPS take a lot of performance
+		// @FPS take a lot of performance - https://github.com/raysan5/raylib/issues/2173
 		if (!activePerf)
 		{
+			DrawRectangle(box.p.pos.x + 3, box.p.pos.y + 3, box.p.size.x - 6, box.p.size.y - 6, box.color);
 			DrawTextureTiled(PattenSlashTexture, (Rectangle){0.0f, 0.0f, 16.0f, 16.0f}, (Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
 							 (Vector2){0.0f, 0.0f}, 0.0f, 1.0f, Fade(box.color, 0.4f));
+		} else {
+			DrawRectangle(box.p.pos.x + 3, box.p.pos.y + 3, box.p.size.x - 6, box.p.size.y - 6, DarkenColor(box.color, 0.8f));
 		}
 	}
 

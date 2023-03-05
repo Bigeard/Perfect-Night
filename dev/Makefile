@@ -33,7 +33,7 @@ COMPILER_PATH      ?= C:/raylib/w64devkit/bin
 
 # Define default options
 # One of PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_ANDROID, PLATFORM_WEB
-PLATFORM           ?= PLATFORM_DESKTOP
+PLATFORM           ?= PLATFORM_WEB
 
 # Locations of your newly installed library and associated headers. See ../src/Makefile
 # On Linux, if you have installed raylib but cannot compile the examples, check that
@@ -244,7 +244,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
         # CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
         CFLAGS += --shell-file ./minshell.html
     else
-        CFLAGS += --shell-file ./minshell.html
+        CFLAGS += --shell-file ./minshell.html -O2 --memory-init-file 0
     endif
     EXT = .html
 endif
