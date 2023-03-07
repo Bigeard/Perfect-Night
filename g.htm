@@ -19,8 +19,8 @@
     <link rel="stylesheet" href="gamepad_resources/style.css">
 
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script> -->
-    <script src="js/peerjs.min.js"></script>
-    <script src="js/nipplejs.min.js"></script>
+    <script src="js/lib/peerjs.min.js"></script>
+    <script src="js/lib/nipplejs.min.js"></script>
 </head>
 
 <body id="body">
@@ -60,15 +60,7 @@
         <button class="btn windowClose" onclick="windowClose(event)">✖</button>
     </div>
 
-    <div id="optionGame">
-        <button class="btn optionBoostFps" onclick="menuAction(event, 4)">Boost FPS</button>
-        <button class="btn optionDevMode" onclick="menuAction(event, 3)">Dev Mode</button>
-        <button disabled class="btn optionGameSettings" onclick="windowClose(event)">Game Settings</button>
-        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
-    </div>
-
     <div id="informationGame">
-        <br /><br /><br /><br /><br /><br /><br />
         <span class="thankYou">Thank you for playing Perfect Night :)</span>
         <span>The game is open source and free !</span>
         <br />
@@ -76,18 +68,101 @@
                 Discord</a></span>
         <span>And to <a href="https://bigeard.github.io/Perfect-Night">participate in the GitHub</a></span>
         <br />
-        <span>Thanks to <a href="https://www.raylib.com">raylib</a> for this game engine that I love ♥️</span>
+        <span>Thanks to <a href="https://www.raylib.com">raylib</a> for this game engine, I love ♥️ it.</span>
         <span>I also thank the people who made <a href="https://www.mapeditor.org/">Tiled</a>, <a
-                href="https://peerjs.com/">PeerJs</a>, the QrCode and the
-            compatibility libraries !</span>
+                href="https://peerjs.com/">PeerJs</a>, <a href="https://yoannmoi.net/nipplejs/">NippleJs</a>,
+            FileSaverJs, <a href="https://emscripten.org/">Emscripten</a>, <a
+                href="https://webassembly.org/">WebAssembly</a>, the QrCode and the
+            compatibility libraries ! JS / C languages</span>
         <br />
         <span>Last but not least, thanks to all the contributors who helped make this game possible :</span>
         <br />
         <span>Mikhail St-Denis - My first contributor thanks you a lot ! art Twitter: @oneSaint</span>
+        <br />
         <span>Bigeard - Me :)</span>
         <br />
         <button class="btn windowClose" onclick="windowClose(event)">✖</button>
-        <br />
+    </div>
+
+    <div id="optionGame">
+        <button class="btn optionBoostFps" onclick="menuAction(event, 4)">Boost FPS</button>
+        <button class="btn optionDevMode" onclick="menuAction(event, 3)">Dev Mode</button>
+        <button class="btn optionGameSettings" onclick="windowOpen(event, gameSettings)">Game Settings</button>
+        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
+    </div>
+
+    <div id="gameSettings">
+        <form onsubmit="changeSettings(this); return false">
+            <div class="fieldContainer">
+                <p>Game Settings</p>
+                <div class="field">
+                    <label for="maxScore">Maximum Score: </label>
+                    <input type="number" name="maxScore" id="maxScore" value="3" max="256" required>
+                </div>
+                <div class="field">
+                    <b>-- @TODO --</b><br>
+                    <label for="randomPosLoot">Random position of the loots: </label>
+                    <input disabled type="checkbox" name="randomPosLoot" id="randomPosLoot">
+                </div>
+                <div class="field">
+                    <b>-- @TODO --</b><br>
+                    <label for="defaultItem">Choose a default item: </label>
+                    <select disabled id="defaultItem" name="defaultItem">
+                        <option selected value="-1">Default</option>
+                        <option value="0">Random</option>
+                        <option value="1">Bonus Ammunition</option>
+                        <option value="2">Bonus Life</option>
+                        <option value="3">Bonus Speed</option>
+                        <option value="4">Laser</option>
+                        <option value="5">Multi Shoot</option>
+                        <option value="6">Nothing</option>
+                        <option value="7">Rocket</option>
+                        <option value="8">Sword</option>
+                    </select>
+                </div>
+                <!-- Change the logic to only use integer. The higher the number, the greater the chance of getting the item. -->
+                <div class="field selectItem">
+                    <b>-- @TODO --</b>
+                    <span>Select Items for the game: </span>
+                    <div>
+                        <label for="selectItemBonusAmmunition">- Bonus Ammunition: </label>
+                        <input disabled type="checkbox" name="selectItemBonusAmmunition" id="selectItemBonusAmmunition">
+                    </div>
+                    <div>
+                        <label for="selectItemBonusLife">- Bonus Life: </label>
+                        <input disabled type="checkbox" name="selectItemBonusLife" id="selectItemBonusLife">
+                    </div>
+                    <div>
+                        <label for="selectItemBonusSpeed">- Bonus Life: </label>
+                        <input disabled type="checkbox" name="selectItemBonusSpeed" id="selectItemBonusSpeed">
+                    </div>
+                    <div>
+                        <label for="selectItemLaser">- Laser: </label>
+                        <input disabled type="checkbox" name="selectItemLaser" id="selectItemLaser">
+                    </div>
+                    <div>
+                        <label for="selectItemMultiShoot">- Multi Shoot: </label>
+                        <input disabled type="checkbox" name="selectItemMultiShoot" id="selectItemMultiShoot">
+                    </div>
+                    <div>
+                        <label for="selectItemNothing">- Nothing: </label>
+                        <input disabled type="checkbox" name="selectItemNothing" id="selectItemNothing">
+                    </div>
+                    <div>
+                        <label for="selectItemRocket">- Rocket: </label>
+                        <input disabled type="checkbox" name="selectItemRocket" id="selectItemRocket">
+                    </div>
+                    <div>
+                        <label for="selectItemSword">- Sword: </label>
+                        <input disabled type="checkbox" name="selectItemSword" id="selectItemSword">
+                    </div>
+                </div>
+            </div>
+            <div class="closeValidButton">
+                <button class="btn windowClose" onclick="windowClose(event, gameSettings)">✖</button>
+                <input class="btn changeSettings" type="submit" value="Change the settings" />
+            </div>
+        </form>
     </div>
 
     <script type="text/javascript">
@@ -102,9 +177,10 @@
 
         // Menu of the gamepad
         const menuGame = document.getElementById("menuGame");
-        const optionGame = document.getElementById("optionGame");
         const informationGame = document.getElementById("informationGame");
-        const listWindow = ["menuGame", "optionGame", "informationGame"];
+        const optionGame = document.getElementById("optionGame");
+        const gameSettings = document.getElementById("gameSettings");
+        const listWindow = ["menuGame", "informationGame", "optionGame", "gameSettings"];
 
         const windowOpen = (event, doc) => {
             listWindow.forEach(d => {
@@ -115,8 +191,8 @@
             else doc.style.display = "none";
         }
 
-        const windowClose = (event) => {
-            event.target.parentNode.style.display = "none";
+        const windowClose = (event, parent) => {
+            parent ? parent.style.display = "none" : event.target.parentNode.style.display = "none";
         }
 
         const menuAction = (event, action) => {
@@ -126,14 +202,26 @@
             }));
         }
 
+        const changeSettings = (form) => {
+            // e.preventDefault();
+            const data = new FormData(form);
+            const formDataObj = {};
+            data.forEach((value, key) => (formDataObj[key] = parseInt(value)));
+            conn.send(JSON.stringify({
+                t: Date.now(), // Time
+                s: formDataObj, // Settings
+            }));
+        }
+
         ['click', 'touchstart'].forEach(evt =>
             window.addEventListener(evt, event => {
                 listWindow.forEach(doc => {
                     const node = window[doc];
                     if (!node.contains(event.target) &&
                         !event.target.classList.contains("menuButton") &&
+                        !event.target.classList.contains("menuInformation") &&
                         !event.target.classList.contains("optionButton") &&
-                        !event.target.classList.contains("menuInformation")) {
+                        !event.target.classList.contains("optionGameSettings")) {
                         node.style.display = "none";
                     }
                 })
@@ -353,7 +441,7 @@
                     if (peerConnection?.PeerServerId === PeerServerId) {
                         PeerPlayerId = peerConnection.PeerPlayerId
                     }
-                    // @DEV_MODE
+                    // @DEV
                     if (!PeerPlayerId) {
                         // Store connection player
                         localStorage.setItem("peerConnection", JSON.stringify({
@@ -523,11 +611,11 @@
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script>
+    </script> -->
 </body>
 
 </html>

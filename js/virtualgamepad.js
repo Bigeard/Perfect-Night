@@ -47,7 +47,7 @@ class VirtualGamepad {
                 this.axes[2] = parseFloat(data[3]);
                 this.axes[3] = parseFloat(data[4]);
 
-                if(!perf) this.conn.send(t); // -> Pong
+                if (!perf) this.conn.send(t); // -> Pong
                 // Edit
                 if (this.edit) this.conn.send(JSON.stringify(this.checkEdit({ t: data.t })));
             }
@@ -62,8 +62,10 @@ class VirtualGamepad {
                     if (menuAction === 4) perf = !perf;
                 }
                 // Edit
-                if (data.e) dataSend = this.checkEdit(dataSend);
-                this.conn.send(JSON.stringify(dataSend));
+                else if (data.e) dataSend = this.checkEdit(dataSend);
+                // Game Settings
+                else if (data.s) changeSettings(data.s);
+                if (this.conn) this.conn.send(JSON.stringify(dataSend));
             }
         });
         this.conn.on('disconnect', () => {

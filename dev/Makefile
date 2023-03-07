@@ -193,7 +193,7 @@ endif
 #  -std=gnu99           defines C language mode (GNU C from 1999 revision)
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS += -Wall -std=gnu17 -D_DEFAULT_SOURCE -Wno-missing-braces -s EXPORTED_RUNTIME_METHODS=['lengthBytesUTF8','stringToUTF8','UTF8ToString','ccall'] -s "EXPORTED_FUNCTIONS=['_main', '_malloc']"
+CFLAGS += -Wall -std=gnu17 -D_DEFAULT_SOURCE -Wno-missing-braces -s EXPORTED_RUNTIME_METHODS=['lengthBytesUTF8','stringToUTF8','UTF8ToString','setValue'] -s "EXPORTED_FUNCTIONS=['_main','_malloc']"
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -O0
@@ -244,7 +244,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
         # CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
         CFLAGS += --shell-file ./minshell.html
     else
-        CFLAGS += --shell-file ./minshell.html # -O2 --memory-init-file 0
+        CFLAGS += --shell-file ./minshell.html -O2 --memory-init-file 0
     endif
     EXT = .html
 endif

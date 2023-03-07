@@ -11,9 +11,10 @@
     <meta name="viewport" content="width=device-width">
     <link rel="shortcut icon" href="favicon.ico">
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.js"></script> -->
-    <script src="js/peerjs.min.js"></script>
+    <script src="js/lib/peerjs.min.js"></script>
+    <script src="js/lib/filesaver.min.js"> </script>
+    <script src="js/gamesettings.js"></script>
     <script src="js/virtualgamepad.js"></script>
-    <script src="js/filesaver.min.js"> </script>
     <script type="text/javascript">
         function saveFileFromMEMFSToDisk(memoryFSname, localFSname)     // This can be called by C/C++ code
         {
@@ -153,7 +154,7 @@
                         // },
                     ],
                     serialization: 'none',
-                    debug: 3
+                    debug: 0
                 };
                 peer = new Peer(Config);
                 console.info(peer);

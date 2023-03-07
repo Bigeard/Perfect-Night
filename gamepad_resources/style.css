@@ -18,7 +18,8 @@ body {
     height: 100vh;
 }
 
-button, input {
+button,
+input {
     font-weight: bold;
     color: #000;
     border: none;
@@ -178,11 +179,15 @@ button, input {
     image-rendering: pixelated;
 }
 
-#menuGame, #informationGame, #optionGame {
+#menuGame,
+#informationGame,
+#optionGame,
+#gameSettings {
     position: fixed;
     z-index: 1000;
     top: 10%;
-    display: none; /* display: flex; */
+    display: none;
+    /* display: flex; */
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -197,7 +202,8 @@ button, input {
     border: solid 2px #ffffff7e;
 }
 
-#menuGame .btn, #optionGame .btn {
+#menuGame .btn,
+#optionGame .btn {
     margin: 10px;
 }
 
@@ -205,20 +211,71 @@ button, input {
     background: #ffc5c5cb;
 }
 
-#informationGame {
+#informationGame,
+#gameSettings {
+    justify-content: start;
+    align-items: start;
     z-index: 1100;
-    width: 80%;
-    height: 60vh;
-    padding: 12px;
-    overflow-y: scroll;
+    width: fit-content;
+    height: 65vh;
     background: #ffffffa1;
+    margin: 0 auto;
+    padding: 0;
+    overflow-y: scroll;
 }
 
-.thankYou {
-    margin-top: 60px;
+#informationGame {
+    width: 70%;
+    height: 55vh;
+    padding: 34px;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+}
+
+#informationGame .windowClose {
+    margin-top: 20px;
+}
+
+#gameSettings p {
+    text-align: center;
+    width: 100%;
+}
+
+#gameSettings form {    
+    width: 100%;
+}
+
+.fieldContainer {
+    padding: 20px;
+}
+
+.selectItem {
+    display: flex;
+    flex-direction: column;
+}
+
+.closeValidButton {
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    padding: 6px 0;
+    position: sticky;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background: #e4e4e4a1;
+}
+
+.closeValidButton input {
+    margin-left: 20px;
+}
+
+.field {
+    margin-top: 20px;
 }
 
 @media screen and (orientation:portrait) {
+
     #joysticks,
     #playerLife,
     #playerAmmunition,

@@ -28,6 +28,7 @@ extern "C"
     extern float arenaSizeY;
     extern Color themeColor[NUMBER_EIGHT];
     extern int colorScore[NUMBER_EIGHT];
+    extern int maxScore;
 
     extern int BoxesScoreFontSize[NUMBER_EIGHT];
     extern Vector2 BoxesScoreSize[NUMBER_EIGHT];
@@ -54,6 +55,7 @@ extern "C"
 
     void InitGameplay(void);
     void InitMap(void);
+    void SwitchMap(void);
     void UpdateGameplay(void);
     void ResetGame(void);
     void DrawGameplay(void);

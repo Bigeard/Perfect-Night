@@ -62,8 +62,8 @@ extern "C"
     void DrawSpawnPlayer(Player player);
     void DrawStatsPlayer(Player player);
 
-    int GamepadPlayerLife(char *p_id, int life);
-    int GamepadPlayerAmmunition(char *p_id, int ammunition);
+    void GamepadPlayerLife(char *p_id, int life);
+    void GamepadPlayerAmmunition(char *p_id, int ammunition);
 
 #ifdef __cplusplus
 }

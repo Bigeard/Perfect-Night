@@ -46,26 +46,34 @@ EM_JS(char *, GetIdGamepad, (int index), {
     Module.stringToUTF8(res, idPointer, byteCount);
     return idPointer;
 });
-EM_JS(int, GamepadPlayerColor, (char *p_id, int color_r, int color_g, int color_b), {
+EM_JS(void, GamepadPlayerColor, (char *p_id, int color_r, int color_g, int color_b), {
     const id = Module.UTF8ToString(p_id);
     const gamepad = listGamepad.get(id);
     gamepad.color = `rgb(${color_r}, ${color_g}, ${color_b})`;
     gamepad.edit = true;
     listGamepad.set(id, gamepad);
-    return 1;
 });
+
+// Menu Action
 EM_JS(int, GetMenuAction, (), {
     return menuAction;
 });
-EM_JS(int, SetMenuAction, (int action), {
+EM_JS(void, SetMenuAction, (int action), {
     menuAction = action;
-    return 1;
 });
 
-// @TODO
-// EM_JS(bool, GetEditSettings, (), {
-//     return settings.edit;
-// });
+// Settings
+EM_JS(bool, GetEditSettings, (), {
+    return gameSettings.edit;
+});
+EM_JS(int *, GetAllSettings, (), {
+    const arrayPointer = Module._malloc(gameSettings.length * 4);
+    Object.values(gameSettings).forEach(function(v, i) {
+        Module.setValue(arrayPointer + i * 4, parseInt(v), "i32");
+    });
+    gameSettings.edit = false;
+    return arrayPointer;
+});
 
 // Gameplay
 tmx_map *map;
@@ -75,6 +83,7 @@ char *listMap[4] = {
     "resources/map_vs.tmx",
     "resources/map_4_team.tmx",
     "resources/map_vs_big.tmx"};
+bool winnerMap = false;
 
 float arenaSizeX = 0.0f;
 float arenaSizeY = 0.0f;
@@ -82,13 +91,15 @@ bool activeDev = false;
 bool activePerf = false;
 double lastSecond = 0.0;
 static Camera2D camera = {0};
-float cameraZoomScreenSize = 0;
 float centerPositionX = 0;
 float centerPositionY = 0;
 static bool pauseGame = false;
 
 double startTime = 0.0;
 double elapsedTime = 0.0;
+
+// Setings
+int maxScore = 3;
 
 // Homepage
 Texture2D titlePerfectNightTexture;
@@ -114,6 +125,7 @@ Color themeColor[NUMBER_EIGHT] = {
 int colorScore[NUMBER_EIGHT] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int BoxesScoreFontSize[NUMBER_EIGHT] = {0};
 Vector2 BoxesScoreSize[NUMBER_EIGHT] = {0};
+int bestScore = 0;
 
 // PLayer Alive
 int numberActiveColor = 0;
@@ -212,7 +224,6 @@ void InitGameplay(void)
     camera.offset = (Vector2){0.0f, 0.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
-    cameraZoomScreenSize = 1.0f;
 
     // Init
     InitBox();
@@ -243,6 +254,32 @@ void InitMap(void)
     tmx_init_object(map->ly_head, players, boxes, loots);
 }
 
+void SwitchMap(void)
+{
+    bestScore = 0;
+    winnerMap = false;
+    idMap++;
+    memset(boxes, 0, sizeof boxes);
+    memset(loots, 0, sizeof loots);
+    map = NULL;
+    InitMap();
+    numberActiveColor = 0;
+    for (int i = 0; i < lastPlayer; i++)
+    {
+        for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
+        {
+            if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
+            {
+                numberActiveColor++;
+                colorScore[c] = 0;
+                BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
+            }
+        }
+    }
+    camera.zoom = 1.0f;
+    ResetGame();
+}
+
 void UpdateGameplay(void)
 {
     centerPositionX = 0;
@@ -253,20 +290,19 @@ void UpdateGameplay(void)
     playerAliveId = 0;
     otherColorAlive = false;
 
-    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (cameraZoomScreenSize / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (cameraZoomScreenSize / 1.0001f))
+    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (camera.zoom / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (camera.zoom / 1.0001f))
     {
-        cameraZoomScreenSize -= 0.001f;
+        camera.zoom -= 0.001f;
     }
     if (GetScreenWidth() > (arenaSizeX + 120.0f) || GetScreenHeight() > (arenaSizeY + 120.0f))
     {
-        cameraZoomScreenSize += 0.001f;
+        camera.zoom += 0.001f;
     }
 
     if (GetTime() > lastSecond)
     {
         // Resize Canvas
         SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
-        camera.offset = (Vector2){GetScreenWidth() - arenaSizeX / 2.0f - GetScreenWidth() / 2.0f, GetScreenHeight() - arenaSizeY / 2.0f - GetScreenHeight() / 2.0f};
         lastSecond += 0.5;
 
         // Menu Action
@@ -279,38 +315,12 @@ void UpdateGameplay(void)
                 for (size_t i = 0; i < NUMBER_EIGHT; i++)
                 {
                     if (colorScore[i] != -1)
-                    {
                         colorScore[i] = 0;
-                    }
                 }
                 ResetGame();
-                startTime = 0.0;
                 break;
             case 2: // Change Map
-                idMap++;
-                // free(map);
-                // tmx_img_load_func = raylib_tex_loader;
-                // tmx_img_free_func = raylib_free_tex;
-                memset(boxes, 0, sizeof boxes);
-                memset(loots, 0, sizeof loots);
-                map = NULL;
-                InitMap();
-                numberActiveColor = 0;
-                for (int i = 0; i < lastPlayer; i++)
-                {
-                    for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
-                    {
-                        if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
-                        {
-                            numberActiveColor++;
-                            colorScore[c] = 0;
-                            BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
-                        }
-                    }
-                }
-                ResetGame();
-                cameraZoomScreenSize = 1.0f;
-                startTime = 0.0;
+                SwitchMap();
                 break;
             case 3: // Dev
                 activeDev = !activeDev;
@@ -320,6 +330,14 @@ void UpdateGameplay(void)
                 break;
             }
             SetMenuAction(0);
+        }
+
+        if (GetEditSettings())
+        {
+            int *settings = GetAllSettings();
+            // settings[0] = edit
+            maxScore = settings[1];
+            free(settings);
         }
     }
 
@@ -344,7 +362,7 @@ void UpdateGameplay(void)
                         {0.0f, 0.0f},
                         {false, false, false, false, false}}, // p: Physic
                     {0.0f, 0.0f},                             // spawn: Spawn position
-                    {3.05f, 3.05f},                      // speed: Speed of the tank
+                    {3.05f, 3.05f},                           // speed: Speed of the tank
                     // Bullet
                     0.0f, // charge: Charge delay
                     true, // canShoot: Can Shoot
@@ -377,7 +395,6 @@ void UpdateGameplay(void)
                 }
                 i = NUMBER_EIGHT;
                 lastPlayer++;
-                startTime = 0.0;
             }
         }
     }
@@ -393,7 +410,7 @@ void UpdateGameplay(void)
     GenerateQrCode();
 
     // Zoom out / zoom in with the mouse wheel
-    cameraZoomScreenSize += ((float)GetMouseWheelMove() * 0.01f);
+    camera.zoom += ((float)GetMouseWheelMove() * 0.01f);
 
     // Active developer mode
     if (IsKeyPressed(KEY_O))
@@ -406,6 +423,7 @@ void UpdateGameplay(void)
         {
             colorScore[i] = -1;
         };
+        bestScore = 0;
         ResetGame();
     }
 
@@ -457,7 +475,7 @@ void UpdateGameplay(void)
             continue;
 
         // Detect if one team win
-        if (players[i].life > 0)
+        if (players[i].life >= 1)
         {
             playerAlive++;
             playerAliveId = i;
@@ -549,42 +567,41 @@ void UpdateGameplay(void)
         }
     }
 
+    camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
     if (lastPlayer >= 2)
     {
         if (playerAlive >= 2)
         {
             centerPositionX = centerPositionX / playerAlive;
             centerPositionY = centerPositionY / playerAlive;
+            camera.target = Vector2Lerp(
+                camera.target,
+                (Vector2){centerPositionX, centerPositionY},
+                GetFrameTime() * (sqrtf(powf(camera.target.x - centerPositionX, 2.0f) + powf(camera.target.y - centerPositionY, 2.0f))) / 100.0f);
         }
         else if (playerAlive == 1)
         {
-            centerPositionX = players[playerAliveId].p.pos.x;
-            centerPositionY = players[playerAliveId].p.pos.y - 220;
+            centerPositionX = (players[playerAliveId].p.pos.x + players[playerAliveId].p.size.x) / 2.0f;
+            centerPositionY = (players[playerAliveId].p.pos.y + players[playerAliveId].p.size.y) / 2.0f - 220.0f;
+            camera.target = (Vector2){centerPositionX, centerPositionY};
         }
         else
         {
             centerPositionX = arenaSizeX / 2;
             centerPositionY = arenaSizeY / 2;
+            camera.target = (Vector2){centerPositionX, centerPositionY};
         }
-        camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
-        camera.target = Vector2Lerp(
-            camera.target,
-            (Vector2){centerPositionX, centerPositionY},
-            GetFrameTime() * (sqrtf(powf(camera.target.x - centerPositionX, 2.0f) + powf(camera.target.x - centerPositionY, 2.0f))) / 100);
-
         // float newZoom = 1.0f - ((centerDistance - (arenaSizeX - 300)) / centerDistance);
         // if (fabs(newZoom) >= 1.1f || fabs(newZoom) <= 0.8f)
         // {
         //     newZoom = camera.zoom;
         // }
-        // camera.zoom = Lerp(camera.zoom, newZoom - cameraZoomScreenSize, GetFrameTime() * 10);
+        // camera.zoom = Lerp(camera.zoom, newZoom - camera.zoom, GetFrameTime() * 10);
     }
     else
     {
-        camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
         camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
     }
-    camera.zoom = cameraZoomScreenSize;
 
     if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
     {
@@ -633,6 +650,7 @@ void UpdateGameplay(void)
                     {
                         players[i].life--;
                         GamepadPlayerLife(players[i].gamepadId, players[i].life);
+                        InitParticles(players[i].p.pos, players[i].p.vel, 0.1f, players[i].color, 120.0f, players[i].shootParticle, 20);
                     };
                     players[i].p.pos = (Vector2){players[i].spawn.x, players[i].spawn.y};
                 }
@@ -662,7 +680,7 @@ void UpdateGameplay(void)
                     }
                 }
             }
-            for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
+            for (int c = 0; c < NUMBER_EIGHT; c++)
             {
                 if (ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].color))
                 {
@@ -670,6 +688,10 @@ void UpdateGameplay(void)
                     {
                         colorScore[c]++;
                         BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
+                        if (colorScore[c] >= bestScore)
+                            bestScore = colorScore[c];
+                        if (colorScore[c] >= maxScore)
+                            winnerMap = true;
                     }
                     break;
                 }
@@ -679,8 +701,10 @@ void UpdateGameplay(void)
         elapsedTime = GetTime() - startTime;
         if (elapsedTime > 3.0)
         {
-            ResetGame();
-            startTime = 0.0;
+            if (winnerMap)
+                SwitchMap();
+            else
+                ResetGame();
         }
     }
 
@@ -719,6 +743,7 @@ void ResetGame(void)
             GamepadPlayerAmmunition(players[i].gamepadId, players[i].life);
         }
     }
+    startTime = 0.0;
 }
 
 void DrawGameplay(void)
@@ -816,7 +841,14 @@ void DrawGameplay(void)
         // Draw Wins
         if (startTime != 0.0)
         {
-            DrawRectangle(camera.target.x - arenaSizeX, camera.target.y - 10, arenaSizeX * 2, 110, Fade(BLACKGROUND, 0.9));
+            Color background = Fade(BLACKGROUND, 0.9);
+            if (maxScore <= bestScore)
+                background = Fade(GOLD, 0.1);
+            DrawRectangle(camera.target.x - arenaSizeX, camera.target.y - 10, arenaSizeX * 2, 110, background);
+            if (maxScore <= bestScore + 1)
+            {
+                DrawRectangleLinesEx((Rectangle){camera.target.x - arenaSizeX, camera.target.y - 10, arenaSizeX * 2, 110}, 2.5f, Fade(GOLD, 0.3f));
+            }
             for (int i = 0; i < numberActiveColor; i++)
             {
                 if (colorScore[i] > -1)

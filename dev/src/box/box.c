@@ -8,9 +8,10 @@
 // Patterns
 Texture2D PattenSlashTexture;
 
-void InitBox(void) {
+void InitBox(void)
+{
 	// Patterns
-    PattenSlashTexture = LoadTexture("resources/pattern_slash.png");
+	PattenSlashTexture = LoadTexture("resources/pattern_slash.png");
 }
 
 void UpdateBox(Box *box) {}
@@ -45,8 +46,11 @@ void DrawBox(Box box)
 
 	if (box.score != -1 && colorScore[box.score] != -1)
 	{
+		Color colorTeam = Fade(themeColor[box.score], 0.4f);
+		if (maxScore <= colorScore[box.score] + 1) colorTeam = GOLD;
+		
 		const char *text = TextFormat("%d", colorScore[box.score]);
-		DrawRectangleLinesEx((Rectangle){box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y}, 2.5f, Fade(themeColor[box.score], 0.4f));
+		DrawRectangleLinesEx((Rectangle){box.p.pos.x, box.p.pos.y, box.p.size.x, box.p.size.y}, 2.5f, colorTeam);
 		DrawText(
 			text,
 			box.p.pos.x + box.p.size.x / 2.0f - MeasureText(text, BoxesScoreFontSize[box.score]) / 2.0f,
