@@ -87,7 +87,7 @@ bool winnerMap = false;
 
 float arenaSizeX = 0.0f;
 float arenaSizeY = 0.0f;
-bool activeDev = false;
+bool activeDev = true;
 bool activePerf = false;
 double lastSecond = 0.0;
 static Camera2D camera = {0};
@@ -159,7 +159,7 @@ int qrCodeParticlesIdColor3 = 3;
 
 // Boxes
 Box boxes[40] = {};
-static int boxesLength = sizeof(boxes) / sizeof(boxes[0]);
+int boxesLength = sizeof(boxes) / sizeof(boxes[0]);
 
 // Loots
 Loot loots[4] = {};
@@ -373,7 +373,7 @@ void UpdateGameplay(void)
                     0.0f, // lastBullet: Allow the ball to be replaced one after the other
                     // Other
                     PURPLE, // COLORS: Colors
-                    {0},    // Item
+                    InitItemLaser(i + 1),    // Item
                     // Control
                     MOBILE,                                                                                                                                                            // INPUT_TYPE: Type of input (mouse, keyboard, gamepad)
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action (@TODO play with controller)

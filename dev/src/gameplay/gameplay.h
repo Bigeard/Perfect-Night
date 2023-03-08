@@ -9,6 +9,7 @@ extern "C"
 
 #include "../../../lib/raylib/src/raylib.h"
 #include "../player/player.h"
+#include "../box/box.h"
 
 #define NUMBER_EIGHT 8
 #define BLACKGROUND     \
@@ -42,8 +43,6 @@ extern "C"
     extern Texture2D NothingTexture;
 
     extern Texture2D PattenSlashTexture;
-    // extern Texture2D PattenSquareTexture;
-    // extern Texture2D PattenCrossTexture;
 
     // extern Shader neonShader;
 
@@ -52,6 +51,9 @@ extern "C"
 
     extern Player *outsidePlayer;
     extern Player *lastOutsidePlayer;
+
+    extern Box boxes[40];
+    extern int boxesLength;
 
     void InitGameplay(void);
     void InitMap(void);

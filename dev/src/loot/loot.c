@@ -45,7 +45,7 @@ void UpdateLoot(Loot *loot, Player *player)
             type = GetRandomValue(1, 5); // Max = 5 and Min = 1
             if (activeDev)
             {
-                type = 1; // @DEV
+                type = LASER; // @DEV
             }
         }
         switch (type)
@@ -61,8 +61,8 @@ void UpdateLoot(Loot *loot, Player *player)
             break;
         case LASER:
             // @TODO add feature laser
-            // player->item = InitItemLaser(player->id);
-            player->item = InitItemMultiShoot(player->id);
+            player->item = InitItemLaser(player->id);
+            // player->item = InitItemMultiShoot(player->id);
             break;
         case MULTI_SHOOT:
             player->item = InitItemMultiShoot(player->id);

@@ -50,9 +50,8 @@ void UpdateItemBonusAmmunition(Item *item)
 {
     if (!item->active)
         return;
-    Player player = players[item->player_id - 1];
-    double elapsedTime = GetTime() - item->timer;
-    if (item->maxTimer < elapsedTime)
+    const Player player = players[item->player_id - 1];
+    if (item->maxTimer < GetTime() - item->timer)
     {
         item->active = false;
     }
@@ -81,7 +80,7 @@ void DrawItemBonusAmmunition(Item *item)
 {
     if (!item->active)
         return;
-    Player player = players[item->player_id - 1];
+    const Player player = players[item->player_id - 1];
 
     // Init Color
     Color color = player.color;

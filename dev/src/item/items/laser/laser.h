@@ -10,7 +10,13 @@ extern "C"
 
     typedef struct Laser
     {
-        int delayKill;
+        float chargeTimerLaser;
+        float laserStartPosX;
+        float laserStartPosY;
+        float laserEndPosX;
+        float laserEndPosY;
+        float laserRadian;
+        float animationTimerLaser;
     } Laser;
 
 #ifdef __cplusplus

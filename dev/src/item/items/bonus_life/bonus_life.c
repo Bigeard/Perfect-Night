@@ -35,8 +35,7 @@ void UpdateItemBonusLife(Item *item)
 {
     if (!item->active)
         return;
-    double elapsedTime = GetTime() - item->timer;
-    if (item->maxTimer < elapsedTime)
+    if (item->maxTimer < GetTime() - item->timer)
     {
         item->active = false;
     }
@@ -46,7 +45,7 @@ void DrawItemBonusLife(Item *item)
 {
     if (!item->active)
         return;
-    Player player = players[item->player_id - 1];
+    const Player player = players[item->player_id - 1];
     DrawTexture(
         BonusLifeWhiteTexture,
         (player.p.pos.x + player.p.size.x / 2) - 16,

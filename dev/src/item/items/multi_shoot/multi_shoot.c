@@ -60,8 +60,7 @@ void UpdateItemMultiShoot(Item *item)
 {
     if (!item->active)
         return;
-    double elapsedTime = GetTime() - item->timer;
-    if (item->maxTimer < elapsedTime)
+    if (item->maxTimer < GetTime() - item->timer)
     {
         item->active = false;
     }
@@ -71,7 +70,7 @@ void DrawItemMultiShoot(Item *item)
 {
     if (!item->active)
         return;
-    Player player = players[item->player_id - 1];
+    const Player player = players[item->player_id - 1];
 
     // Init Color
     Color color = player.color;

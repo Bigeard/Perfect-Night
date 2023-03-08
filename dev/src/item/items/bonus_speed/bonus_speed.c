@@ -42,8 +42,7 @@ void UpdateItemBonusSpeed(Item *item)
         }
         return;
     };
-    double elapsedTime = GetTime() - item->timer;
-    if (item->maxTimer < elapsedTime)
+    if (item->maxTimer < GetTime() - item->timer)
     {
         item->active = false;
     }
@@ -59,8 +58,8 @@ void DrawItemBonusSpeed(Item *item)
 {
     if (!item->active)
         return;
-    Player player = players[item->player_id - 1];
-    double elapsedTime = GetTime() - item->timer;
+    const Player player = players[item->player_id - 1];
+    const double elapsedTime = GetTime() - item->timer;
     if (elapsedTime <= 4.0)
     {
         DrawTexture(
