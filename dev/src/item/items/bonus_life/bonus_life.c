@@ -6,14 +6,19 @@
 #include "../../../gameplay/gameplay.h"
 #include "../../../tool/tool.h"
 
-Item InitItemBonusLife(int player_id)
+Item InitItemBonusLife(int player_id, float maxTimer)
 {
+    // Custom
+    int defaultPlusLife = 1;
+    if (maxTimer > -1.0f && maxTimer != FLT_MAX)
+        defaultPlusLife = (int)maxTimer;
+
     Item item = {
         player_id,
         "Bonus Life",
         true,
         GetTime(),
-        4.0,
+        4.0f,
         true,
         true,
         ShootItemBonusLife,
@@ -21,7 +26,7 @@ Item InitItemBonusLife(int player_id)
         DrawItemBonusLife,
         {1}};
     Player *player = &players[item.player_id - 1];
-    player->life++;
+    player->life += defaultPlusLife;
     GamepadPlayerLife(player->gamepadId, player->life);
     return item;
 }

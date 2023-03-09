@@ -100,14 +100,8 @@
                     <input type="number" name="maxScore" id="maxScore" value="3" max="256" required>
                 </div>
                 <div class="field">
-                    <b>-- @TODO --</b><br>
-                    <label for="randomPosLoot">Random position of the loots: </label>
-                    <input disabled type="checkbox" name="randomPosLoot" id="randomPosLoot">
-                </div>
-                <div class="field">
-                    <b>-- @TODO --</b><br>
-                    <label for="defaultItem">Choose a default item: </label>
-                    <select disabled id="defaultItem" name="defaultItem">
+                    <label for="defaultTypeItem">Choose a default item: </label>
+                    <select id="defaultTypeItem" name="defaultTypeItem">
                         <option selected value="-1">Default</option>
                         <option value="0">Random</option>
                         <option value="1">Bonus Ammunition</option>
@@ -115,10 +109,54 @@
                         <option value="3">Bonus Speed</option>
                         <option value="4">Laser</option>
                         <option value="5">Multi Shoot</option>
-                        <option value="6">Nothing</option>
-                        <option value="7">Rocket</option>
-                        <option value="8">Sword</option>
+                        <!-- @TODO -->
+                        <!-- <option value="6">Nothing</option> -->
+                        <!-- <option value="7">Rocket</option> -->
+                        <!-- <option value="8">Sword</option> -->
                     </select>
+                </div>
+                <div class="field">
+                    <label for="defaultMaxTimerItem">Choose a maximum duration for the default item: </label>
+                    <select id="defaultMaxTimerItem" name="defaultMaxTimerItem">
+                        <option selected value="-1">Default Timer</option>
+                        <option value="0">Infinite</option>
+                        <option value="1">1s</option>
+                        <option value="2">2s</option>
+                        <option value="3">3s</option>
+                        <option value="4">4s</option>
+                        <option value="5">5s</option>
+                        <option value="6">6s</option>
+                        <option value="7">7s</option>
+                        <option value="8">8s</option>
+                        <option value="9">9s</option>
+                        <option value="10">10s</option>
+                        <option value="11">11s</option>
+                        <option value="12">12s</option>
+                        <option value="13">13s</option>
+                        <option value="14">14s</option>
+                        <option value="15">15s</option>
+                        <option value="16">16s</option>
+                        <option value="17">17s</option>
+                        <option value="18">18s</option>
+                        <option value="19">19s</option>
+                        <option value="20">20s</option>
+                        <option value="25">25s</option>
+                        <option value="30">30s</option>
+                        <option value="35">35s</option>
+                        <option value="40">40s</option>
+                        <option value="45">45s</option>
+                        <option value="50">50s</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="activeLoot">Activate the loot box: </label>
+                    <input type='hidden' value='0' name='activeLoot'>
+                    <input checked type="checkbox" value="1" name="activeLoot" id="activeLoot">
+                </div>
+                <div class="field">
+                    <b>-- @TODO In progress ^^ --</b><br>
+                    <label for="randomPosLoot">Random position of the loots: </label>
+                    <input disabled type="checkbox" name="randomPosLoot" id="randomPosLoot">
                 </div>
                 <!-- Change the logic to only use integer. The higher the number, the greater the chance of getting the item. -->
                 <div class="field selectItem">
@@ -207,6 +245,7 @@
             const data = new FormData(form);
             const formDataObj = {};
             data.forEach((value, key) => (formDataObj[key] = parseInt(value)));
+            console.log(formDataObj);
             conn.send(JSON.stringify({
                 t: Date.now(), // Time
                 s: formDataObj, // Settings
@@ -611,11 +650,11 @@
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script> -->
+    </script>
 </body>
 
 </html>

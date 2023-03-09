@@ -7,14 +7,18 @@
 #include "../../../player/player.h"
 #include "../../../tool/tool.h"
 
-Item InitItemMultiShoot(int player_id)
+Item InitItemMultiShoot(int player_id, float maxTimer)
 {
+    float defaultMaxTimer = 8.0f;
+    if (maxTimer > -1.0f)
+        defaultMaxTimer = maxTimer;
+
     return (Item){
         player_id,
         "Multi Shoot",
         true,
         GetTime(),
-        8,
+        defaultMaxTimer,
         false,
         false,
         ShootItemMultiShoot,

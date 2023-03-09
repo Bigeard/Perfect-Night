@@ -7,14 +7,18 @@
 #include "../../../player/player.h"
 #include "../../../tool/tool.h"
 
-Item InitItemRocket(int player_id)
+Item InitItemRocket(int player_id, float maxTimer)
 {
+    float defaultMaxTimer = 10.0f;
+    if (maxTimer > -1.0f)
+        defaultMaxTimer = maxTimer;
+
     return (Item){
         player_id,
         "Rocket",
         true,
         GetTime(),
-        10.0,
+        defaultMaxTimer,
         false,
         false,
         ShootItemRocket,

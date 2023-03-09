@@ -7,14 +7,18 @@
 #include "../../../player/player.h"
 #include "../../../tool/tool.h"
 
-Item InitItemBonusAmmunition(int player_id)
+Item InitItemBonusAmmunition(int player_id, float maxTimer)
 {
+    float defaultMaxTimer = 6.0f;
+    if (maxTimer > -1.0f)
+        defaultMaxTimer = maxTimer;
+
     Item item = {
         player_id,
         "Bonus Amm.",
         true,
         GetTime(),
-        5.0,
+        defaultMaxTimer,
         true,
         false,
         ShootItemBonusAmmunition,

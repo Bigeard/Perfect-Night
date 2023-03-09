@@ -8,14 +8,18 @@
 #include "../../../tool/tool.h"
 #include "../../../ray_collisions/ray_collisions.h"
 
-Item InitItemLaser(int player_id)
+Item InitItemLaser(int player_id, float maxTimer)
 {
+    float defaultMaxTimer = 8.0f;
+    if (maxTimer > -1.0f)
+        defaultMaxTimer = maxTimer;
+
     return (Item){
         player_id,
         "Laser",
         true,
         GetTime(),
-        3000.0,
+        defaultMaxTimer,
         false,
         false,
         ShootItemLaser,
@@ -27,11 +31,24 @@ Item InitItemLaser(int player_id)
 void ShootItemLaser(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y)
 {
     Player *player = &players[item->player_id - 1];
-    item->laser.laserRadian = player->radian;
-    item->laser.laserStartPosX = player->p.pos.x + player->p.size.x / 2;
-    item->laser.laserStartPosY = player->p.pos.y + player->p.size.y / 2;
-    item->laser.animationTimerLaser = 10.0f;
-    // @TODO
+    // item->laser.laserRadian = player.lastRadian;
+    // item->laser.laserStartPosX = player.p.pos.x + player.p.size.x / 2;
+    // item->laser.laserStartPosY = player.p.pos.y + player.p.size.y / 2;
+    // item->laser.animationTimerLaser = 20000.0f;
+
+    player->bullets[player->lastBullet] = (Bullet){
+        player->id,
+        (Physic){
+            {player->p.pos.x + 20.0f + calcPosRadianX * 22.0f - 2.5f, player->p.pos.y + 20.0f + calcPosRadianY * 22.0f - 2.5f},
+            {2.5f, 2.5f},
+            {cosf(player->lastRadian) * 20, sinf(player->lastRadian) * 20},
+            {false, false, false, false, false}},
+        {20, 20},
+        player->lastRadian,
+        false,
+        false,
+        true,
+        player->color};
 }
 
 void UpdateItemLaser(Item *item)
@@ -44,50 +61,61 @@ void UpdateItemLaser(Item *item)
         item->laser.animationTimerLaser -= 0.1;
     }
 
-    Vector2 ray_origin = {
-        ((10 - item->laser.animationTimerLaser) * 200 * cosf(item->laser.laserRadian)) + item->laser.laserStartPosX,
-        ((10 - item->laser.animationTimerLaser) * 200 * sinf(item->laser.laserRadian)) + item->laser.laserStartPosY};
-    Vector2 ray_dir = {
-        item->laser.laserStartPosX + (10000 * cosf(item->laser.laserRadian)),
-        item->laser.laserStartPosY + (10000 * sinf(item->laser.laserRadian))};
-    Vector2 contact_point = (Vector2){0.0f, 0.0f};
-    Vector2 contact_normal = (Vector2){0.0f, 0.0f};
-    float near_contact_time = 0.0f;
-    Vector2 probableContactPoints[2];
+    // Vector2 ray_origin = {
+    //     item->laser.laserStartPosX,
+    //     item->laser.laserStartPosY};
+    // Vector2 ray_dir = {
+    //     item->laser.laserStartPosX + (10000 * cosf(item->laser.laserRadian)),
+    //     item->laser.laserStartPosY + (10000 * sinf(item->laser.laserRadian))};
+    // Vector2 contact_point = (Vector2){0.0f, 0.0f};
+    // Vector2 contact_normal = (Vector2){0.0f, 0.0f};
+    // float near_contact_time = 0.0f;
+    // Vector2 probableContactPoints[2];
 
-    // if there are collision with a player
-    for (int i = 0; i < NUMBER_EIGHT; i++)
-    {
-        const Rectangle recPlayer = {players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y};
-        if (RayVsRect2D(ray_origin, ray_dir, recPlayer, &contact_point, &contact_normal, &near_contact_time, probableContactPoints))
-        {
-            if (ColorToInt(players[i].color) != ColorToInt(players[item->player_id - 1].color))
-            {
-                players[i].life--;
-            }
-            item->laser.laserEndPosX = contact_point.x;
-            item->laser.laserEndPosY = contact_point.y;
-            if (near_contact_time < 1.0f)
-            {
-                item->laser.animationTimerLaser = 0.0f;
-            }
-        }
-    }
+    // float rayDistance = sqrtf(powf(item->laser.laserStartPosX - ray_dir.x, 2.0f) + powf(item->laser.laserStartPosX - ray_dir.y, 2.0f));
 
-    // if there are collision with a box
-    for (int i = 0; i < boxesLength; i++)
-    {
-        const Rectangle recBox = {boxes[i].p.pos.x, boxes[i].p.pos.y, boxes[i].p.size.x, boxes[i].p.size.y};
-        if (RayVsRect2D(ray_origin, ray_dir, recBox, &contact_point, &contact_normal, &near_contact_time, probableContactPoints))
-        {
-            item->laser.laserEndPosX = contact_point.x;
-            item->laser.laserEndPosY = contact_point.y;
-            if (near_contact_time < 1.0f)
-            {
-                item->laser.animationTimerLaser = 0.0f;
-            }
-        }
-    }
+    // // if there are collision with a box
+    // for (int i = 0; i < boxesLength; i++)
+    // {
+    //     const Rectangle recBox = {boxes[i].p.pos.x, boxes[i].p.pos.y, boxes[i].p.size.x, boxes[i].p.size.y};
+    //     if (boxes[i].collision && RayVsRect2D(ray_origin, ray_dir, recBox, &contact_point, &contact_normal, &near_contact_time, probableContactPoints))
+    //     {
+    //         float contactDistance = sqrtf(powf(item->laser.laserStartPosX - contact_point.x, 2.0f) + powf(item->laser.laserStartPosX - contact_point.y, 2.0f));
+    //         if (rayDistance > contactDistance)
+    //         {
+    //             ray_dir.x = contact_point.x;
+    //             ray_dir.y = contact_point.y;
+    //             rayDistance = contactDistance;
+    //         }
+
+    //         if (item->laser.laserStartPosX == item->laser.laserEndPosX && item->laser.laserStartPosY == item->laser.laserEndPosY)
+    //         {
+    //             item->laser.animationTimerLaser = 0.0f;
+    //         }
+    //     }
+    // }
+
+    // // if there are collision with a player
+    // for (int i = 0; i < NUMBER_EIGHT; i++)
+    // {
+    //     const Rectangle recPlayer = {players[i].p.pos.x, players[i].p.pos.y, players[i].p.size.x, players[i].p.size.y};
+    //     if (RayVsRect2D(ray_origin, ray_dir, recPlayer, &contact_point, &contact_normal, &near_contact_time, probableContactPoints))
+    //     {
+    //         if (ColorToInt(players[i].color) != ColorToInt(players[item->player_id - 1].color))
+    //         {
+    //             players[i].life--;
+    //         }
+    //         ray_dir.x = contact_point.x;
+    //         ray_dir.y = contact_point.y;
+    //         if (item->laser.laserStartPosX == item->laser.laserEndPosX && item->laser.laserStartPosY == item->laser.laserEndPosY)
+    //         {
+    //             item->laser.animationTimerLaser = 0.0f;
+    //         }
+    //     }
+    // }
+
+    // item->laser.laserEndPosX = ray_dir.x;
+    // item->laser.laserEndPosY = ray_dir.y;
 
     if (item->maxTimer < GetTime() - item->timer)
     {
@@ -141,36 +169,14 @@ void DrawItemLaser(Item *item)
         DrawCircle(ammunitionPosX, ammunitionPosY, 5, DarkenColor(player.color, 0.7));
     }
 
-    // Draw the progress bar of the charge
-    if (player.charge != 2)
-    {
-        DrawRing(
-            (Vector2){player.p.pos.x + player.p.size.x / 2, player.p.pos.y + player.p.size.y / 2},
-            38.0f,
-            47.0f,
-            player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4 - 2,
-            player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4 + 2,
-            0,
-            Fade(WHITE, 0.6));
+    
+    // for bullets 
 
-        DrawRing(
-            (Vector2){player.p.pos.x + player.p.size.x / 2, player.p.pos.y + player.p.size.y / 2},
-            40.0f,
-            45.0f,
-            player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4,
-            player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4,
-            0,
-            Fade(player.color, 0.8));
-    }
+    //     DrawLine(
+    //         item->laser.laserStartPosX,
+    //         item->laser.laserStartPosY,
+    //         item->laser.laserEndPosX,
+    //         item->laser.laserEndPosY,
+    //         player.color);
 
-    if (item->laser.animationTimerLaser > 0)
-    {
-        TraceLog(LOG_INFO, "%f", item->laser.animationTimerLaser);
-        DrawLine(
-            ((10 - item->laser.animationTimerLaser) * 200 * cosf(item->laser.laserRadian)) + item->laser.laserStartPosX,
-            ((10 - item->laser.animationTimerLaser) * 200 * sinf(item->laser.laserRadian)) + item->laser.laserStartPosY,
-            item->laser.laserEndPosX,
-            item->laser.laserEndPosY,
-            player.color);
-    }
 }

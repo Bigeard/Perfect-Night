@@ -6,14 +6,18 @@
 #include "../../../player/player.h"
 #include "../../../tool/tool.h"
 
-Item InitItemNothing(int player_id)
+Item InitItemNothing(int player_id, float maxTimer)
 {
+    float defaultMaxTimer = 5.0f;
+    if (maxTimer > -1.0f)
+        defaultMaxTimer = maxTimer;
+
     return (Item){
         player_id,
         "Nothing",
         true,
         GetTime(),
-        6.0,
+        defaultMaxTimer,
         false,
         false,
         ShootItemNothing,

@@ -6,18 +6,6 @@
 #include "../tool/tool.h"
 
 Texture2D LootBoxTexture;
-enum Types
-{
-    RANDOM = 0,
-    BONUS_AMMUNITION = 1,
-    BONUS_LIFE = 2,
-    BONUS_SPEED = 3,
-    LASER = 4,
-    MULTI_SHOOT = 5,
-    ROCKET = 6,
-    SWORD = 7,
-    NOTHING = 8
-};
 
 void InitLoot(void)
 {
@@ -39,46 +27,8 @@ void UpdateLoot(Loot *loot, Player *player)
         (Rectangle){player->p.pos.x, player->p.pos.y, player->p.size.x, player->p.size.y});
     if (itemCollision)
     {
-        enum Types type = loot->type;
-        if (RANDOM == loot->type)
-        {
-            type = GetRandomValue(1, 5); // Max = 5 and Min = 1
-            if (activeDev)
-            {
-                type = LASER; // @DEV
-            }
-        }
-        switch (type)
-        {
-        case BONUS_AMMUNITION:
-            player->item = InitItemBonusAmmunition(player->id);
-            break;
-        case BONUS_LIFE:
-            player->item = InitItemBonusLife(player->id);
-            break;
-        case BONUS_SPEED:
-            player->item = InitItemBonusSpeed(player->id);
-            break;
-        case LASER:
-            // @TODO add feature laser
-            player->item = InitItemLaser(player->id);
-            // player->item = InitItemMultiShoot(player->id);
-            break;
-        case MULTI_SHOOT:
-            player->item = InitItemMultiShoot(player->id);
-            break;
-        case ROCKET:
-            player->item = InitItemRocket(player->id);
-            break;
-        case SWORD:
-            player->item = InitItemSword(player->id);
-            break;
-        case NOTHING:
-            player->item = InitItemNothing(player->id);
-            break;
-        case RANDOM:
-            break;
-        }
+        enum TypeItem type = loot->type;
+        InitItemWithTypeItem(player->id, type, -1);
         loot->active = false;
         if (loot->delay >= 0)
         {

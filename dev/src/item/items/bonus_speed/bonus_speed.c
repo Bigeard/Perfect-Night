@@ -5,20 +5,24 @@
 #include "../../../gameplay/gameplay.h"
 #include "../../../player/player.h"
 
-Item InitItemBonusSpeed(int player_id)
+Item InitItemBonusSpeed(int player_id, float maxTimer)
 {
+    float defaultMaxTimer = 6.0f;
+    if (maxTimer > -1.0f)
+        defaultMaxTimer = maxTimer;
+
     Item item = {
         player_id,
         "Bonus Speed",
         true,
         GetTime(),
-        8.0,
+        defaultMaxTimer,
         true,
         true,
         ShootItemBonusSpeed,
         UpdateItemBonusSpeed,
         DrawItemBonusSpeed,
-        {0, 0.9}};
+        {0, 0.9f}};
     Player *player = &players[player_id - 1];
     player->speed.x = player->speed.x + item.bonusSpeed.speed;
     player->speed.y = player->speed.y + item.bonusSpeed.speed;

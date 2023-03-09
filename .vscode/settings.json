@@ -66,6 +66,9 @@
 		"utility": "c",
 		"charconv": "c",
 		"complex": "c",
-		"cmath": "c"
+		"cmath": "c",
+		"any": "c",
+		"__bit_reference": "c",
+		"algorithm": "c"
 	},
 }

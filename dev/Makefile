@@ -364,6 +364,7 @@ OBJS ?= main.c \
         src/bullet/bullet.c \
         src/box/box.c \
         src/loot/loot.c \
+        src/item/item.c \
         src/item/items/bonus_ammunition/bonus_ammunition.c \
         src/item/items/bonus_life/bonus_life.c \
         src/item/items/bonus_speed/bonus_speed.c \

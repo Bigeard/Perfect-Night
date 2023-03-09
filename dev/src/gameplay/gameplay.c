@@ -11,7 +11,6 @@
 #include "../box/box.h"
 #include "../loot/loot.h"
 #include "../item/item.h"
-#include "../item/items/multi_shoot/multi_shoot.h"
 #include "../particle/particle.h"
 #include "../tool/tool.h"
 
@@ -87,8 +86,6 @@ bool winnerMap = false;
 
 float arenaSizeX = 0.0f;
 float arenaSizeY = 0.0f;
-bool activeDev = true;
-bool activePerf = false;
 double lastSecond = 0.0;
 static Camera2D camera = {0};
 float centerPositionX = 0;
@@ -99,7 +96,16 @@ double startTime = 0.0;
 double elapsedTime = 0.0;
 
 // Setings
+bool activeDev = false;
+bool activePerf = false;
 int maxScore = 3;
+bool activeLoot = true; // bool
+float defaultTypeItem = -1; // 0 = random / -1 = default item (none)
+float defaultMaxTimerItem = -1; // 0 = no limit / -1 = default max timer
+
+//// Example
+// int defaultTypeItem = LASER; // 0 = random / -1 = default item (none)
+// int defaultMaxTimerItem = 0; // 0 = no limit / -1 = default max timer
 
 // Homepage
 Texture2D titlePerfectNightTexture;
@@ -337,7 +343,12 @@ void UpdateGameplay(void)
             int *settings = GetAllSettings();
             // settings[0] = edit
             maxScore = settings[1];
+            defaultTypeItem = (float)settings[2];
+            defaultMaxTimerItem = (float)settings[3];
+            activeLoot = (bool)settings[4];
             free(settings);
+            ResetGame();
+            // @TODO displayed settings have been changed
         }
     }
 
@@ -373,7 +384,7 @@ void UpdateGameplay(void)
                     0.0f, // lastBullet: Allow the ball to be replaced one after the other
                     // Other
                     PURPLE, // COLORS: Colors
-                    InitItemLaser(i + 1),    // Item
+                    {0},    // Item
                     // Control
                     MOBILE,                                                                                                                                                            // INPUT_TYPE: Type of input (mouse, keyboard, gamepad)
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action (@TODO play with controller)
@@ -549,9 +560,12 @@ void UpdateGameplay(void)
             CollisionPhysic(&players[i].p, newPlayerRec, envBox);
         }
 
-        for (int j = 0; j < lootsLength; j++)
+        if (activeLoot)
         {
-            UpdateLoot(&loots[j], &players[i]);
+            for (int j = 0; j < lootsLength; j++)
+            {
+                UpdateLoot(&loots[j], &players[i]);
+            }
         }
 
         if (players[i].shootParticle[0].timer != 0)
@@ -741,6 +755,10 @@ void ResetGame(void)
             GamepadPlayerColor(players[i].gamepadId, players[i].color.r, players[i].color.g, players[i].color.b);
             GamepadPlayerLife(players[i].gamepadId, players[i].life);
             GamepadPlayerAmmunition(players[i].gamepadId, players[i].life);
+            if (defaultTypeItem > -1)
+            {
+                InitItemWithTypeItem(i + 1, defaultTypeItem, defaultMaxTimerItem);
+            }
         }
     }
     startTime = 0.0;
@@ -797,9 +815,12 @@ void DrawGameplay(void)
         }
     }
 
-    for (int i = 0; i < lootsLength; i++)
+    if (activeLoot)
     {
-        DrawLoot(loots[i]);
+        for (int i = 0; i < lootsLength; i++)
+        {
+            DrawLoot(loots[i]);
+        }
     }
     EndMode2D();
 
