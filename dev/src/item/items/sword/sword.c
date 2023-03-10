@@ -71,12 +71,12 @@ void DrawItemSword(Item *item)
     DrawTextureEx(playerBodyTexture, (Vector2){player.p.pos.x + 3, player.p.pos.y + 3}, 0, 1, color);
     DrawTexturePro(playerTemplatesTextures[player.id], (Rectangle){0, 0, 32, 32}, (Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 32, 32}, (Vector2){16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
-    for (int a = 0; a < MAX_AMMUNITION; a++)
+    for (int a = 0; a < maxAmmunition; a++)
     {
         if (a >= player.ammunition)
             break;
         int ammunitionDisplay = player.ammunition;
-        // if (player.ammunition != MAX_AMMUNITION) ammunitionDisplay++;
+        // if (player.ammunition != maxAmmunition) ammunitionDisplay++;
         // float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
         float calcRadian = player.radian + PI + (a * 0.7 + 0.7 / 2 - (ammunitionDisplay * 0.7 / 2));
         float loadColor = 1;

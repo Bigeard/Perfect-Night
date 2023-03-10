@@ -72,7 +72,7 @@ void UpdatePlayer(Player *player)
     }
 
     // Load Ammunition
-    if (player->ammunition < MAX_AMMUNITION)
+    if (player->ammunition < maxAmmunition)
     {
         player->ammunitionLoad = player->ammunitionLoad - delta;
     }
@@ -135,7 +135,7 @@ void UpdatePlayer(Player *player)
             {
                 // Loop bullet (Allow the ball to be replaced one after the other)
                 player->lastBullet += 1;
-                if (player->lastBullet >= sizeof(player->bullets) / sizeof(player->bullets[0]))
+                if (player->lastBullet >= MAX_BULLET)
                 {
                     player->lastBullet = 0;
                 }
@@ -174,6 +174,11 @@ void UpdatePlayer(Player *player)
                         false,
                         false,
                         true,
+                        (Vector2){
+                            player->p.pos.x + player->p.size.x / 2,
+                            player->p.pos.y + player->p.size.y / 2,
+                        },
+                        0.0f,
                         player->color};
                 }
                 // Remove ammunition

@@ -1,6 +1,7 @@
 const gameSettings = {
     edit: 0,
     maxScore: 3,
+    maxAmmunition: 3,
     defaultTypeItem: -1, // 0 = random / -1 = default item (none)
     defaultMaxTimerItem: -1, // 0 = no limit / -1 = default max timer
     activeLoot: 1,

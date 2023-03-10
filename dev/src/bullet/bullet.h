@@ -18,6 +18,8 @@ extern "C"
         bool direction;
         bool inactive;
         bool isNew;
+        Vector2 startPos;
+        float distanceLaser; // I couldn't find anything better :/
         Color COLOR;
     } Bullet;
 

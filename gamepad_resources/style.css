@@ -182,7 +182,8 @@ input {
 #menuGame,
 #informationGame,
 #optionGame,
-#gameSettings {
+#gameSettings,
+#qrCodeGame {
     position: fixed;
     z-index: 1000;
     top: 10%;
@@ -274,6 +275,25 @@ input {
     margin-top: 20px;
 }
 
+.qrCodeButton {
+    background-image: url("images/qrcode_icon.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80%;
+    image-rendering: pixelated;
+    width: 44px;
+    height: 44px;
+}
+
+#qrCodeGame {
+    width: 220px;
+}
+
+#qrCodeDisplay {
+    border-radius: 20px;
+    width: 100%;
+}
+
 @media screen and (orientation:portrait) {
 
     #joysticks,
@@ -281,7 +301,8 @@ input {
     #playerAmmunition,
     #goTop,
     #scrollUp,
-    .optionButton {
+    .optionButton,
+    .qrCodeButton {
         display: none;
     }
 

@@ -29,7 +29,10 @@ extern "C"
     extern float arenaSizeY;
     extern Color themeColor[NUMBER_EIGHT];
     extern int colorScore[NUMBER_EIGHT];
+
+    // Settings
     extern int maxScore;
+    extern int maxAmmunition;
 
     extern int BoxesScoreFontSize[NUMBER_EIGHT];
     extern Vector2 BoxesScoreSize[NUMBER_EIGHT];
@@ -40,11 +43,10 @@ extern "C"
     extern Texture2D BonusLifeTexture;
     extern Texture2D BonusLifeWhiteTexture;
     extern Texture2D BonusSpeedTexture;
+    extern Texture2D LaserTexture;
     extern Texture2D NothingTexture;
 
     extern Texture2D PattenSlashTexture;
-
-    // extern Shader neonShader;
 
     extern Player players[NUMBER_EIGHT];
     extern int numberPlayer;

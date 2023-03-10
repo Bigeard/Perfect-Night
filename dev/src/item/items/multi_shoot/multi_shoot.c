@@ -51,9 +51,14 @@ void ShootItemMultiShoot(Item *item, float calcPosRadianX, float calcPosRadianY,
             false,
             false,
             true,
+            (Vector2){
+                player->p.pos.x + player->p.size.x / 2,
+                player->p.pos.y + player->p.size.y / 2,
+            },
+            0.0f,
             player->color};
         player->lastBullet += 1;
-        if (player->lastBullet >= sizeof(player->bullets) / sizeof(player->bullets[0]))
+        if (player->lastBullet >= MAX_BULLET)
         {
             player->lastBullet = 0;
         }

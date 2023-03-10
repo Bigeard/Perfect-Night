@@ -17,7 +17,7 @@ extern "C"
 #define GAMEPAD 2
 #define MOBILE 3
 
-#define MAX_AMMUNITION 4
+#define MAX_BULLET 8
 #define DELAY_AMMUNITION 3.0f
 #define DELAY_INVINCIBLE 140
 
@@ -43,7 +43,7 @@ extern "C"
         int timeShoot;
         float radian;      // Determine the position of the cannon
         float lastRadian;  // Determine the position of the cannon
-        Bullet bullets[7]; // Array of bullet
+        Bullet bullets[MAX_BULLET]; // Array of bullet
         int lastBullet;    // Allow the ball to be replaced one after the other
         // Other
         Color color;

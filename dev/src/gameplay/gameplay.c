@@ -99,8 +99,9 @@ double elapsedTime = 0.0;
 bool activeDev = false;
 bool activePerf = false;
 int maxScore = 3;
-bool activeLoot = true; // bool
-float defaultTypeItem = -1; // 0 = random / -1 = default item (none)
+int maxAmmunition = 4;
+bool activeLoot = true;
+float defaultTypeItem = -1;     // 0 = random / -1 = default item (none)
 float defaultMaxTimerItem = -1; // 0 = no limit / -1 = default max timer
 
 //// Example
@@ -176,25 +177,8 @@ Texture2D BonusAmmunitionTexture;
 Texture2D BonusLifeTexture;
 Texture2D BonusLifeWhiteTexture;
 Texture2D BonusSpeedTexture;
+Texture2D LaserTexture;
 Texture2D NothingTexture;
-
-// // Shaders
-// @TODO try retro neon
-// const char *neonShaderCode =
-//     "#version 330\n"
-//     "in vec2 fragCoord;\n"
-//     "uniform float time;\n"
-//     "void main()\n"
-//     "{\n"
-//     "   vec2 uv = fragCoord.xy / vec2(1920, 1080);\n"
-//     "   vec3 color = vec3(0.0);\n"
-//     "   float t = time * 0.1;\n"
-//     "   float d = length(uv - vec2(0.5, 0.5));\n"
-//     "   float v = sin(d * 200.0 + t) + sin(d * 100.0 - t) + sin(d * 300.0 + t);\n"
-//     "   color = vec3(v * 0.2 + 0.8);\n"
-//     "   gl_FragColor = vec4(color, 1.0);\n"
-//     "}";
-// Shader neonShader;
 
 void InitGameplay(void)
 {
@@ -220,10 +204,8 @@ void InitGameplay(void)
     BonusLifeTexture = LoadTexture("resources/bonus_life.png");
     BonusLifeWhiteTexture = LoadTexture("resources/bonus_life_white.png");
     BonusSpeedTexture = LoadTexture("resources/bonus_speed.png");
+    LaserTexture = LoadTexture("resources/laser.png");
     NothingTexture = LoadTexture("resources/nothing.png");
-
-    // Shaders
-    // neonShader = LoadShaderFromMemory(NULL, neonShaderCode);
 
     // Init Camera
     camera.target = (Vector2){0.0f, 0.0f};
@@ -240,8 +222,6 @@ void InitGameplay(void)
     tmx_img_load_func = raylib_tex_loader;
     tmx_img_free_func = raylib_free_tex;
     InitMap();
-
-    // lastSecond = GetTime();
 }
 
 void InitMap(void)
@@ -343,9 +323,10 @@ void UpdateGameplay(void)
             int *settings = GetAllSettings();
             // settings[0] = edit
             maxScore = settings[1];
-            defaultTypeItem = (float)settings[2];
-            defaultMaxTimerItem = (float)settings[3];
-            activeLoot = (bool)settings[4];
+            maxAmmunition = settings[2];
+            defaultTypeItem = (float)settings[3];
+            defaultMaxTimerItem = (float)settings[4];
+            activeLoot = (bool)settings[5];
             free(settings);
             ResetGame();
             // @TODO displayed settings have been changed
@@ -365,7 +346,7 @@ void UpdateGameplay(void)
                     GetIdGamepad(i),  // gamepadId: Gamepad identifier
                     1,                // life: Number of life
                     DELAY_INVINCIBLE, // invincible: Time of invincibility
-                    MAX_AMMUNITION,   // ammunition: Ammunition
+                    maxAmmunition,   // ammunition: Ammunition
                     DELAY_AMMUNITION, // ammunitionLoad: Ammunition loading
                     {
                         {0.0f, 0.0f},
@@ -442,18 +423,6 @@ void UpdateGameplay(void)
     if (IsKeyPressed(KEY_P))
         pauseGame = !pauseGame;
     if (pauseGame)
-    {
-        if (IsKeyPressed(KEY_C))
-        {
-            // Controller display
-        }
-        if (IsKeyPressed(KEY_E))
-        {
-            // Edit map display
-        }
-        // return;
-    }
-    if (pauseGame)
         return;
 
     if (numberPlayer == 0 && camera.target.x != 0.0f && camera.target.y != 0.0f)
@@ -500,7 +469,7 @@ void UpdateGameplay(void)
         UpdatePlayer(&players[i]);
 
         // Bullets
-        for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+        for (int j = 0; j < MAX_BULLET; j++)
         {
             if (!players[i].bullets[j].playerId || players[i].bullets[j].inactive)
                 continue;
@@ -560,6 +529,7 @@ void UpdateGameplay(void)
             CollisionPhysic(&players[i].p, newPlayerRec, envBox);
         }
 
+        // Loots
         if (activeLoot)
         {
             for (int j = 0; j < lootsLength; j++)
@@ -581,6 +551,7 @@ void UpdateGameplay(void)
         }
     }
 
+    // Camera Management
     camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
     if (lastPlayer >= 2)
     {
@@ -617,6 +588,7 @@ void UpdateGameplay(void)
         camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
     }
 
+    // Outside logic
     if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
     {
         if (lastOutsidePlayer && ColorToInt(outsidePlayer->color) != ColorToInt(lastOutsidePlayer->color))
@@ -680,6 +652,7 @@ void UpdateGameplay(void)
         startTimeOutside = 0.0;
     }
 
+    // WIN Logic
     if ((!otherColorAlive && lastPlayer > 1) || playerAlive == 0)
     {
         if (startTime == 0.0 && numberPlayer > 1)
@@ -688,7 +661,7 @@ void UpdateGameplay(void)
             {
                 if (playerSpace[i])
                 {
-                    for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+                    for (int j = 0; j < MAX_BULLET; j++)
                     {
                         players[i].bullets[j].inactive = true;
                     }
@@ -742,13 +715,13 @@ void ResetGame(void)
         {
             players[i].life = 1;
             players[i].id = i + 1;
-            players[i].ammunition = MAX_AMMUNITION;
+            players[i].ammunition = maxAmmunition;
             players[i].invincible = DELAY_INVINCIBLE;
             players[i].charge = 0.0f;
             players[i].item.active = false;
             players[i].speed.x = 3.05f;
             players[i].speed.y = 3.05f;
-            for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+            for (int j = 0; j < MAX_BULLET; j++)
             {
                 players[i].bullets[j].inactive = true;
             }
@@ -802,7 +775,7 @@ void DrawGameplay(void)
         if (!players[i].id)
             continue;
         DrawSpawnPlayer(players[i]);
-        for (int j = 0; j < sizeof(players[i].bullets) / sizeof(players[i].bullets[0]); j++)
+        for (int j = 0; j < MAX_BULLET; j++)
         {
             if (!players[i].bullets[j].playerId)
                 continue;
@@ -837,20 +810,20 @@ void DrawGameplay(void)
         // @DEV
         if (activeDev)
         {
-            // for (int i = 0; i < NUMBER_EIGHT; i++)
-            // {
-            //     if (!players[i].id)
-            //         continue;
-            //     DrawStatsPlayer(players[i]);
-            // }
+            for (int i = 0; i < NUMBER_EIGHT; i++)
+            {
+                if (!players[i].id)
+                    continue;
+                DrawStatsPlayer(players[i]);
+            }
 
             // DISPLAY FPS
             DrawFPS(10, 10);
 
             // DISPLAY INFO
-            // DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, WHITE);
-            // DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, WHITE);
-            // DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, WHITE);
+            DrawText(TextFormat("ZOOM: %f", camera.zoom), 10, 30, 10, WHITE);
+            DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, WHITE);
+            DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, WHITE);
         }
         EndDrawing();
     }
@@ -909,6 +882,7 @@ void DrawGameplay(void)
             DrawTexture(titlePerfectNightTexture, camera.target.x - 155 * 3.47, camera.target.y - 105 * 3.47, WHITE);
             DrawTexture(useSameWifiTexture, camera.target.x - 205 * 3.47, camera.target.y + 210, WHITE);
             DrawTexture(andScanQrTexture, camera.target.x + 80 * 3.47, camera.target.y + 230, WHITE);
+            DrawTextPro(GetFontDefault(), "BETA !", (Vector2){camera.target.x + 490, camera.target.y - 234}, (Vector2){0.0f, 0.0f}, 26.0f, 30.0f, 2.6f, WHITE);
 
             DrawRectangle(0, 18, 300, 144, Fade(BLACKGROUND, 0.6f));
             DrawText("- Don't use a VPN", 30, 40, 24, WHITE);

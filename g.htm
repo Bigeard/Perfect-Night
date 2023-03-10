@@ -21,6 +21,7 @@
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script> -->
     <script src="js/lib/peerjs.min.js"></script>
     <script src="js/lib/nipplejs.min.js"></script>
+    <script src="js/lib/qrcodegen.min.js"></script>
 </head>
 
 <body id="body">
@@ -30,6 +31,7 @@
             <span id="ping">Ping: X</span>
         </div>
         <div>
+            <button class="btn qrCodeButton" onclick="windowOpen(event, qrCodeGame)">&nbsp;</button>
             <button class="btn optionButton" onclick="windowOpen(event, optionGame)">Option ⚙</button>
             <button class="btn menuButton" onclick="windowOpen(event, menuGame)">Menu ⠸</button>
         </div>
@@ -98,6 +100,10 @@
                 <div class="field">
                     <label for="maxScore">Maximum Score: </label>
                     <input type="number" name="maxScore" id="maxScore" value="3" max="256" required>
+                </div>
+                <div class="field">
+                    <label for="maxAmmunition">Maximum Ammunition: </label>
+                    <input type="number" name="maxAmmunition" id="maxAmmunition" value="3" max="256" required>
                 </div>
                 <div class="field">
                     <label for="defaultTypeItem">Choose a default item: </label>
@@ -203,6 +209,11 @@
         </form>
     </div>
 
+    <div id="qrCodeGame">
+        <div id="qrCodeDisplay"></div>
+        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
+    </div>
+
     <script type="text/javascript">
         // Ping / Latency Test
         // let pings = [0];
@@ -218,7 +229,8 @@
         const informationGame = document.getElementById("informationGame");
         const optionGame = document.getElementById("optionGame");
         const gameSettings = document.getElementById("gameSettings");
-        const listWindow = ["menuGame", "informationGame", "optionGame", "gameSettings"];
+        const qrCodeGame = document.getElementById("qrCodeGame");
+        const listWindow = ["menuGame", "informationGame", "optionGame", "gameSettings", "qrCodeGame"];
 
         const windowOpen = (event, doc) => {
             listWindow.forEach(d => {
@@ -260,7 +272,8 @@
                         !event.target.classList.contains("menuButton") &&
                         !event.target.classList.contains("menuInformation") &&
                         !event.target.classList.contains("optionButton") &&
-                        !event.target.classList.contains("optionGameSettings")) {
+                        !event.target.classList.contains("optionGameSettings") &&
+                        !event.target.classList.contains("qrCodeButton")) {
                         node.style.display = "none";
                     }
                 })
@@ -271,6 +284,33 @@
             event.preventDefault();
             document.documentElement.scrollTop = 0;
         }
+
+        // QrCode 
+        const toSvgString = (qr, border, lightColor, darkColor) => {
+            if (border < 0)
+                throw new RangeError("Border must be non-negative");
+            let parts = [];
+            for (let y = 0; y < qr.size; y++) {
+                for (let x = 0; x < qr.size; x++) {
+                    if (qr.getModule(x, y))
+                        parts.push(`M${x + border},${y + border}h1v1h-1z`);
+                }
+            }
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ${qr.size + border * 2} ${qr.size + border * 2}" stroke="none" style="border-radius: 10px;">
+	<rect width="100%" height="100%" fill="${lightColor}"/>
+	<path d="${parts.join(" ")}" fill="${darkColor}"/>
+</svg>
+`;
+        }
+        const qrCodeDisplay = document.getElementById("qrCodeDisplay");
+        const QRC = qrcodegen.QrCode;
+        // Simple operation
+        const qr0 = QRC.encodeText(window.location.href, QRC.Ecc.MEDIUM);
+        const svg = toSvgString(qr0, 2, "#fff", "#000");
+        qrCodeDisplay.innerHTML = svg;
+
 
         // NippleJS - Joystick
         const joysticks = document.getElementById("joysticks");

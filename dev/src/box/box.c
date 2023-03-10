@@ -36,7 +36,7 @@ void DrawBox(Box box)
 				PattenSlashTexture,
 				(Vector2){16.0f, 16.0f},
 				(Rectangle){box.p.pos.x + 3.0f, box.p.pos.y + 3.0f, box.p.size.x - 6.0f, box.p.size.y - 6.0f},
-				Fade(box.color, 0.4f));
+				Fade(box.color, 0.5f));
 		}
 		else
 		{

@@ -244,7 +244,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
         # CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html
         CFLAGS += --shell-file ./minshell.html
     else
-        CFLAGS += --shell-file ./minshell.html # -O2 --memory-init-file 0
+        CFLAGS += --shell-file ./minshell.html -O2 --memory-init-file 0
     endif
     EXT = .html
 endif
