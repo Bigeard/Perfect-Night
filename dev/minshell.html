@@ -68,11 +68,21 @@
             const init = () => {
                 const Config = {
                     reliable: true, // Low Latency (not sure...)
-                    //// ONLINE
+                    //// ONLINE UK
                     secure: true,
                     host: "perfect-night.aventu.re",
                     port: 443,
 
+                    //// ONLINE EU
+                    // secure: true,
+                    // host: "perfect-night-374900.oa.r.appspot.com",
+                    // port: 443,
+
+                    //// ONLINE US
+                    // secure: true,
+                    // host: "0.peerjs.com",
+                    // port: 443,
+                    
                     //// LOCAL
                     // secure: false,
                     // host: "192.168.12.1",
@@ -89,11 +99,12 @@
                                 username: "perfectnight",
                                 credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
                             },
+                            // US / EU
                             // {
                             //     urls: [
-                            //         "stun:stun4.l.google.com:19302",
+                            //         "stun:stun.l.google.com:19302",
                             //     ]
-                            // }
+                            // },
                             // {
                             //     urls: [
                             // //         //// ONLINE
@@ -108,8 +119,8 @@
                             // },
                             // {
                             //     urls: [
-                            //         "turn:eu-0.turn.peerjs.com:3478",
-                            //         // "turn:us-0.turn.peerjs.com:3478",
+                            //         // "turn:eu-0.turn.peerjs.com:3478",
+                            //         "turn:us-0.turn.peerjs.com:3478",
                             //     ],
                             //     username: "peerjs",
                             //     credential: "peerjsp"
@@ -117,13 +128,6 @@
                         ],
                     },
                     iceServers: [
-                        // {
-                        //     urls: [
-                        //         //// ONLINE
-                        //         "stun:stun3.l.google.com:19302",
-                        //         "stun:stun4.l.google.com:19302",
-                        //     ]
-                        // },
                         {
                             urls: [ // UK
                                 "turn:perfect-night.aventu.re:3478",
@@ -134,13 +138,15 @@
                         },
                         // {
                         //     urls: [
-                        //         "stun:stun4.l.google.com:19302",
+                        //         "stun:stun.l.google.com:19302",
+                        // //      "stun:stun3.l.google.com:19302",
+                        // //      "stun:stun4.l.google.com:19302",
                         //     ]
-                        // }
+                        // },
                         // {
                         //     urls: [
-                        //         "turn:eu-0.turn.peerjs.com:3478",
-                        //         // "turn:us-0.turn.peerjs.com:3478",
+                        //         // "turn:eu-0.turn.peerjs.com:3478",
+                        //         "turn:us-0.turn.peerjs.com:3478",
                         //     ],
                         //     username: "peerjs",
                         //     credential: "peerjsp"
