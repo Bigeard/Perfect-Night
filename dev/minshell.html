@@ -49,13 +49,54 @@
         canvas {
             width: 100%;
         }
+
+        #divCopyLink {
+            position: absolute;
+            bottom: 0;
+            border-radius: 20px;
+        }
+
+        #inputCopyLink {
+            width: 450px;
+            padding: 10px;
+            border-radius: 20px 0 0 20px;
+            border: none;
+            margin: 0;
+        }
+
+        #buttonCopyLink {
+            padding: 10px;
+            border-radius: 0 20px 20px 0;
+            border: none;
+            margin: 0;
+        }
     </style>
 </head>
 
 <body>
     <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 
+    <div id="divCopyLink">
+        <input type="text" value="Wait..." id="inputCopyLink">
+        <button id="buttonCopyLink" onclick="copyLink()">Copy the link</button>
+    </div>
+
     <script type="text/javascript">
+        // Copy link
+        const divCopyLink = document.getElementById("divCopyLink");
+        const inputCopyLink = document.getElementById("inputCopyLink");
+        const buttonCopyLink = document.getElementById("buttonCopyLink");
+        copyLink = () => {
+            inputCopyLink.select();
+            inputCopyLink.setSelectionRange(0, 99999);
+            if (window.isSecureContext && navigator.clipboard) {
+                navigator.clipboard.writeText(inputCopyLink.value);
+            } else {
+                document.execCommand('copy');
+            }
+            buttonCopyLink.innerText = "Successfully copied ✅ !"
+        }
+
         // RayLib
         var Module = { canvas: document.getElementById("canvas") }
 
@@ -82,7 +123,7 @@
                     // secure: true,
                     // host: "0.peerjs.com",
                     // port: 443,
-                    
+
                     //// LOCAL
                     // secure: false,
                     // host: "192.168.12.1",
@@ -175,6 +216,7 @@
 
                     // QrCode
                     gamepadUrl = window.location.href + "g.htm?i=" + peer.id;
+                    inputCopyLink.value = gamepadUrl;
                     console.info(gamepadUrl);
                 });
 

@@ -20,6 +20,7 @@ class VirtualGamepad {
     lastUpdate = 0;
 
     constructor(conn, id, index, name, shortName, type = "mobile") {
+        divCopyLink.style.display = "none";
         this.conn = conn;
         this.id = id;
         this.index = index + 1;

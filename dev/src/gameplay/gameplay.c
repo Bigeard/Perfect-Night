@@ -402,7 +402,9 @@ void UpdateGameplay(void)
     GenerateQrCode();
 
     // Zoom out / zoom in with the mouse wheel
-    camera.zoom += ((float)GetMouseWheelMove() * 0.01f);
+    if(activeDev) {
+        camera.zoom += ((float)GetMouseWheelMove() * 0.01f);
+    }
 
     // Active developer mode
     if (IsKeyPressed(KEY_O))
