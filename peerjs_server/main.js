@@ -3,7 +3,7 @@
 const express = require('express');
 const { ExpressPeerServer } = require('peer');
 
-const { randomUUID } = require("node:crypto");
+const { v4: uuidV4 } = require('uuid');
 const realm = require('peer/dist/src/models/realm');
 
 const app = express();
@@ -19,9 +19,9 @@ const server = app.listen(PORT, () => {
 class NewRealm extends realm.Realm {
   generateClientId() {
     let size = 4;
-    let clientId = randomUUID().substring(0, size);
+    let clientId = uuidV4().substring(0, size);
     while (this.getClientById(clientId)) {
-      clientId = randomUUID().substring(0, size);
+      clientId = uuidV4().substring(0, size);
       size++;
     }
     return clientId;
