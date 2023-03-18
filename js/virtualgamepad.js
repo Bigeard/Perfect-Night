@@ -3,6 +3,8 @@ let perf = false;
 let menuAction = 0;
 const listGamepad = new Map([]);
 const disconnectGamepad = [];
+let listScreenShareIndex = 0;
+const listScreenShare = new Array(8); 
 
 class VirtualGamepad {
     conn;
@@ -48,8 +50,11 @@ class VirtualGamepad {
                 this.axes[2] = parseFloat(data[3]);
                 this.axes[3] = parseFloat(data[4]);
 
+                // let i=0;
+                // while (i<listScreenShareIndex) { listScreenShare[i].send(JSON.stringify({t: t})); i++; }
+
                 if (!perf) this.conn.send(t); // -> Pong
-                // Edit
+                Edit
                 if (this.edit) this.conn.send(JSON.stringify(this.checkEdit({ t: data.t })));
             }
             else {

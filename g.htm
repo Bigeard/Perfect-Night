@@ -18,6 +18,7 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="stylesheet" href="gamepad_resources/style.css">
 
+    <script src="js/config/uk.js"></script>
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script> -->
     <script src="js/lib/peerjs.min.js"></script>
     <script src="js/lib/nipplejs.min.js"></script>
@@ -414,102 +415,6 @@
 
             const init = () => {
                 status.innerText = "No connection";
-
-                const Config = {
-                    reliable: true, // Low Latency (not sure...)
-                    //// ONLINE UK
-                    secure: true,
-                    host: "perfect-night.aventu.re",
-                    port: 443,
-
-                    //// ONLINE EU
-                    // secure: true,
-                    // host: "perfect-night-374900.oa.r.appspot.com",
-                    // port: 443,
-
-                    //// ONLINE US
-                    // secure: true,
-                    // host: "0.peerjs.com",
-                    // port: 443,
-                    
-                    //// LOCAL
-                    // secure: false,
-                    // host: "192.168.12.1",
-                    // port: 9000,
-
-                    path: "/peer",
-                    config: {
-                        iceServers: [
-                            {
-                                urls: [ // UK
-                                    "turn:perfect-night.aventu.re:3478",
-                                    "stun:perfect-night.aventu.re:3478",
-                                ],
-                                username: "perfectnight",
-                                credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
-                            },
-                            // {
-                            //     urls: [
-                            //         "stun:stun.l.google.com:19302",
-                            //     ]
-                            // },
-                            // {
-                            //     urls: [
-                            // //         //// ONLINE
-                            // //         "stun:stun.l.google.com:19302",
-                            // //         "stun:stun3.l.google.com:19302",
-                            // //         "stun:stun4.l.google.com:19302",
-
-                            //     //     //// LOCAL
-                            //     //     "192.168.12.1:5349",
-                            //     //     "192.168.12.1:3478"
-                            //     // ]
-                            // },
-                            // {
-                            //     urls: [
-                            //         // "turn:eu-0.turn.peerjs.com:3478",
-                            //         "turn:us-0.turn.peerjs.com:3478",
-                            //     ],
-                            //     username: "peerjs",
-                            //     credential: "peerjsp"
-                            // }
-                        ],
-                    },
-                    iceServers: [
-                        {
-                            urls: [ // UK
-                                "turn:perfect-night.aventu.re:3478",
-                                "stun:perfect-night.aventu.re:3478",
-                            ],
-                            username: "perfectnight",
-                            credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
-                        },
-                        // {
-                        //     urls: [
-                        //         "stun:stun.l.google.com:19302",
-                        // //      "stun:stun3.l.google.com:19302",
-                        // //      "stun:stun4.l.google.com:19302",
-                        //     ]
-                        // },
-                        // {
-                        //     urls: [
-                        //         // "turn:eu-0.turn.peerjs.com:3478",
-                        //         "turn:us-0.turn.peerjs.com:3478",
-                        //     ],
-                        //     username: "peerjs",
-                        //     credential: "peerjsp"
-                        // },
-                        // {
-                        //     urls: [
-                        //         //// LOCAL
-                        //         "192.168.12.1:3478",
-                        //         "192.168.12.1:5349"
-                        //     ]
-                        // },
-                    ],
-                    serialization: 'none',
-                    debug: 0,
-                };
                 peer = new Peer(Config);
 
                 peer.on("open", (NewPeerPlayerId) => {
@@ -583,7 +488,7 @@
                     metadata: {
                         id: PeerPlayerId,
                     },
-                    reliable: true,
+                    reliable: false,
                     serialization: 'none'
                 });
                 conn.on("open", () => {
@@ -675,7 +580,7 @@
                     lastPing = 0;
                     peer.disconnect();
                     conn = peer.connect(conn.peer,
-                        { reliable: true }
+                        { reliable: false }
                     );
                 }
                 if (joystickLeft && joystickRight && peer.id && conn) {
@@ -695,11 +600,11 @@
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script> -->
+    </script>
 </body>
 
 </html>

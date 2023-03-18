@@ -29,6 +29,7 @@ Click on this link to play ! 👾
 ### TURN SERVER
 
 > turnserver --log-file stdout
+> turnserver -u perfect:perfect --log-file stdout
 
 ### PEERJS SERVER
 > cd peerjs_server && npm start

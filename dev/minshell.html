@@ -11,9 +11,11 @@
     <meta name="viewport" content="width=device-width">
     <link rel="shortcut icon" href="favicon.ico">
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.js"></script> -->
+    <script src="js/config/uk.js"></script>
     <script src="js/lib/peerjs.min.js"></script>
     <script src="js/lib/filesaver.min.js"> </script>
     <script src="js/gamesettings.js"></script>
+    <script src="js/sharesceen.js"></script>
     <script src="js/virtualgamepad.js"></script>
     <script type="text/javascript">
         function saveFileFromMEMFSToDisk(memoryFSname, localFSname)     // This can be called by C/C++ code
@@ -50,12 +52,19 @@
             width: 100%;
         }
 
+        #divShareScreen {
+            position: absolute;
+            top: 0;
+            border-radius: 20px;
+        }
+
         #divCopyLink {
             position: absolute;
             bottom: 0;
             border-radius: 20px;
         }
 
+        #inputShareScreen,
         #inputCopyLink {
             width: 450px;
             padding: 10px;
@@ -64,6 +73,7 @@
             margin: 0;
         }
 
+        #buttonShareScreen,
         #buttonCopyLink {
             padding: 10px;
             border-radius: 0 20px 20px 0;
@@ -76,17 +86,41 @@
 <body>
     <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 
+    <div id="divShareScreen">
+        <input type="text" id="inputShareScreen">
+        <button id="buttonShareScreen" onclick="clickShareScreen()">Connect</button>
+    </div>
+
     <div id="divCopyLink">
         <input type="text" value="Wait..." id="inputCopyLink">
-        <button id="buttonCopyLink" onclick="copyLink()">Copy the link</button>
+        <button id="buttonCopyLink" onclick="clickCopyLink()">Copy the link</button>
     </div>
 
     <script type="text/javascript">
+        console.info(Config);
+
+        // Share Screen
+        let PeerServerId = null;
+        const inputShareScreen = document.getElementById("inputShareScreen");
+        const buttonShareScreen = document.getElementById("buttonShareScreen");
+        clickShareScreen = () => {
+            if (peer) {
+                peer.disconnect()
+                peer = null;
+                // console.log(peer);
+                PeerServerId = inputShareScreen.value;
+                // console.log(PeerServerId);
+                // join();
+                init();
+                buttonShareScreen.innerText = "Successfully added ✅ !"
+            }
+        }
+
         // Copy link
         const divCopyLink = document.getElementById("divCopyLink");
         const inputCopyLink = document.getElementById("inputCopyLink");
         const buttonCopyLink = document.getElementById("buttonCopyLink");
-        copyLink = () => {
+        clickCopyLink = () => {
             inputCopyLink.select();
             inputCopyLink.setSelectionRange(0, 99999);
             if (window.isSecureContext && navigator.clipboard) {
@@ -104,172 +138,114 @@
         let gamepadUrl = 'n';
         let lastPeerId = null;
         let peer = null;
+        let conn = null;
+
+        const init = () => {
+            peer = new Peer(Config);
+            console.info(peer);
+
+            peer.on("open", (id) => {
+                if (peer.id === null) {
+                    console.info("Received null id from peer open");
+                    peer.id = lastPeerId;
+                } else {
+                    lastPeerId = peer.id;
+                }
+
+                // QrCode
+                gamepadUrl = window.location.href + "g.htm?i=" + peer.id;
+                inputCopyLink.value = gamepadUrl;
+                console.info(gamepadUrl);
+
+                if (PeerServerId) {
+                    join();
+                }
+            });
+
+            peer.on("connection", (conn) => {
+                if (conn.metadata && conn.metadata.type === "screenShare") {
+                    // const screenShare = new VirtualScreenShare(conn, conn.peer);
+                    listScreenShare[listScreenShareIndex] = conn;
+                    listScreenShareIndex++;
+                    console.log(conn);
+                    return;
+                }
+
+                let gamepad = false;
+                listGamepad.forEach(g => g.conn?.peer === conn.peer ? gamepad = g : 0);
+
+                if (gamepad) { // If connection exist
+                    gamepad.conn = conn;
+                    gamepad.connect();
+                }
+                else if (conn.metadata && conn.metadata.id) { // If gamepad still open
+                    gamepad = listGamepad.get(conn.metadata.id);
+                    gamepad.conn = conn;
+                    gamepad.connect();
+                }
+                else if (listGamepad.size >= 8) { // check if the maximum size is reached
+                    conn.on("open", () => {
+                        conn.send("Error: To many players");
+                        setTimeout(() => conn.close(), 500);
+                    });
+                    return;
+                }
+                else { // Create Virtual Gamepad and the player
+                    gamepad = new VirtualGamepad(
+                        conn,
+                        conn.peer,
+                        listGamepad.size
+                    );
+                    listGamepad.set(gamepad.id, gamepad);
+                }
+
+                const listPlayerConnected = [];
+                listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn?.peer }));
+                console.info("Player connected: ", listPlayerConnected);
+            });
+
+            peer.on("disconnected", () => {
+                console.info("Connection lost. Please reconnect");
+                peer.id = lastPeerId;
+                peer._lastServerId = lastPeerId;
+                peer.reconnect();
+                // listGamepad.forEach(g => g.disconnect());
+            });
+
+            peer.on("close", () => {
+                console.info("Connection destroyed. Please refresh");
+                peer.reconnect();
+                // listGamepad.forEach(g => g.disconnect());
+            });
+
+            peer.on("error", (err) => console.error(err));
+        };
+
+        const join = () => {
+            if (conn) {
+                conn.close();
+            }
+            conn = peer.connect(PeerServerId, {
+                metadata: {
+                    type: "screenShare",
+                },
+                reliable: false,
+                serialization: 'none'
+            });
+            conn.on("open", () => {
+                console.info("Connected to ", conn.peer);
+            });
+            conn.on("data", (data) => {
+                const nData = JSON.parse(data);
+                let d = Date.now();
+                console.log("Ping:", d - nData.t);
+                console.log("Time phone:", nData.t);
+                console.log("Time screen:", d);
+                console.log(nData);
+            });
+        }
 
         (() => {
-            const init = () => {
-                const Config = {
-                    reliable: true, // Low Latency (not sure...)
-                    //// ONLINE UK
-                    secure: true,
-                    host: "perfect-night.aventu.re",
-                    port: 443,
-
-                    //// ONLINE EU
-                    // secure: true,
-                    // host: "perfect-night-374900.oa.r.appspot.com",
-                    // port: 443,
-
-                    //// ONLINE US
-                    // secure: true,
-                    // host: "0.peerjs.com",
-                    // port: 443,
-
-                    //// LOCAL
-                    // secure: false,
-                    // host: "192.168.12.1",
-                    // port: 9000,
-
-                    path: "/peer",
-                    config: {
-                        iceServers: [
-                            {
-                                urls: [ // UK
-                                    "turn:perfect-night.aventu.re:3478",
-                                    "stun:perfect-night.aventu.re:3478",
-                                ],
-                                username: "perfectnight",
-                                credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
-                            },
-                            // US / EU
-                            // {
-                            //     urls: [
-                            //         "stun:stun.l.google.com:19302",
-                            //     ]
-                            // },
-                            // {
-                            //     urls: [
-                            // //         //// ONLINE
-                            // //         "stun:stun.l.google.com:19302",
-                            // //         "stun:stun3.l.google.com:19302",
-                            // //         "stun:stun4.l.google.com:19302",
-
-                            //     //     //// LOCAL
-                            //     //     "192.168.12.1:5349",
-                            //     //     "192.168.12.1:3478"
-                            //     // ]
-                            // },
-                            // {
-                            //     urls: [
-                            //         // "turn:eu-0.turn.peerjs.com:3478",
-                            //         "turn:us-0.turn.peerjs.com:3478",
-                            //     ],
-                            //     username: "peerjs",
-                            //     credential: "peerjsp"
-                            // }
-                        ],
-                    },
-                    iceServers: [
-                        {
-                            urls: [ // UK
-                                "turn:perfect-night.aventu.re:3478",
-                                "stun:perfect-night.aventu.re:3478",
-                            ],
-                            username: "perfectnight",
-                            credential: "RohM0sWu2cEo8JjLSRwgahlkq6O48Oe0anoNsr1FAqUhK9"
-                        },
-                        // {
-                        //     urls: [
-                        //         "stun:stun.l.google.com:19302",
-                        // //      "stun:stun3.l.google.com:19302",
-                        // //      "stun:stun4.l.google.com:19302",
-                        //     ]
-                        // },
-                        // {
-                        //     urls: [
-                        //         // "turn:eu-0.turn.peerjs.com:3478",
-                        //         "turn:us-0.turn.peerjs.com:3478",
-                        //     ],
-                        //     username: "peerjs",
-                        //     credential: "peerjsp"
-                        // },
-                        // {
-                        //     urls: [
-                        //         //// LOCAL
-                        //         "192.168.12.1:3478",
-                        //         "192.168.12.1:5349"
-                        //     ]
-                        // },
-                    ],
-                    serialization: 'none',
-                    debug: 0
-                };
-                peer = new Peer(Config);
-                console.info(peer);
-
-                peer.on("open", (id) => {
-                    if (peer.id === null) {
-                        console.info("Received null id from peer open");
-                        peer.id = lastPeerId;
-                    } else {
-                        lastPeerId = peer.id;
-                    }
-
-                    // QrCode
-                    gamepadUrl = window.location.href + "g.htm?i=" + peer.id;
-                    inputCopyLink.value = gamepadUrl;
-                    console.info(gamepadUrl);
-                });
-
-                peer.on("connection", (conn) => {
-                    let gamepad = false;
-                    listGamepad.forEach(g => g.conn?.peer === conn.peer ? gamepad = g : 0);
-
-                    if (gamepad) { // If connection exist
-                        gamepad.conn = conn;
-                        gamepad.connect();
-                    }
-                    else if (conn.metadata?.id != false) { // If gamepad still open
-                        gamepad = listGamepad.get(conn.metadata.id);
-                        gamepad.conn = conn;
-                        gamepad.connect();
-                    }
-                    else if (listGamepad.size >= 8) { // check if the maximum size is reached
-                        conn.on("open", () => {
-                            conn.send("Error: To many players");
-                            setTimeout(() => conn.close(), 500);
-                        });
-                        return;
-                    }
-                    else { // Create Virtual Gamepad and the player
-                        gamepad = new VirtualGamepad(
-                            conn,
-                            conn.peer,
-                            listGamepad.size
-                        );
-                        listGamepad.set(gamepad.id, gamepad);
-                    }
-
-                    const listPlayerConnected = [];
-                    listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn?.peer }));
-                    console.info("Player connected: ", listPlayerConnected);
-                });
-
-                peer.on("disconnected", () => {
-                    console.info("Connection lost. Please reconnect");
-                    peer.id = lastPeerId;
-                    peer._lastServerId = lastPeerId;
-                    peer.reconnect();
-                    // listGamepad.forEach(g => g.disconnect());
-                });
-
-                peer.on("close", () => {
-                    console.info("Connection destroyed. Please refresh");
-                    peer.reconnect();
-                    // listGamepad.forEach(g => g.disconnect());
-                });
-
-                peer.on("error", (err) => console.error(err));
-            };
             init();
         })();
     </script>
