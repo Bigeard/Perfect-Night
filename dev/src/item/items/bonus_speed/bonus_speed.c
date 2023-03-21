@@ -13,7 +13,7 @@ Item InitItemBonusSpeed(int player_id, float maxTimer)
 
     Item item = {
         player_id,
-        "Bonus Speed",
+        BONUS_SPEED,
         true,
         GetTime(),
         defaultMaxTimer,

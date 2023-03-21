@@ -27,6 +27,7 @@ extern "C"
     void UpdateBullet(Bullet *bullet);
     void BulletBounce(Bullet *bullet);
     void DrawBullet(Bullet bullet);
+    void BulletValueToData(Bullet bullet, char *DataToSend);
 
 #ifdef __cplusplus
 }

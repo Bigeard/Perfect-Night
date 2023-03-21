@@ -35,7 +35,7 @@ extern "C"
     typedef struct Item
     {
         int player_id;
-        char name[15];
+        enum TypeItem type;
         bool active;
         double timer;
         double maxTimer;

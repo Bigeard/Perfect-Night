@@ -16,13 +16,13 @@
     <link rel="apple-touch-icon" href="/favicon.ico">
 
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" href="gamepad_resources/style.css">
+    <link rel="stylesheet" href="resources/style.css">
 
-    <script src="js/config/uk.js"></script>
+    <script src="../js/config/uk.js"></script>
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script> -->
-    <script src="js/lib/peerjs.min.js"></script>
-    <script src="js/lib/nipplejs.min.js"></script>
-    <script src="js/lib/qrcodegen.min.js"></script>
+    <script src="../js/lib/peerjs.min.js"></script>
+    <script src="../js/lib/nipplejs.min.js"></script>
+    <script src="../js/lib/qrcodegen.min.js"></script>
 </head>
 
 <body id="body">
@@ -40,7 +40,7 @@
 
     <div id="scrollUp">
         <span class="scrollUpText">Scroll Up</span><br>
-        <img class="scrollUpArrow" src="gamepad_resources/images/scroll_up.gif" alt="Scroll Up Gif">
+        <img class="scrollUpArrow" src="resources/images/scroll_up.gif" alt="Scroll Up Gif">
     </div>
 
     <button id="playerId" onclick="scrollOnTop(event)">PLAYER X</button>
@@ -221,8 +221,7 @@
         // let w = 0; // Loop 500
 
         // Find Peer Server Id (in URL)
-        const params = new URLSearchParams(document.location.search);
-        const PeerServerId = params.get("i");
+        const PeerServerId = window.location.hash.substring(1);
         console.info("Peer Server (Main) Id:", PeerServerId);
 
         // Menu of the gamepad
@@ -433,10 +432,10 @@
                     // @DEV
                     if (!PeerPlayerId) {
                         // Store connection player
-                        localStorage.setItem("peerConnection", JSON.stringify({
-                            PeerServerId,
-                            PeerPlayerId: NewPeerPlayerId
-                        }));
+                        // localStorage.setItem("peerConnection", JSON.stringify({
+                        //     PeerServerId,
+                        //     PeerPlayerId: NewPeerPlayerId
+                        // }));
                     }
 
                     // Join the connection
@@ -600,11 +599,11 @@
         })();
     </script>
     <!-- @DEV - console / debug / inspector -->
-    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
         eruda.init();
         eruda.position({ x: window.innerWidth, y: window.innerHeight });
-    </script>
+    </script> -->
 </body>
 
 </html>

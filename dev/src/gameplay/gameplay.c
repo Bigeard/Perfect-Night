@@ -74,6 +74,25 @@ EM_JS(int *, GetAllSettings, (), {
     return arrayPointer;
 });
 
+// Online
+EM_JS(void, SendData, (char *data), {
+    const dataToSend = Module.UTF8ToString(data);
+    let i = 0;
+    while (i < listScreenShareIndex)
+    {
+        listScreenShare[i].send(dataToSend);
+        i++;
+    }
+});
+EM_JS(char *, GetData, (), {
+    if (!dataReceive)
+        return;
+    const byteCount = Module.lengthBytesUTF8(dataReceive) + 1;
+    const dataPointer = Module._malloc(byteCount);
+    Module.stringToUTF8(dataReceive, dataPointer, byteCount);
+    return dataPointer;
+});
+
 // Gameplay
 tmx_map *map;
 int idMap = 0;
@@ -98,6 +117,8 @@ double elapsedTime = 0.0;
 // Setings
 bool activeDev = false;
 bool activePerf = false;
+bool activeOnline = false;
+bool activeMain = false;
 int maxScore = 3;
 int maxAmmunition = 4;
 bool activeLoot = true;
@@ -179,6 +200,9 @@ Texture2D BonusLifeWhiteTexture;
 Texture2D BonusSpeedTexture;
 Texture2D LaserTexture;
 Texture2D NothingTexture;
+
+int lengthDataToSend = 0;
+char dataToSend[2048];
 
 void InitGameplay(void)
 {
@@ -314,6 +338,15 @@ void UpdateGameplay(void)
             case 4: // Perf
                 activePerf = !activePerf;
                 break;
+            case 5:
+                activeMain = true;
+                activeOnline = true;
+                break;
+            case 6:
+                activeMain = false;
+                activeOnline = true;
+                qrCodeOk = false;
+                break;
             }
             SetMenuAction(0);
         }
@@ -346,7 +379,7 @@ void UpdateGameplay(void)
                     GetIdGamepad(i),  // gamepadId: Gamepad identifier
                     1,                // life: Number of life
                     DELAY_INVINCIBLE, // invincible: Time of invincibility
-                    maxAmmunition,   // ammunition: Ammunition
+                    maxAmmunition,    // ammunition: Ammunition
                     DELAY_AMMUNITION, // ammunitionLoad: Ammunition loading
                     {
                         {0.0f, 0.0f},
@@ -371,6 +404,28 @@ void UpdateGameplay(void)
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action (@TODO play with controller)
                     {0}                                                                                                                                                                // shootParticle
                 };
+                for (int i = 0; i < MAX_BULLET; i++)
+                {
+                    players[i].bullets[i] = (Bullet){
+                        players[i].id,
+                        (Physic){
+                            {-9999.9f, -9999.9f},
+                            {5.0f, 5.0f},
+                            {0.0f, 0.0f},
+                            {false, false, false, false, false}},
+                        {0.0f, 0.0f},
+                        0.0f,
+                        false,
+                        true,
+                        true,
+                        (Vector2){
+                            0.0f,
+                            0.0f,
+                        },
+                        0.0f,
+                        players[i].color};
+                }
+
                 ResetGame();
                 for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
                 {
@@ -402,7 +457,8 @@ void UpdateGameplay(void)
     GenerateQrCode();
 
     // Zoom out / zoom in with the mouse wheel
-    if(activeDev) {
+    if (activeDev)
+    {
         camera.zoom += ((float)GetMouseWheelMove() * 0.01f);
     }
 
@@ -449,9 +505,142 @@ void UpdateGameplay(void)
         UnloadTexture(andScanQrTexture);
     }
 
+    if (activeOnline && !activeMain)
+    {
+        double datetime = 0.0;
+
+        int player_index = 0;
+        int player_part = 1;
+
+        int type_index = 0;
+        int type_value = 0;
+        int type_loop = 1;
+
+        int end_of_type = true;
+
+        float bullet_pos_x = 0.0f;
+
+        char *data = GetData();
+        char *token;
+        // TraceLog(LOG_INFO, "%s", data);
+
+        // split the string with the delimiter ","
+        while ((token = strchr(data, ',')) != NULL)
+        {
+            *token = '\0'; // replace the delimiter with null terminator
+            if (datetime == 0.0)
+            {
+                datetime = atoll(data);
+            }
+            else if (player_part <= 3)
+            {
+                if (player_part == 1)
+                {
+                    memset(players[player_index].bullets, 0, MAX_BULLET);
+                    // for (int i = 0; i < MAX_BULLET; i++)
+                    // {
+                    //     players[player_index].bullets[i].inactive = true;
+                    // }
+                    players[player_index].p.pos.x = atof(data);
+                }
+                else if (player_part == 2)
+                {
+                    players[player_index].p.pos.y = atof(data);
+                }
+                else
+                {
+                    players[player_index].invincible = 0;
+                    players[player_index].charge = 2.0f;
+                    players[player_index].radian = atof(data);
+                    end_of_type = true;
+                }
+                player_part++;
+            }
+            else
+            {
+                if (end_of_type)
+                {
+                    end_of_type = false;
+                    const int new_type_value = atoi(data);
+
+                    if (new_type_value != type_value)
+                    {
+                        type_value = new_type_value;
+                        type_index = 0;
+                    }
+
+                    if (type_value == 0)
+                    {
+                        player_part = 1;
+                        player_index++;
+                    }
+                }
+                else
+                {
+                    switch (type_value)
+                    {
+                    case 1:
+                        InitItemWithTypeItem(player_index, atoi(data), defaultMaxTimerItem);
+                        end_of_type = true;
+                        break;
+
+                    case 2:
+                        if (type_loop == 1)
+                        {
+                            bullet_pos_x = atof(data);
+                            type_loop++;
+                        }
+                        else
+                        {
+                            players[player_index].bullets[type_index] = (Bullet){
+                                players[player_index].id,
+                                (Physic){
+                                    {bullet_pos_x, atof(data)},
+                                    {5.0f, 5.0f},
+                                    {0.0f, 0.0f},
+                                    {false, false, false, false, false}},
+                                {0.0f, 0.0f},
+                                0.0f,
+                                false,
+                                false,
+                                false,
+                                (Vector2){
+                                    players[player_index].p.pos.x + players[player_index].p.size.x / 2,
+                                    players[player_index].p.pos.y + players[player_index].p.size.y / 2,
+                                },
+                                0.0f,
+                                players[player_index].color};
+                            type_index++;
+                            type_loop = 1;
+                            end_of_type = true;
+                        }
+                        break;
+
+                    default:
+                        TraceLog(LOG_INFO, "Error loop, type_value: %d, data: %s", type_value, data);
+                        break;
+                    }
+                }
+            }
+            data = token + 1; // move the pointer to the next token
+        }
+        return;
+    }
+
+    if (activeOnline && activeMain)
+    {
+        double newTime = GetTime();
+        lengthDataToSend = sizeof(newTime);
+        memset(dataToSend, 0, 2048);
+        strcat(dataToSend, TextFormat("%f,", newTime));
+    }
+
     // Update Players / Bullets
     for (int i = 0; i < NUMBER_EIGHT; i++)
     {
+        if (activeOnline && activeMain)
+            PlayerValueToData(players[i], dataToSend);
+
         // If player not exist continue
         if (!players[i].id)
             continue;
@@ -507,6 +696,8 @@ void UpdateGameplay(void)
                     envPlayer);
             }
             BulletBounce(&players[i].bullets[j]);
+            if (activeOnline && activeMain)
+                BulletValueToData(players[i].bullets[j], dataToSend);
         }
 
         // Collision Player and Player
@@ -551,6 +742,18 @@ void UpdateGameplay(void)
             centerPositionY += players[i].p.pos.y + players[i].p.size.y / 2.0f;
             // centerDistance += sqrtf(powf(camera.target.x - players[i].p.pos.x, 2.0f) + powf(camera.target.x - players[i].p.pos.y, 2.0f));
         }
+        if (activeOnline && activeMain)
+        {
+            ItemValueToData(players[i], dataToSend);
+            strcat(dataToSend, "0,");
+        }
+    }
+
+    // Save data to js
+    // TraceLog(LOG_INFO, "%s", dataToSend, lengthDataToSend);
+    if (activeOnline && activeMain)
+    {
+        SendData(dataToSend);
     }
 
     // Camera Management
@@ -742,7 +945,8 @@ void ResetGame(void)
 void DrawGameplay(void)
 {
     // DRAW GAME
-    BeginMode2D(camera);
+    BeginMode2D(camera); // DRAW 1
+
     if (outsidePlayer)
     {
         ClearBackground(DarkenColor(DarkenColor(outsidePlayer->color, 0.2f), 1.0f - elapsedTimeOutside / 2.0f));
@@ -802,7 +1006,7 @@ void DrawGameplay(void)
     // DRAW STAT LOG INFO MENU SCREEN
     if (numberPlayer == 0 || startTime != 0.0 || pauseGame || activeDev)
     {
-        BeginDrawing();
+        BeginDrawing(); // DRAW 2
 
         if (numberPlayer == 0 || startTime != 0.0 || pauseGame) // Background for title / win
         {
@@ -827,12 +1031,13 @@ void DrawGameplay(void)
             DrawText(TextFormat("TARGET: %f/%f", camera.target.x, camera.target.y), 10, 40, 10, WHITE);
             DrawText(TextFormat("DELTA: %f", GetFrameTime()), 10, 50, 10, WHITE);
         }
+
         EndDrawing();
     }
 
     if (numberPlayer == 0 || startTime != 0.0 || pauseGame)
     {
-        BeginMode2D(camera);
+        BeginMode2D(camera); // DRAW 3
 
         // Draw Wins
         if (startTime != 0.0)
@@ -870,7 +1075,7 @@ void DrawGameplay(void)
         // Draw Pause
         else if (pauseGame)
         {
-            DrawText("PAUSE", (int)(camera.target.x - MeasureText("PAUSE", 100) / 2), (int)(camera.target.y - 200), 100, BLACK);
+            DrawText("PAUSE", (int)(camera.target.x - MeasureText("PAUSE", 100) / 2), (int)(camera.target.y - 200), 100, WHITE);
         }
         // Draw Title
         else if (numberPlayer == 0)

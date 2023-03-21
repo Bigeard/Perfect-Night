@@ -14,7 +14,7 @@ Item InitItemNothing(int player_id, float maxTimer)
 
     return (Item){
         player_id,
-        "Nothing",
+        NOTHING,
         true,
         GetTime(),
         defaultMaxTimer,

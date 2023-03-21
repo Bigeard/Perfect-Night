@@ -1,4 +1,5 @@
 #include "../../../lib/raylib/src/raylib.h"
+#include <string.h>
 
 #include "bullet.h"
 #include "../gameplay/gameplay.h"
@@ -73,4 +74,9 @@ void DrawBullet(Bullet bullet)
                 bullet.p.size.y * 2.0f},
             Fade(PURPLE, 0.5f));
     }
+}
+
+void BulletValueToData(Bullet bullet, char *dataToSend)
+{
+    strcat(dataToSend, TextFormat("2,%f,%f,", bullet.p.pos.x, bullet.p.pos.y));
 }

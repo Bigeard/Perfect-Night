@@ -41,10 +41,10 @@ extern "C"
         float charge;
         bool canShoot;
         int timeShoot;
-        float radian;      // Determine the position of the cannon
-        float lastRadian;  // Determine the position of the cannon
+        float radian;               // Determine the position of the cannon
+        float lastRadian;           // Determine the position of the cannon
         Bullet bullets[MAX_BULLET]; // Array of bullet
-        int lastBullet;    // Allow the ball to be replaced one after the other
+        int lastBullet;             // Allow the ball to be replaced one after the other
         // Other
         Color color;
         Item item;
@@ -61,6 +61,8 @@ extern "C"
     void DrawPlayer(Player player);
     void DrawSpawnPlayer(Player player);
     void DrawStatsPlayer(Player player);
+    void PlayerValueToData(Player player, char *DataToSend);
+    void ItemValueToData(Player player, char *DataToSend);
 
     void GamepadPlayerLife(char *p_id, int life);
     void GamepadPlayerAmmunition(char *p_id, int ammunition);

@@ -2,6 +2,7 @@
 #include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
 #include "stdio.h"
+#include "string.h"
 
 #include "player.h"
 #include "../gameplay/gameplay.h"
@@ -295,7 +296,7 @@ void DrawPlayer(Player player)
         }
 
         // Draw the progress bar of the charge
-        if (player.charge != 2)
+        if (player.charge != 2.0f)
         {
             DrawRing(
                 (Vector2){player.p.pos.x + player.p.size.x / 2.0f, player.p.pos.y + player.p.size.y / 2.0f},
@@ -382,4 +383,21 @@ void DrawStatsPlayer(Player player)
         DrawTextPro(GetFontDefault(), TextFormat("%.1f", player.ammunitionLoad), (Vector2){GetScreenWidth() - 250.0f, 70.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 40.0f, 10.0f, colorDisplay);
         DrawTextPro(GetFontDefault(), TextFormat("%d", player.life), (Vector2){GetScreenWidth() - 130.0f, -40.0f + 120.0f * (float)(player.id - 1)}, (Vector2){40.0f, 0.0f}, -20.0f, 40.0f, 10.0f, colorDisplay);
     }
+}
+
+void PlayerValueToData(Player player, char *dataToSend)
+{
+    if (!player.id)
+        strcat(dataToSend, "0,0,0,");
+    else
+        strcat(dataToSend, TextFormat("%f,%f,%f,",
+                                      player.p.pos.x,
+                                      player.p.pos.y,
+                                      player.radian));
+}
+
+void ItemValueToData(Player player, char *dataToSend)
+{
+    if (player.item.active)
+        strcat(dataToSend, TextFormat("1,%d,", player.item.type));
 }

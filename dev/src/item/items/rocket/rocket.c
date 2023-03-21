@@ -15,7 +15,7 @@ Item InitItemRocket(int player_id, float maxTimer)
 
     return (Item){
         player_id,
-        "Rocket",
+        ROCKET,
         true,
         GetTime(),
         defaultMaxTimer,

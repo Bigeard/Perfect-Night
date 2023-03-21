@@ -15,7 +15,7 @@ Item InitItemBonusLife(int player_id, float maxTimer)
 
     Item item = {
         player_id,
-        "Bonus Life",
+        BONUS_LIFE,
         true,
         GetTime(),
         4.0f,

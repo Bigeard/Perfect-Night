@@ -16,7 +16,7 @@ Item InitItemLaser(int player_id, float maxTimer)
 
     return (Item){
         player_id,
-        "Laser",
+        LASER,
         true,
         GetTime(),
         defaultMaxTimer,

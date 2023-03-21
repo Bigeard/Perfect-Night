@@ -15,7 +15,7 @@ Item InitItemMultiShoot(int player_id, float maxTimer)
 
     return (Item){
         player_id,
-        "Multi Shoot",
+        MULTI_SHOOT,
         true,
         GetTime(),
         defaultMaxTimer,

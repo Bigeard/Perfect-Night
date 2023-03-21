@@ -15,7 +15,7 @@ Item InitItemSword(int player_id, float maxTimer)
 
     return (Item){
         player_id,
-        "Sword",
+        SWORD,
         true,
         GetTime(),
         defaultMaxTimer,
