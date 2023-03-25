@@ -17,6 +17,7 @@ extern "C"
         float radian;
         bool direction;
         bool inactive;
+        int timerInactive;
         bool isNew;
         Vector2 startPos;
         float distanceLaser; // I couldn't find anything better :/

@@ -417,6 +417,7 @@ void UpdateGameplay(void)
                         0.0f,
                         false,
                         true,
+                        0,
                         true,
                         (Vector2){
                             0.0f,
@@ -552,12 +553,13 @@ void UpdateGameplay(void)
                 }
                 else if (player_part == 5)
                 {
-                    const int type_item = atoi(data);  
+                    const int type_item = atoi(data);
                     if (type_item != 0)
                     {
-                        InitItemWithTypeItem(player_index+1, atoi(data), defaultMaxTimerItem);
+                        InitItemWithTypeItem(player_index + 1, atoi(data), defaultMaxTimerItem);
                     }
-                    else {
+                    else
+                    {
                         players[player_index].item.active = false;
                     }
                 }
@@ -618,6 +620,7 @@ void UpdateGameplay(void)
                                 0.0f,
                                 false,
                                 false,
+                                0,
                                 false,
                                 (Vector2){
                                     players[player_index].p.pos.x + players[player_index].p.size.x / 2,

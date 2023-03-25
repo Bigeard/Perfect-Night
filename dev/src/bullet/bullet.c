@@ -26,6 +26,20 @@ void UpdateBullet(Bullet *bullet)
     {
         bullet->inactive = true;
     }
+    if ((bullet->p.pos.x >= arenaSizeX ||
+         bullet->p.pos.x + bullet->p.size.x <= 0.0f) ||
+        (bullet->p.pos.y >= arenaSizeY ||
+         bullet->p.pos.y + bullet->p.size.y <= 0.0f))
+    {
+        bullet->timerInactive++;
+        if (bullet->timerInactive > 100)
+        {
+            bullet->inactive = true;
+        }
+    }
+    else {
+        bullet->timerInactive = 0;
+    }
 }
 
 void BulletBounce(Bullet *bullet)

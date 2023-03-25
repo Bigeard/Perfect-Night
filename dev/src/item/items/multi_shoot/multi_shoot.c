@@ -50,6 +50,7 @@ void ShootItemMultiShoot(Item *item, float calcPosRadianX, float calcPosRadianY,
             radian,
             false,
             false,
+            0,
             true,
             (Vector2){
                 player->p.pos.x + player->p.size.x / 2,

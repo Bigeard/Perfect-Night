@@ -176,6 +176,7 @@ void UpdatePlayer(Player *player)
                         player->lastRadian,
                         false,
                         false,
+                        0,
                         true,
                         (Vector2){
                             player->p.pos.x + player->p.size.x / 2,
