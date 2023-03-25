@@ -10,6 +10,7 @@
 #include "../particle/particle.h"
 #include "../tool/tool.h"
 
+// @TODO optimize the code
 EM_JS(float, GetJoystickMobileLeftX, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[0]});
 EM_JS(float, GetJoystickMobileLeftY, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[1]});
 EM_JS(float, GetJoystickMobileRightX, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[2]});
@@ -18,10 +19,12 @@ EM_JS(float, GetJoystickMobileRightY, (const char *id), {return listGamepad.get(
 EM_JS(void, GamepadPlayerLife, (char *p_id, int life), {
     const id = Module.UTF8ToString(p_id);
     const gamepad = listGamepad.get(id);
-    gamepad.life = life;
-    gamepad.edit = true;
-    listGamepad.set(id, gamepad);
-    // return 1;
+    if (gamepad)
+    {
+        gamepad.life = life;
+        gamepad.edit = true;
+        listGamepad.set(id, gamepad);
+    }
 });
 
 EM_JS(void, GamepadPlayerAmmunition, (char *p_id, int ammunition), {
@@ -30,7 +33,6 @@ EM_JS(void, GamepadPlayerAmmunition, (char *p_id, int ammunition), {
     gamepad.ammunition = ammunition;
     gamepad.edit = true;
     listGamepad.set(id, gamepad);
-    // return 1;
 });
 
 Texture2D playerBorderTexture;
@@ -388,16 +390,15 @@ void DrawStatsPlayer(Player player)
 void PlayerValueToData(Player player, char *dataToSend)
 {
     if (!player.id)
-        strcat(dataToSend, "0,0,0,");
+        strcat(dataToSend, "0,0,0,0,0,0,0,");
     else
-        strcat(dataToSend, TextFormat("%f,%f,%f,",
+        strcat(dataToSend, TextFormat("%f,%f,%f,%f,%d,%d,%d,",
                                       player.p.pos.x,
                                       player.p.pos.y,
-                                      player.radian));
-}
-
-void ItemValueToData(Player player, char *dataToSend)
-{
-    if (player.item.active)
-        strcat(dataToSend, TextFormat("1,%d,", player.item.type));
+                                      player.radian,
+                                      player.charge,
+                                      player.item.active ? (int)player.item.type : 0,
+                                      player.life,
+                                      player.ammunition));
+    // TraceLog(LOG_INFO, TextFormat("%s", dataToSend));
 }

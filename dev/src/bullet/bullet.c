@@ -78,5 +78,5 @@ void DrawBullet(Bullet bullet)
 
 void BulletValueToData(Bullet bullet, char *dataToSend)
 {
-    strcat(dataToSend, TextFormat("2,%f,%f,", bullet.p.pos.x, bullet.p.pos.y));
+    strcat(dataToSend, TextFormat("1,%f,%f,", bullet.p.pos.x, bullet.p.pos.y));
 }

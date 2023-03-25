@@ -532,26 +532,46 @@ void UpdateGameplay(void)
             {
                 datetime = atoll(data);
             }
-            else if (player_part <= 3)
+            else if (player_part <= 7) // Loop 7 times for the player
             {
-                if (player_part == 1)
+                if (player_part == 1) // Start Init Player !
                 {
-                    memset(players[player_index].bullets, 0, MAX_BULLET);
-                    // for (int i = 0; i < MAX_BULLET; i++)
-                    // {
-                    //     players[player_index].bullets[i].inactive = true;
-                    // }
                     players[player_index].p.pos.x = atof(data);
                 }
                 else if (player_part == 2)
                 {
                     players[player_index].p.pos.y = atof(data);
                 }
-                else
+                else if (player_part == 3)
                 {
-                    players[player_index].invincible = 0;
-                    players[player_index].charge = 2.0f;
                     players[player_index].radian = atof(data);
+                }
+                else if (player_part == 4)
+                {
+                    players[player_index].charge = atof(data);
+                }
+                else if (player_part == 5)
+                {
+                    const int type_item = atoi(data);  
+                    if (type_item != 0)
+                    {
+                        InitItemWithTypeItem(player_index+1, atoi(data), defaultMaxTimerItem);
+                    }
+                    else {
+                        players[player_index].item.active = false;
+                    }
+                }
+                else if (player_part == 6)
+                {
+                    players[player_index].life = atoi(data);
+                }
+                else if (player_part == 7) // End Init Player !
+                {
+                    players[player_index].ammunition = atoi(data);
+
+                    // Reset data player
+                    players[player_index].invincible = 0;
+                    memset(players[player_index].bullets, 0, MAX_BULLET);
                     end_of_type = true;
                 }
                 player_part++;
@@ -580,11 +600,6 @@ void UpdateGameplay(void)
                     switch (type_value)
                     {
                     case 1:
-                        InitItemWithTypeItem(player_index, atoi(data), defaultMaxTimerItem);
-                        end_of_type = true;
-                        break;
-
-                    case 2:
                         if (type_loop == 1)
                         {
                             bullet_pos_x = atof(data);
@@ -624,6 +639,7 @@ void UpdateGameplay(void)
             }
             data = token + 1; // move the pointer to the next token
         }
+        // TraceLog(LOG_INFO, TextFormat("Item player %d => %d", player_index, players[0].item.type));
         return;
     }
 
@@ -638,9 +654,6 @@ void UpdateGameplay(void)
     // Update Players / Bullets
     for (int i = 0; i < NUMBER_EIGHT; i++)
     {
-        if (activeOnline && activeMain)
-            PlayerValueToData(players[i], dataToSend);
-
         // If player not exist continue
         if (!players[i].id)
             continue;
@@ -658,6 +671,10 @@ void UpdateGameplay(void)
         }
 
         UpdatePlayer(&players[i]);
+        if (activeOnline && activeMain)
+        {
+            PlayerValueToData(players[i], dataToSend);
+        }
 
         // Bullets
         for (int j = 0; j < MAX_BULLET; j++)
@@ -744,7 +761,6 @@ void UpdateGameplay(void)
         }
         if (activeOnline && activeMain)
         {
-            ItemValueToData(players[i], dataToSend);
             strcat(dataToSend, "0,");
         }
     }

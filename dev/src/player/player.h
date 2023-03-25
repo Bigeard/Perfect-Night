@@ -62,7 +62,6 @@ extern "C"
     void DrawSpawnPlayer(Player player);
     void DrawStatsPlayer(Player player);
     void PlayerValueToData(Player player, char *DataToSend);
-    void ItemValueToData(Player player, char *DataToSend);
 
     void GamepadPlayerLife(char *p_id, int life);
     void GamepadPlayerAmmunition(char *p_id, int ammunition);
