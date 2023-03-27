@@ -9,6 +9,8 @@
     <meta name="description" content="Multi Player Video Game | Perfect Night">
     <meta name="keywords" content="perfectnight, multiplayer, videogame">
     <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Permissions-Policy" content="screen-wake-lock">
+
     <link rel="shortcut icon" href="favicon.ico">
     <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.js"></script> -->
     <script src="js/config/uk.js"></script>
@@ -84,6 +86,23 @@
 </head>
 
 <body>
+    <script type="text/javascript" async>
+        const wakeLockTrigger = async () => {
+            if ("wakeLock" in navigator) {
+                console.log("Screen Wake Lock API supported!");
+            } else {
+                console.log("Wake lock is not supported by this browser.");
+            }
+            try {
+                const wakeLock = await navigator.wakeLock.request("screen");
+            } catch (err) {
+                // the wake lock request fails - usually system related, such being low on battery
+                console.log(`${err.name}, ${err.message}`);
+            }
+        }
+        wakeLockTrigger();
+    </script>
+
     <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 
     <div id="divShareScreen">

@@ -57,14 +57,14 @@ extern "C"
     extern Box boxes[40];
     extern int boxesLength;
 
-    void InitGameplay(void);
-    void InitMap(void);
-    void SwitchMap(void);
-    void UpdateGameplay(void);
-    void ResetGame(void);
-    void DrawGameplay(void);
-    void DrawGameArena(void);
-    void GenerateQrCode(void);
+    void InitGameplay();
+    void InitMap();
+    void SwitchMap();
+    void UpdateGameplay();
+    void ResetGame();
+    void DrawGameplay();
+    void DrawGameArena();
+    void GenerateQrCode();
     void QrCodeParticleInit(float *qrCodeParticlesAnimationTimer, int *qrCodeParticlesIdColor, Particle *qrCodeParticles);
 
 #ifdef __cplusplus

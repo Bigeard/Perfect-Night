@@ -204,7 +204,7 @@ Texture2D NothingTexture;
 int lengthDataToSend = 0;
 char dataToSend[2048];
 
-void InitGameplay(void)
+void InitGameplay()
 {
     // Home Screen
     // Resize Image for reduce the size of the game
@@ -248,7 +248,7 @@ void InitGameplay(void)
     InitMap();
 }
 
-void InitMap(void)
+void InitMap()
 {
     if (idMap >= sizeof(listMap) / sizeof(listMap[0]))
     {
@@ -264,11 +264,10 @@ void InitMap(void)
     tmx_init_object(map->ly_head, players, boxes, loots);
 }
 
-void SwitchMap(void)
+void SwitchMap()
 {
     bestScore = 0;
     winnerMap = false;
-    idMap++;
     memset(boxes, 0, sizeof boxes);
     memset(loots, 0, sizeof loots);
     map = NULL;
@@ -290,7 +289,7 @@ void SwitchMap(void)
     ResetGame();
 }
 
-void UpdateGameplay(void)
+void UpdateGameplay()
 {
     centerPositionX = 0;
     centerPositionY = 0;
@@ -330,6 +329,7 @@ void UpdateGameplay(void)
                 ResetGame();
                 break;
             case 2: // Change Map
+                idMap++;
                 SwitchMap();
                 break;
             case 3: // Dev
@@ -509,6 +509,7 @@ void UpdateGameplay(void)
     if (activeOnline && !activeMain)
     {
         double datetime = 0.0;
+        int idMapData = -1;
 
         int player_index = 0;
         int player_part = 1;
@@ -532,6 +533,15 @@ void UpdateGameplay(void)
             if (datetime == 0.0)
             {
                 datetime = atoll(data);
+            }
+            else if (idMapData == -1)
+            { // Change map if id change
+                idMapData = atoi(data);
+                if (idMapData != idMap)
+                {
+                    idMap = idMapData;
+                    SwitchMap();
+                }
             }
             else if (player_part <= 7) // Loop 7 times for the player
             {
@@ -575,6 +585,21 @@ void UpdateGameplay(void)
                     players[player_index].invincible = 0;
                     memset(players[player_index].bullets, 0, MAX_BULLET);
                     end_of_type = true;
+                    if (players[player_index].life >= 1)
+                    {
+                        playerAlive++;
+                        playerAliveId = player_index;
+                        if (ColorToInt(players[player_index].color) != ColorToInt(colorAlive))
+                        {
+                            otherColorAlive = true;
+                        }
+                        colorAlive = players[player_index].color;
+                    }
+                    if (players[player_index].life >= 1)
+                    {
+                        centerPositionX += players[player_index].p.pos.x + players[player_index].p.size.x / 2.0f;
+                        centerPositionY += players[player_index].p.pos.y + players[player_index].p.size.y / 2.0f;
+                    }
                 }
                 player_part++;
             }
@@ -642,6 +667,36 @@ void UpdateGameplay(void)
             }
             data = token + 1; // move the pointer to the next token
         }
+        // Camera Management
+        camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+        if (lastPlayer >= 2)
+        {
+            if (playerAlive >= 2)
+            {
+                centerPositionX = centerPositionX / playerAlive;
+                centerPositionY = centerPositionY / playerAlive;
+                camera.target = Vector2Lerp(
+                    camera.target,
+                    (Vector2){centerPositionX, centerPositionY},
+                    GetFrameTime() * (sqrtf(powf(camera.target.x - centerPositionX, 2.0f) + powf(camera.target.y - centerPositionY, 2.0f))) / 100.0f);
+            }
+            else if (playerAlive == 1)
+            {
+                centerPositionX = (players[playerAliveId].p.pos.x + players[playerAliveId].p.size.x) / 2.0f;
+                centerPositionY = (players[playerAliveId].p.pos.y + players[playerAliveId].p.size.y) / 2.0f - 220.0f;
+                camera.target = (Vector2){centerPositionX, centerPositionY};
+            }
+            else
+            {
+                centerPositionX = arenaSizeX / 2;
+                centerPositionY = arenaSizeY / 2;
+                camera.target = (Vector2){centerPositionX, centerPositionY};
+            }
+        }
+        else
+        {
+            camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
+        }
         // TraceLog(LOG_INFO, TextFormat("Item player %d => %d", player_index, players[0].item.type));
         return;
     }
@@ -651,7 +706,7 @@ void UpdateGameplay(void)
         double newTime = GetTime();
         lengthDataToSend = sizeof(newTime);
         memset(dataToSend, 0, 2048);
-        strcat(dataToSend, TextFormat("%f,", newTime));
+        strcat(dataToSend, TextFormat("%f,%d,", newTime, idMap));
     }
 
     // Update Players / Bullets
@@ -913,7 +968,10 @@ void UpdateGameplay(void)
         if (elapsedTime > 3.0)
         {
             if (winnerMap)
+            {
+                idMap++;
                 SwitchMap();
+            }
             else
                 ResetGame();
         }
@@ -930,7 +988,7 @@ void UpdateGameplay(void)
     // TraceLog(LOG_INFO, "camera.zoom: %d", camera.zoom);
 }
 
-void ResetGame(void)
+void ResetGame()
 {
     tmx_init_object(map->ly_head, players, boxes, loots);
     for (int i = 0; i < NUMBER_EIGHT; i++)
@@ -961,7 +1019,7 @@ void ResetGame(void)
     startTime = 0.0;
 }
 
-void DrawGameplay(void)
+void DrawGameplay()
 {
     // DRAW GAME
     BeginMode2D(camera); // DRAW 1
@@ -1127,7 +1185,7 @@ void DrawGameplay(void)
     }
 }
 
-void DrawGameArena(void)
+void DrawGameArena()
 {
     if (activeDev || activePerf)
     {
@@ -1153,7 +1211,7 @@ void DrawGameArena(void)
     }
 }
 
-void GenerateQrCode(void)
+void GenerateQrCode()
 {
     if (!qrCodeOk)
     {
