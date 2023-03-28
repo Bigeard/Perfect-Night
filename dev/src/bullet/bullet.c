@@ -37,7 +37,8 @@ void UpdateBullet(Bullet *bullet)
             bullet->inactive = true;
         }
     }
-    else {
+    else
+    {
         bullet->timerInactive = 0;
     }
 }
@@ -92,5 +93,6 @@ void DrawBullet(Bullet bullet)
 
 void BulletValueToData(Bullet bullet, char *dataToSend)
 {
-    strcat(dataToSend, TextFormat("1,%f,%f,", bullet.p.pos.x, bullet.p.pos.y));
+    if (bullet.playerId && !bullet.inactive)
+        strcat(dataToSend, TextFormat("1,%f,%f,", bullet.p.pos.x, bullet.p.pos.y));
 }

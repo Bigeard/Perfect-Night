@@ -543,7 +543,7 @@ void UpdateGameplay()
                     SwitchMap();
                 }
             }
-            else if (player_part <= 7) // Loop 7 times for the player
+            else if (player_part <= 8) // Loop 8 times for the player
             {
                 if (player_part == 1) // Start Init Player !
                 {
@@ -577,14 +577,37 @@ void UpdateGameplay()
                 {
                     players[player_index].life = atoi(data);
                 }
-                else if (player_part == 7) // End Init Player !
+                else if (player_part == 7)
                 {
                     players[player_index].ammunition = atoi(data);
+                }
+                else if (player_part == 8)
+                { // End Init Player !
+                    const int player_score = atoi(data);
+                    if (colorScore[player_index] != player_score)
+                    {
+                        colorScore[player_index] = player_score;
+                        startTime = GetTime();
+                        if (colorScore[player_index] >= bestScore)
+                            bestScore = colorScore[player_index];
+                        if (colorScore[player_index] >= maxScore)
+                            winnerMap = true;
+                    }
 
-                    // Reset data player
-                    players[player_index].invincible = 0;
-                    memset(players[player_index].bullets, 0, MAX_BULLET);
-                    end_of_type = true;
+                    // ...
+                    // Other player stuff
+                    if (players[player_index].invincible > 1)
+                        players[player_index].invincible = players[player_index].invincible - GetFrameTime();
+                    else
+                        players[player_index].invincible = 0;
+
+                    // memset(players[player_index].bullets, 0, MAX_BULLET);
+                    for (size_t i = 0; i < MAX_BULLET; i++)
+                    {
+                        if (players[player_index].bullets[i].playerId)
+                            players[player_index].bullets[i].inactive = true;
+                    }
+
                     if (players[player_index].life >= 1)
                     {
                         playerAlive++;
@@ -600,6 +623,7 @@ void UpdateGameplay()
                         centerPositionX += players[player_index].p.pos.x + players[player_index].p.size.x / 2.0f;
                         centerPositionY += players[player_index].p.pos.y + players[player_index].p.size.y / 2.0f;
                     }
+                    end_of_type = true;
                 }
                 player_part++;
             }
@@ -696,6 +720,14 @@ void UpdateGameplay()
         else
         {
             camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
+        }
+        if (startTime != 0.0)
+        {
+            elapsedTime = GetTime() - startTime;
+            if (elapsedTime > 3.0)
+            {
+                ResetGame();
+            }
         }
         // TraceLog(LOG_INFO, TextFormat("Item player %d => %d", player_index, players[0].item.type));
         return;

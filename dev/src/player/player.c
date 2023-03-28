@@ -390,16 +390,15 @@ void DrawStatsPlayer(Player player)
 
 void PlayerValueToData(Player player, char *dataToSend)
 {
-    if (!player.id)
-        strcat(dataToSend, "0,0,0,0,0,0,0,");
-    else
-        strcat(dataToSend, TextFormat("%f,%f,%f,%f,%d,%d,%d,",
+    if (player.id)
+        strcat(dataToSend, TextFormat("%f,%f,%f,%f,%d,%d,%d,%d,",
                                       player.p.pos.x,
                                       player.p.pos.y,
                                       player.radian,
                                       player.charge,
                                       player.item.active ? (int)player.item.type : 0,
                                       player.life,
-                                      player.ammunition));
+                                      player.ammunition,
+                                      colorScore[player.id-1]));
     // TraceLog(LOG_INFO, TextFormat("%s", dataToSend));
 }

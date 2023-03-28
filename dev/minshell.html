@@ -73,6 +73,7 @@
             border-radius: 20px 0 0 20px;
             border: none;
             margin: 0;
+            transition: opacity 1s;
         }
 
         #buttonShareScreen,
@@ -81,6 +82,7 @@
             border-radius: 0 20px 20px 0;
             border: none;
             margin: 0;
+            transition: opacity 1s;
         }
     </style>
 </head>
@@ -209,6 +211,12 @@
             peer.on("connection", (conn) => {
                 if (conn.metadata && conn.metadata.type === "screenShare") {
                     menuAction = 5;
+                    if (listScreenShareIndex === 0) {
+                        inputShareScreen.style.opacity = '0';
+                        buttonShareScreen.style.opacity = '0';
+                        inputShareScreen.addEventListener('transitionend', () => inputShareScreen.remove());
+                        buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
+                    }
                     listScreenShare[listScreenShareIndex] = conn;
                     listScreenShareIndex++;
                     console.info("Main Connected to", conn.peer, conn);
@@ -235,6 +243,12 @@
                     return;
                 }
                 else { // Create Virtual Gamepad and the player
+                    if (listGamepad.size === 0) {
+                        inputShareScreen.style.opacity = '0';
+                        buttonShareScreen.style.opacity = '0';
+                        inputShareScreen.addEventListener('transitionend', () => inputShareScreen.remove());
+                        buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
+                    }
                     gamepad = new VirtualGamepad(
                         conn,
                         conn.peer,
@@ -284,6 +298,11 @@
                 console.info("Second Connected to", conn.peer, conn);
                 menuAction = 6;
                 buttonShareScreen.innerText = "Successfully connected ✅ !"
+
+                inputShareScreen.style.opacity = '0';
+                buttonShareScreen.style.opacity = '0';
+                inputShareScreen.addEventListener('transitionend', () => inputShareScreen.remove());
+                buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
             });
             conn.on("data", (data) => {
                 // console.log(data);
