@@ -510,6 +510,7 @@ void UpdateGameplay()
     {
         double datetime = 0.0;
         int idMapData = -1;
+        int loot_index = 0;
 
         int player_index = 0;
         int player_part = 1;
@@ -543,25 +544,31 @@ void UpdateGameplay()
                     SwitchMap();
                 }
             }
-            else if (player_part <= 8) // Loop 8 times for the player
+            else if (loot_index <= 3)
+            { // Display or not the the loot
+                loots[loot_index].active = atoi(data);
+                loot_index++;
+            }
+            else if (player_part <= 9) // Loop 9 times for the player
             {
-                if (player_part == 1) // Start Init Player !
+                // Start Init Player !
+                if (player_part == 1) // Postion player X
                 {
                     players[player_index].p.pos.x = atof(data);
                 }
-                else if (player_part == 2)
+                else if (player_part == 2) // Postion player Y
                 {
                     players[player_index].p.pos.y = atof(data);
                 }
-                else if (player_part == 3)
+                else if (player_part == 3) // Radian player cannon
                 {
                     players[player_index].radian = atof(data);
                 }
-                else if (player_part == 4)
+                else if (player_part == 4) // Charge of the bullet
                 {
                     players[player_index].charge = atof(data);
                 }
-                else if (player_part == 5)
+                else if (player_part == 5) // Type of the item (if type == 0 item = NULL)
                 {
                     const int type_item = atoi(data);
                     if (type_item != 0)
@@ -573,15 +580,28 @@ void UpdateGameplay()
                         players[player_index].item.active = false;
                     }
                 }
-                else if (player_part == 6)
+                else if (player_part == 6) // Timer item (detect change and for the animation)
                 {
-                    players[player_index].life = atoi(data);
+                    players[player_index].item.timer = atof(data);
                 }
-                else if (player_part == 7)
+                else if (player_part == 7) // Life player
+                {
+                    const int new_life = atoi(data);
+                    if (new_life != players[player_index].life)
+                    {
+                        players[player_index].life = new_life;
+                        if (players[player_index].life <= 0)
+                        {
+                            // Add case of velocity of the bullet (more data to send probably) @TODO
+                            InitParticles(players[player_index].p.pos, players[player_index].p.vel, 0.1f, players[player_index].color, 120.0f, players[player_index].shootParticle, 20);
+                        }
+                    }
+                }
+                else if (player_part == 8) // Ammunition player
                 {
                     players[player_index].ammunition = atoi(data);
                 }
-                else if (player_part == 8)
+                else if (player_part == 9) // Score player
                 { // End Init Player !
                     const int player_score = atoi(data);
                     if (colorScore[player_index] != player_score)
@@ -623,6 +643,37 @@ void UpdateGameplay()
                         centerPositionX += players[player_index].p.pos.x + players[player_index].p.size.x / 2.0f;
                         centerPositionY += players[player_index].p.pos.y + players[player_index].p.size.y / 2.0f;
                     }
+
+                    // Out of area
+                    if ((players[player_index].p.pos.x >= arenaSizeX ||
+                         players[player_index].p.pos.x + players[player_index].p.size.x <= 0.0f) ||
+                        (players[player_index].p.pos.y >= arenaSizeY ||
+                         players[player_index].p.pos.y + players[player_index].p.size.y <= 0.0f))
+                    {
+
+                        if (lastOutsidePlayer->id != players[player_index].id)
+                        {
+                            outsidePlayer = &players[player_index];
+                        }
+                    }
+                    else
+                    {
+                        if (outsidePlayer->id == players[player_index].id)
+                        {
+                            outsidePlayer = NULL;
+                        }
+                    }
+
+                    if (players[player_index].life <= 0 && outsidePlayer->id == players[player_index].id)
+                    {
+                        outsidePlayer = NULL;
+                    }
+
+                    if (players[player_index].shootParticle[0].timer != 0)
+                    {
+                        UpdateParticles(players[player_index].shootParticle, 20);
+                    }
+
                     end_of_type = true;
                 }
                 player_part++;
@@ -721,6 +772,28 @@ void UpdateGameplay()
         {
             camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
         }
+
+        if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
+        {
+            lastOutsidePlayer = outsidePlayer;
+            startTimeOutside = GetTime();
+        }
+        if (startTimeOutside != 0.0)
+        {
+            elapsedTimeOutside = GetTime() - startTimeOutside;
+        }
+        if (elapsedTimeOutside > 2.0)
+        {
+            outsidePlayer = NULL;
+            lastOutsidePlayer = NULL;
+            startTimeOutside = 0.0;
+        }
+        if (!outsidePlayer)
+        {
+            lastOutsidePlayer = NULL;
+            startTimeOutside = 0.0;
+        }
+
         if (startTime != 0.0)
         {
             elapsedTime = GetTime() - startTime;
@@ -738,7 +811,7 @@ void UpdateGameplay()
         double newTime = GetTime();
         lengthDataToSend = sizeof(newTime);
         memset(dataToSend, 0, 2048);
-        strcat(dataToSend, TextFormat("%f,%d,", newTime, idMap));
+        strcat(dataToSend, TextFormat("%f,%d,%d,%d,%d,%d,", newTime, idMap, loots[0].active, loots[1].active, loots[2].active, loots[3].active));
     }
 
     // Update Players / Bullets
@@ -747,18 +820,6 @@ void UpdateGameplay()
         // If player not exist continue
         if (!players[i].id)
             continue;
-
-        // Detect if one team win
-        if (players[i].life >= 1)
-        {
-            playerAlive++;
-            playerAliveId = i;
-            if (ColorToInt(players[i].color) != ColorToInt(colorAlive))
-            {
-                otherColorAlive = true;
-            }
-            colorAlive = players[i].color;
-        }
 
         UpdatePlayer(&players[i]);
         if (activeOnline && activeMain)
@@ -845,6 +906,16 @@ void UpdateGameplay()
 
         if (players[i].life >= 1)
         {
+            // Detect if one team win
+            playerAlive++;
+            playerAliveId = i;
+            if (ColorToInt(players[i].color) != ColorToInt(colorAlive))
+            {
+                otherColorAlive = true;
+            }
+            colorAlive = players[i].color;
+
+            // Position the camera to the center
             centerPositionX += players[i].p.pos.x + players[i].p.size.x / 2.0f;
             centerPositionY += players[i].p.pos.y + players[i].p.size.y / 2.0f;
             // centerDistance += sqrtf(powf(camera.target.x - players[i].p.pos.x, 2.0f) + powf(camera.target.x - players[i].p.pos.y, 2.0f));
@@ -933,7 +1004,7 @@ void UpdateGameplay()
     }
     if (elapsedTimeOutside > 2.0)
     {
-        for (int i = 0; i < NUMBER_EIGHT; i++)
+        for (int i = 0; i < NUMBER_EIGHT; i++) // Number player
         {
             if (ColorToInt(players[i].color) == ColorToInt(outsidePlayer->color))
             {

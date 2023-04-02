@@ -71,4 +71,5 @@
 		"__bit_reference": "c",
 		"algorithm": "c"
 	},
+	"C_Cpp.errorSquiggles": "disabled",
 }

@@ -38,7 +38,7 @@ extern "C"
         enum TypeItem type;
         bool active;
         double timer;
-        double maxTimer;
+        float maxTimer;
         bool defaultShoot;
         bool defaultDisplay;
         void (*ShootItem)(struct Item *, const float, const float, const float, const float);
