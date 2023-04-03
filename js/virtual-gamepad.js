@@ -61,9 +61,6 @@ class VirtualGamepad {
                 this.axes[2] = parseFloat(data[3]);
                 this.axes[3] = parseFloat(data[4]);
 
-                // let i=0;
-                // while (i<listScreenShareIndex) { listScreenShare[i].send(JSON.stringify({t: t})); i++; }
-
                 if (!perf) this.conn.send(t); // -> Pong
                 // Edit
                 if (this.edit) this.conn.send(JSON.stringify(this.checkEdit({ t: data.t })));

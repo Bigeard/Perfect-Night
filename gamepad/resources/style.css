@@ -291,8 +291,23 @@ input {
 
 #qrCodeDisplay {
     border-radius: 20px;
-    width: 100%;
+    width: 80%;
 }
+
+#buttonCopyLink {
+    padding: 10px 18px;
+    border: none;
+    margin: 10px;
+    transition: opacity 1s;
+    background: black;
+    color: #000;
+    font-weight: bold;
+    background: #fff;
+    font-size: 16px;
+    border-radius:  20px;
+
+}
+
 
 @media screen and (orientation:portrait) {
 
@@ -302,7 +317,7 @@ input {
     #goTop,
     #scrollUp,
     .optionButton,
-    .qrCodeButton {
+    .menuButton {
         display: none;
     }
 

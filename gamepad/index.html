@@ -212,10 +212,57 @@
 
     <div id="qrCodeGame">
         <div id="qrCodeDisplay"></div>
-        <button class="btn windowClose" onclick="windowClose(event)">✖</button>
+        <div>
+            <button id="buttonCopyLink" onclick="clickCopyLink()">Copy the link</button>
+            <button class="btn windowClose" onclick="windowClose(event, qrCodeGame)">✖</button>
+        </div>
+        <input type="text" value="Wait..." id="inputCopyLink">
     </div>
 
     <script type="text/javascript">
+        ; (function () {
+            var pushState = history.pushState;
+            var replaceState = history.replaceState;
+
+            history.pushState = function () {
+                pushState.apply(history, arguments);
+                window.dispatchEvent(new Event('pushstate'));
+                window.dispatchEvent(new Event('locationchange'));
+            };
+
+            history.replaceState = function () {
+                replaceState.apply(history, arguments);
+                window.dispatchEvent(new Event('replacestate'));
+                window.dispatchEvent(new Event('locationchange'));
+            };
+
+            window.addEventListener('popstate', function () {
+                window.dispatchEvent(new Event('locationchange'))
+            });
+        })();
+
+        window.addEventListener('locationchange', () => {
+            window.location.reload();
+        });
+
+        const isIphone = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
+        // Copy link
+        const divCopyLink = document.getElementById("divCopyLink");
+        const inputCopyLink = document.getElementById("inputCopyLink");
+        const buttonCopyLink = document.getElementById("buttonCopyLink");
+        clickCopyLink = () => {
+            inputCopyLink.select();
+            inputCopyLink.setSelectionRange(0, 99999);
+            if (window.isSecureContext && navigator.clipboard) {
+                navigator.clipboard.writeText(inputCopyLink.value);
+            } else {
+                document.execCommand('copy');
+            }
+            buttonCopyLink.innerText = "Copied ✅ !"
+        }
+        inputCopyLink.value = window.location.href;
+
         // Ping / Latency Test
         // let pings = [0];
         // let w = 0; // Loop 500
@@ -318,18 +365,18 @@
         let onShoot = false;
 
         // IOS disable zoom page
-        if (/iPad|iPhone|iPod|Safari/.test(navigator.userAgent)) {
+        if (isIphone) {
             joysticks.addEventListener("touchend", (event) => {
                 event.preventDefault();
             }, { passive: false });
-            joysticks.addEventListener("gesturestart", (e) => {
-                e.preventDefault();
+            joysticks.addEventListener("gesturestart", (event) => {
+                event.preventDefault();
             });
-            joysticks.addEventListener("gesturechange", (e) => {
-                e.preventDefault();
+            joysticks.addEventListener("gesturechange", (event) => {
+                event.preventDefault();
             });
-            joysticks.addEventListener("gestureend", (e) => {
-                e.preventDefault();
+            joysticks.addEventListener("gestureend", (event) => {
+                event.preventDefault();
             });
         }
 
