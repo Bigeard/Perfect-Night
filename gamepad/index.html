@@ -479,10 +479,10 @@
                     // @DEV
                     if (!PeerPlayerId) {
                         // Store connection player
-                        // localStorage.setItem("peerConnection", JSON.stringify({
-                        //     PeerServerId,
-                        //     PeerPlayerId: NewPeerPlayerId
-                        // }));
+                        localStorage.setItem("peerConnection", JSON.stringify({
+                            PeerServerId,
+                            PeerPlayerId: NewPeerPlayerId
+                        }));
                     }
 
                     // Join the connection
