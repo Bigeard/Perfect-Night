@@ -41,8 +41,17 @@ listGamepad.set(
 
 4. If you use a variable r, g or b, you may have a value problem in the EM_JS functions.
 
+--
+
 5. Not found 
 fatal error: emscripten/emscripten.h: No such file or directory
     3 | #include <emscripten/emscripten.h>
 
 > `make PLATFORM=PLATFORM_WEB` and not `make PLATFORM=PLATFORM_DESKTOP`
+
+--
+
+6. wasm-ld: error: unknown file type: ../lib/raylib/src/libraylib.a(rglfw.o)
+go to raylib/src
+> make clean
+> make PLATFORM=PLATFORM_WEB -B
