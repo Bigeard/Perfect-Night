@@ -43,7 +43,6 @@ clickShareScreen = () => {
         if (!PeerServerId) {
             PeerServerId = inputShareScreen.value
         }
-        console.log("ddd;", PeerServerId);
         // console.log(PeerServerId);
         // join();
         init();
@@ -99,8 +98,8 @@ const init = () => {
         }
     });
 
-    peer.on("connection", (conn) => {
-        if (conn.metadata && conn.metadata.type === "screenShare") {
+    peer.on("connection", (connection) => {
+        if (connection.metadata && connection.metadata.type === "screenShare") {
             menuAction = 5;
             if (listScreenShareIndex === 0) {
                 inputShareScreen.style.opacity = '0';
@@ -108,28 +107,29 @@ const init = () => {
                 inputShareScreen.addEventListener('transitionend', () => inputShareScreen.remove());
                 buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
             }
-            listScreenShare[listScreenShareIndex] = conn;
+            listScreenShare[listScreenShareIndex] = { conn: connection, init: false };
             listScreenShareIndex++;
-            console.info("Main Connected to", conn.peer, conn);
+
+            console.info("Main Connected to", connection.peer, connection);
             return;
         }
 
         let gamepad = false;
-        listGamepad.forEach(g => g.conn?.peer === conn.peer ? gamepad = g : 0);
+        listGamepad.forEach(g => g.connection?.peer === connection.peer ? gamepad = g : 0);
 
         if (gamepad) { // If connection exist
-            gamepad.conn = conn;
+            gamepad.connection = connection;
             gamepad.connect();
         }
-        else if (conn.metadata && conn.metadata.id) { // If gamepad still open
-            gamepad = listGamepad.get(conn.metadata.id);
-            gamepad.conn = conn;
+        else if (connection.metadata && connection.metadata.id) { // If gamepad still open
+            gamepad = listGamepad.get(connection.metadata.id);
+            gamepad.connection = connection;
             gamepad.connect();
         }
         else if (listGamepad.size >= 8) { // check if the maximum size is reached
-            conn.on("open", () => {
-                conn.send("Error: To many players");
-                setTimeout(() => conn.close(), 500);
+            connection.on("open", () => {
+                connection.send("Error: To many players");
+                setTimeout(() => connection.close(), 500);
             });
             return;
         }
@@ -141,15 +141,15 @@ const init = () => {
                 buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
             }
             gamepad = new VirtualGamepad(
-                conn,
-                conn.peer,
+                connection,
+                connection.peer,
                 listGamepad.size
             );
             listGamepad.set(gamepad.id, gamepad);
         }
 
         const listPlayerConnected = [];
-        listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn?.peer }));
+        listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.connection?.peer }));
         console.info("Player connected: ", listPlayerConnected);
     });
 
@@ -199,11 +199,13 @@ const join = () => {
         buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
     });
     conn.on("data", (data) => {
-        // console.log(data);
+        console.log(data);
         if (parseInt(data[0])) {
             dataReceive = data;
         }
         else {
+            // console.log(data);
+
             data = JSON.parse(data);
             console.log(data);
             if (data.ma) { // Menu Action

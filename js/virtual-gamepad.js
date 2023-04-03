@@ -29,7 +29,7 @@ class VirtualGamepad {
         let i = 0;
         while (i < listScreenShareIndex)
         {
-            listScreenShare[i].send(JSON.stringify({
+            listScreenShare[i].conn.send(JSON.stringify({
                 t: Date.now(), // Time
                 g: {
                     conn: null,

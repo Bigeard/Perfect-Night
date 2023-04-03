@@ -80,7 +80,21 @@ EM_JS(void, SendData, (char *data), {
     let i = 0;
     while (i < listScreenShareIndex)
     {
-        listScreenShare[i].send(dataToSend);
+        if (!listScreenShare[i].init)
+        {
+            listScreenShare[i].init = true;
+            listGamepad.forEach(function (g) {
+                listScreenShare[i].conn.send(JSON.stringify({
+                    t : Date.now(), // Time
+                    g : {
+                        conn : null,
+                        peer : g.id,
+                        id : g.index,
+                    }, // Create Virtual Gamepad
+                }));
+            });
+        }
+        listScreenShare[i].conn.send(dataToSend);
         i++;
     }
 });
@@ -602,7 +616,7 @@ void UpdateGameplay()
                     players[player_index].ammunition = atoi(data);
                 }
                 else if (player_part == 9) // Score player
-                { // End Init Player !
+                {                          // End Init Player !
                     const int player_score = atoi(data);
                     if (colorScore[player_index] != player_score)
                     {
