@@ -32,15 +32,15 @@ class VirtualGamepad {
             listScreenShare[i].conn.send(JSON.stringify({
                 t: Date.now(), // Time
                 g: {
-                    conn: null,
                     peer: id,
                     id: index,
                 }, // Create Virtual Gamepad
             }));
             i++;
         }
-
-        this.connect();
+        if (conn) {
+            this.connect();
+        }
     }
 
     connect() {

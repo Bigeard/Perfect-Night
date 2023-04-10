@@ -20,7 +20,11 @@
 })();
 
 window.addEventListener('locationchange', () => {
-    window.location.reload();
+    console.log("Change the code (hash):", window.location.hash.substring(1), "Peer Id", PeerServerId);
+    console.log("Peer Id", PeerServerId, " OR ", peer.id);
+    if (PeerServerId !== window.location.hash.substring(1) && peer.id !== window.location.hash.substring(1)) {
+        window.location.reload();
+    }
 });
 
 console.info(Config);
@@ -89,11 +93,13 @@ const init = () => {
         if (PeerServerId !== "") {
             gamepadUrl = window.location.origin + "#" + PeerServerId;
             inputCopyLink.value = gamepadUrl;
+            window.location.hash = PeerServerId;
             console.info(gamepadUrl);
             join();
         } else {
             gamepadUrl = window.location.href.slice(0, -1) + "#" + peer.id;
             inputCopyLink.value = gamepadUrl;
+            window.location.hash = peer.id;
             console.info(gamepadUrl);
         }
     });
@@ -199,15 +205,11 @@ const join = () => {
         buttonShareScreen.addEventListener('transitionend', () => buttonShareScreen.remove());
     });
     conn.on("data", (data) => {
-        console.log(data);
         if (parseInt(data[0])) {
             dataReceive = data;
         }
         else {
-            // console.log(data);
-
             data = JSON.parse(data);
-            console.log(data);
             if (data.ma) { // Menu Action
                 menuAction = data.ma;
                 if (menuAction === 4) perf = !perf;
@@ -219,7 +221,7 @@ const join = () => {
                 listGamepad.forEach(g => g.conn?.peer === data.g.peer ? gamepad = g : 0);
                 if (!gamepad) {
                     gamepad = new VirtualGamepad(
-                        conn,
+                        null,
                         data.g.peer,
                         data.g.id,
                     );
