@@ -261,14 +261,14 @@
             }
             buttonCopyLink.innerText = "Copied ✅ !"
         }
-        inputCopyLink.value = window.location.href;
+        inputCopyLink.value = window.location.origin + window.location.hash;
 
         // Ping / Latency Test
         // let pings = [0];
         // let w = 0; // Loop 500
 
         // Find Peer Server Id (in URL)
-        const PeerServerId = window.location.hash.substring(1);
+        const PeerServerId = window.location.hash.substring(1); // remove `#` before the code
         console.info("Peer Server (Main) Id:", PeerServerId);
 
         // Menu of the gamepad
@@ -354,7 +354,8 @@
         const qrCodeDisplay = document.getElementById("qrCodeDisplay");
         const QRC = qrcodegen.QrCode;
         // Simple operation
-        const qr0 = QRC.encodeText(window.location.href, QRC.Ecc.MEDIUM);
+        console.log(window.location.origin + window.location.hash);
+        const qr0 = QRC.encodeText(window.location.origin + window.location.hash, QRC.Ecc.MEDIUM);
         const svg = toSvgString(qr0, 2, "#fff", "#000");
         qrCodeDisplay.innerHTML = svg;
 

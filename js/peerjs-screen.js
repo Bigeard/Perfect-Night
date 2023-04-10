@@ -118,12 +118,12 @@ const init = () => {
         listGamepad.forEach(g => g.connection?.peer === connection.peer ? gamepad = g : 0);
 
         if (gamepad) { // If connection exist
-            gamepad.connection = connection;
+            gamepad.conn = connection;
             gamepad.connect();
         }
         else if (connection.metadata && connection.metadata.id) { // If gamepad still open
             gamepad = listGamepad.get(connection.metadata.id);
-            gamepad.connection = connection;
+            gamepad.conn = connection;
             gamepad.connect();
         }
         else if (listGamepad.size >= 8) { // check if the maximum size is reached
