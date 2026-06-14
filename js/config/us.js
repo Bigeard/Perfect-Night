@@ -13,13 +13,13 @@ const Config = {
                     "stun:stun.l.google.com:19302",
                 ]
             },
-            {
-                urls: [
-                    "turn:us-0.turn.peerjs.com:3478",
-                ],
-                username: "peerjs",
-                credential: "peerjsp"
-            }
+            // {
+            //     urls: [
+            //         "turn:us-0.turn.peerjs.com:3478",
+            //     ],
+            //     username: "peerjs",
+            //     credential: "peerjsp"
+            // }
         ],
     },
     iceServers: [
@@ -28,13 +28,13 @@ const Config = {
                 "stun:stun.l.google.com:19302",
             ]
         },
-        {
-            urls: [
-                "turn:us-0.turn.peerjs.com:3478",
-            ],
-            username: "peerjs",
-            credential: "peerjsp"
-        },
+        // {
+        //     urls: [
+        //         "turn:us-0.turn.peerjs.com:3478",
+        //     ],
+        //     username: "peerjs",
+        //     credential: "peerjsp"
+        // },
     ],
     serialization: 'none',
     debug: 0,

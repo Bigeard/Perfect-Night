@@ -6,7 +6,7 @@ static void GameMainLoop(void);
 
 int main(void)
 {
-    InitWindow(1920, 1190, "Perfect Night");
+    InitWindow(1920, 1080, "Perfect Night");
     // InitAudioDevice();
     InitGameplay();
     emscripten_set_main_loop(GameMainLoop, 120, 1);

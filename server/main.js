@@ -1,5 +1,3 @@
-// The PeerJs server allows communication between the phone and the main screen.
-
 const express = require('express');
 const { ExpressPeerServer } = require('peer');
 
@@ -7,12 +5,14 @@ const { v4: uuidV4 } = require('uuid');
 const realm = require('peer/dist/src/models/realm');
 
 const app = express();
+const path = require('path');
 
 app.enable('trust proxy');
+app.use('/', express.static(path.join(__dirname, '../')))
 
 const PORT = process.env.PORT || 9000;
 const server = app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
+  console.log(`App listening on port: ${PORT}`);
   console.log('Press Ctrl+C to quit.');
 });
 

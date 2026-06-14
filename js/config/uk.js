@@ -10,7 +10,7 @@ const Config = {
         iceServers: [
             {
                 urls: [
-                    "turn:perfect-night.aventu.re:3478",
+                    // "turn:perfect-night.aventu.re:3478",
                     "stun:perfect-night.aventu.re:3478",
                 ],
                 username: "perfectnight",
@@ -21,7 +21,7 @@ const Config = {
     iceServers: [
         {
             urls: [
-                "turn:perfect-night.aventu.re:3478",
+                // "turn:perfect-night.aventu.re:3478",
                 "stun:perfect-night.aventu.re:3478",
             ],
             username: "perfectnight",

@@ -83,9 +83,9 @@ void draw_objects(tmx_object_group *objgr)
 	}
 }
 
-void draw_image_layer(tmx_image_layer *image)
+void draw_image_layer(tmx_image *image)
 {
-	Texture2D *texture = (Texture2D *)image->image;
+	Texture2D *texture = (Texture2D *)image->resource_image;
 	DrawTexture(*texture, 0, 0, WHITE);
 }
 
@@ -150,7 +150,7 @@ void draw_all_layers(tmx_map *map, tmx_layer *layers)
 			// }
 			else if (layers->type == L_IMAGE)
 			{
-				draw_image_layer(layers->content.image_layer);
+				draw_image_layer(layers->content.image);
 			}
 			else if (layers->type == L_LAYER)
 			{

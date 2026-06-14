@@ -16,10 +16,8 @@
             },
             "dependsOn": [
                 "Compile The Game",
-                "Run Static Server",
-                "Run PeerJs Server (WebRTC)",
+                "Run PeerJs Server And Static Server",
                 "Run Hotspot Wifi",
-                "Run TURN Server"
             ],
             "problemMatcher": []
         },
@@ -37,7 +35,7 @@
             },
         },
         {
-            "label": "Run Static Server",
+            "label": "Run PeerJs Server And Static Server",
             "type": "shell",
             "command": "sudo node main.js",
             "presentation": {
@@ -46,20 +44,7 @@
                 "group": "develop"
             },
             "options": {
-                "cwd": "${workspaceFolder}/static_server"
-            }
-        },
-        {
-            "label": "Run PeerJs Server (WebRTC)",
-            "type": "shell",
-            "command": "npm start",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "group": "develop"
-            },
-            "options": {
-                "cwd": "${workspaceFolder}/peerjs_server"
+                "cwd": "${workspaceFolder}/server"
             }
         },
         {
@@ -72,15 +57,5 @@
                 "group": "develop"
             },
         },
-        {
-            "label": "Run TURN Server",
-            "type": "shell",
-            "command": "turnserver --log-file stdout",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new",
-                "group": "develop"
-            }
-        }
     ]
 }

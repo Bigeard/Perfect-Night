@@ -271,6 +271,9 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
         INCLUDE_PATHS = -I$(RAYLIB_H_INSTALL_PATH) -isystem. -isystem$(RAYLIB_PATH)/src -isystem$(RAYLIB_PATH)/release/include -isystem$(RAYLIB_PATH)/src/external
     endif
 endif
+ifeq ($(PLATFORM),PLATFORM_WEB)
+    INCLUDE_PATHS += -I../lib/libxml2/include -I../lib/libxml2/build-wasm
+endif
 
 # Define library paths containing required libs.
 LDFLAGS = -L. -L$(RAYLIB_RELEASE_PATH) -L$(RAYLIB_PATH)/src
@@ -343,7 +346,7 @@ ifeq ($(PLATFORM),PLATFORM_RPI)
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # Libraries for web (HTML5) compiling
-    LDLIBS = $(RAYLIB_RELEASE_PATH)/libraylib.a ../build/.libs/libxml2.a -I/usr/include/libxml2
+    LDLIBS = $(RAYLIB_RELEASE_PATH)/libraylib.a ../lib/libxml2/build-wasm/libxml2.a
 endif
 
 # Define a recursive wildcard function

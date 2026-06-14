@@ -26,15 +26,10 @@ Click on this link to play ! 👾
 
 > cd dev && make
 
-### TURN SERVER
+### PEERJS SERVER AND STATIC SERVER
+> server && npm start
 
-> turnserver --log-file stdout
-> turnserver -u perfect:perfect --log-file stdout
-
-### PEERJS SERVER
-> cd peerjs_server && npm start
-
-### TRUN WIFI ON
+### TRUN WIFI ON (optional)
 > wihotspot
 
 and use Chromium !
