@@ -10,11 +10,14 @@
 #include "../particle/particle.h"
 #include "../tool/tool.h"
 
-// @TODO optimize the code
-EM_JS(float, GetJoystickMobileLeftX, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[0]});
-EM_JS(float, GetJoystickMobileLeftY, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[1]});
-EM_JS(float, GetJoystickMobileRightX, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[2]});
-EM_JS(float, GetJoystickMobileRightY, (const char *id), {return listGamepad.get(Module.UTF8ToString(id)).axes[3]});
+EM_JS(void, GetJoystickMobileAxes, (const char *id, float *axes), {
+    const gamepad = listGamepad.get(Module.UTF8ToString(id));
+    const sourceAxes = gamepad ? gamepad.axes : [0, 0, 0, 0];
+    Module.setValue(axes, sourceAxes[0], "float");
+    Module.setValue(axes + 4, sourceAxes[1], "float");
+    Module.setValue(axes + 8, sourceAxes[2], "float");
+    Module.setValue(axes + 12, sourceAxes[3], "float");
+});
 
 EM_JS(void, GamepadPlayerLife, (char *p_id, int life), {
     const id = Module.UTF8ToString(p_id);
@@ -95,10 +98,13 @@ void UpdatePlayer(Player *player)
     // MOBILE CONTROLLER
     if (player->INPUT_TYPE == MOBILE)
     {
-        const float joystickLeftX = GetJoystickMobileLeftX(player->gamepadId) * 0.02f;
-        const float joystickLeftY = GetJoystickMobileLeftY(player->gamepadId) * 0.02f;
-        const float joystickRightX = GetJoystickMobileRightX(player->gamepadId) * 0.02f;
-        const float joystickRightY = GetJoystickMobileRightY(player->gamepadId) * 0.02f;
+        float axes[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+        GetJoystickMobileAxes(player->gamepadId, axes);
+
+        const float joystickLeftX = axes[0] * 0.02f;
+        const float joystickLeftY = axes[1] * 0.02f;
+        const float joystickRightX = axes[2] * 0.02f;
+        const float joystickRightY = axes[3] * 0.02f;
         const float distance = sqrtf(joystickRightY * joystickRightY + joystickRightX * joystickRightX);
 
         // Move Player

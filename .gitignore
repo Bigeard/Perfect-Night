@@ -55,3 +55,4 @@ idea.md
 build
 
 node_modules
+lib/*
