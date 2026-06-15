@@ -6,6 +6,7 @@ extern "C"
 {
 #endif
 
+#include <stddef.h>
 #include "../../../lib/raylib/src/raylib.h"
 #include "../physic/physic.h"
 
@@ -28,7 +29,7 @@ extern "C"
     void UpdateBullet(Bullet *bullet);
     void BulletBounce(Bullet *bullet);
     void DrawBullet(Bullet bullet);
-    void BulletValueToData(Bullet bullet, char *DataToSend);
+    void BulletValueToData(Bullet bullet, char *DataToSend, size_t dataSize);
 
 #ifdef __cplusplus
 }

@@ -63,7 +63,9 @@ void UpdateItemLaser(Item *item)
 
         float endPosX = player->bullets[i].p.pos.x + player->bullets[i].p.size.x / 2;
         float endPosY = player->bullets[i].p.pos.y + player->bullets[i].p.size.y / 2;
-        float distance = sqrtf(powf(player->bullets[i].startPos.x - endPosX, 2.0f) + powf(player->bullets[i].startPos.y - endPosY, 2.0f));
+        const float distanceX = player->bullets[i].startPos.x - endPosX;
+        const float distanceY = player->bullets[i].startPos.y - endPosY;
+        float distance = sqrtf(distanceX * distanceX + distanceY * distanceY);
         if (distance >= player->bullets[i].distanceLaser)
         {
             distance = player->bullets[i].distanceLaser;
@@ -138,7 +140,9 @@ void DrawItemLaser(Item *item)
         float endPosX = player.bullets[i].p.pos.x + player.bullets[i].p.size.x / 2;
         float endPosY = player.bullets[i].p.pos.y + player.bullets[i].p.size.y / 2;
 
-        float distance = sqrtf(powf(player.bullets[i].startPos.x - endPosX, 2.0f) + powf(player.bullets[i].startPos.y - endPosY, 2.0f));
+        const float distanceX = player.bullets[i].startPos.x - endPosX;
+        const float distanceY = player.bullets[i].startPos.y - endPosY;
+        float distance = sqrtf(distanceX * distanceX + distanceY * distanceY);
         if (distance >= player.bullets[i].distanceLaser)
         {
             distance = player.bullets[i].distanceLaser;

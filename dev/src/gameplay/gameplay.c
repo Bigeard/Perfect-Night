@@ -1,6 +1,7 @@
 #include "../../../lib/raylib/src/raylib.h"
 #include "../../../lib/raylib/src/raymath.h"
 #include <emscripten/emscripten.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -66,8 +67,16 @@ EM_JS(bool, GetEditSettings, (), {
     return gameSettings.edit;
 });
 EM_JS(int *, GetAllSettings, (), {
-    const arrayPointer = Module._malloc(gameSettings.length * 4);
-    Object.values(gameSettings).forEach(function(v, i) {
+    const values = [
+        gameSettings.edit,
+        gameSettings.maxScore,
+        gameSettings.maxAmmunition,
+        gameSettings.defaultTypeItem,
+        gameSettings.defaultMaxTimerItem,
+        gameSettings.activeLoot,
+    ];
+    const arrayPointer = Module._malloc(values.length * 4);
+    values.forEach(function(v, i) {
         Module.setValue(arrayPointer + i * 4, parseInt(v), "i32");
     });
     gameSettings.edit = false;
@@ -80,11 +89,17 @@ EM_JS(void, SendData, (char *data), {
     let i = 0;
     while (i < listScreenShareIndex)
     {
-        if (!listScreenShare[i].init)
+        const screenShare = listScreenShare[i];
+        if (!screenShare || !screenShare.conn || !screenShare.conn.open)
         {
-            listScreenShare[i].init = true;
+            i++;
+            continue;
+        }
+        if (!screenShare.init)
+        {
+            screenShare.init = true;
             listGamepad.forEach(function (g) {
-                listScreenShare[i].conn.send(JSON.stringify({
+                screenShare.conn.send(JSON.stringify({
                     t : Date.now(), // Time
                     g : {
                         conn : null,
@@ -94,7 +109,11 @@ EM_JS(void, SendData, (char *data), {
                 }));
             });
         }
-        listScreenShare[i].conn.send(dataToSend);
+        const channel = screenShare.conn.dataChannel;
+        if (!channel || channel.bufferedAmount < 65536)
+        {
+            screenShare.conn.send(dataToSend);
+        }
         i++;
     }
 });
@@ -148,6 +167,8 @@ Texture2D titlePerfectNightTexture;
 Texture2D useSameWifiTexture;
 Texture2D andScanQrTexture;
 bool unloadHomepage = false;
+static RenderTexture2D mapTexture = {0};
+static bool mapTextureLoaded = false;
 
 // Player
 int lastPlayer = 0;
@@ -218,6 +239,27 @@ Texture2D NothingTexture;
 int lengthDataToSend = 0;
 char dataToSend[2048];
 
+static void LoadStaticMapTexture(void)
+{
+    if (mapTextureLoaded)
+    {
+        UnloadRenderTexture(mapTexture);
+        mapTextureLoaded = false;
+    }
+
+    if (!map || arenaSizeX <= 0.0f || arenaSizeY <= 0.0f)
+    {
+        return;
+    }
+
+    mapTexture = LoadRenderTexture((int)arenaSizeX, (int)arenaSizeY);
+    BeginTextureMode(mapTexture);
+    ClearBackground(BLANK);
+    render_map(map);
+    EndTextureMode();
+    mapTextureLoaded = true;
+}
+
 void InitGameplay()
 {
     // Home Screen
@@ -276,6 +318,7 @@ void InitMap()
     arenaSizeX = map->tile_width * map->width;
     arenaSizeY = map->tile_height * map->height;
     tmx_init_object(map->ly_head, players, boxes, loots);
+    LoadStaticMapTexture();
 }
 
 void SwitchMap()
@@ -325,7 +368,12 @@ void UpdateGameplay()
     if (GetTime() > lastSecond)
     {
         // Resize Canvas
-        SetWindowSize(GetCanvasWidthCustom(), GetCanvasHeightCustom());
+        const int canvasWidth = GetCanvasWidthCustom();
+        const int canvasHeight = GetCanvasHeightCustom();
+        if (canvasWidth != GetScreenWidth() || canvasHeight != GetScreenHeight())
+        {
+            SetWindowSize(canvasWidth, canvasHeight);
+        }
         lastSecond += 0.5;
 
         // Menu Action
@@ -418,9 +466,9 @@ void UpdateGameplay()
                     {GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_X, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_LEFT_Y, GAMEPAD_AXIS_RIGHT_X, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_AXIS_RIGHT_Y}, // KEY: Key you can press to move or do an action (@TODO play with controller)
                     {0}                                                                                                                                                                // shootParticle
                 };
-                for (int i = 0; i < MAX_BULLET; i++)
+                for (int b = 0; b < MAX_BULLET; b++)
                 {
-                    players[i].bullets[i] = (Bullet){
+                    players[i].bullets[b] = (Bullet){
                         players[i].id,
                         (Physic){
                             {-9999.9f, -9999.9f},
@@ -538,8 +586,11 @@ void UpdateGameplay()
         float bullet_pos_x = 0.0f;
 
         char *data = GetData();
+        char *dataStart = data;
         char *token;
         // TraceLog(LOG_INFO, "%s", data);
+        if (!data)
+            return;
 
         // split the string with the delimiter ","
         while ((token = strchr(data, ',')) != NULL)
@@ -665,20 +716,20 @@ void UpdateGameplay()
                          players[player_index].p.pos.y + players[player_index].p.size.y <= 0.0f))
                     {
 
-                        if (lastOutsidePlayer->id != players[player_index].id)
+                        if (!lastOutsidePlayer || lastOutsidePlayer->id != players[player_index].id)
                         {
                             outsidePlayer = &players[player_index];
                         }
                     }
                     else
                     {
-                        if (outsidePlayer->id == players[player_index].id)
+                        if (outsidePlayer && outsidePlayer->id == players[player_index].id)
                         {
                             outsidePlayer = NULL;
                         }
                     }
 
-                    if (players[player_index].life <= 0 && outsidePlayer->id == players[player_index].id)
+                    if (players[player_index].life <= 0 && outsidePlayer && outsidePlayer->id == players[player_index].id)
                     {
                         outsidePlayer = NULL;
                     }
@@ -767,7 +818,7 @@ void UpdateGameplay()
                 camera.target = Vector2Lerp(
                     camera.target,
                     (Vector2){centerPositionX, centerPositionY},
-                    GetFrameTime() * (sqrtf(powf(camera.target.x - centerPositionX, 2.0f) + powf(camera.target.y - centerPositionY, 2.0f))) / 100.0f);
+                    GetFrameTime() * Vector2Distance(camera.target, (Vector2){centerPositionX, centerPositionY}) / 100.0f);
             }
             else if (playerAlive == 1)
             {
@@ -817,6 +868,7 @@ void UpdateGameplay()
             }
         }
         // TraceLog(LOG_INFO, TextFormat("Item player %d => %d", player_index, players[0].item.type));
+        free(dataStart);
         return;
     }
 
@@ -825,7 +877,7 @@ void UpdateGameplay()
         double newTime = GetTime();
         lengthDataToSend = sizeof(newTime);
         memset(dataToSend, 0, 2048);
-        strcat(dataToSend, TextFormat("%f,%d,%d,%d,%d,%d,", newTime, idMap, loots[0].active, loots[1].active, loots[2].active, loots[3].active));
+        snprintf(dataToSend, sizeof(dataToSend), "%f,%d,%d,%d,%d,%d,", newTime, idMap, loots[0].active, loots[1].active, loots[2].active, loots[3].active);
     }
 
     // Update Players / Bullets
@@ -838,7 +890,7 @@ void UpdateGameplay()
         UpdatePlayer(&players[i]);
         if (activeOnline && activeMain)
         {
-            PlayerValueToData(players[i], dataToSend);
+            PlayerValueToData(players[i], dataToSend, sizeof(dataToSend));
         }
 
         // Bullets
@@ -879,7 +931,7 @@ void UpdateGameplay()
             }
             BulletBounce(&players[i].bullets[j]);
             if (activeOnline && activeMain)
-                BulletValueToData(players[i].bullets[j], dataToSend);
+                BulletValueToData(players[i].bullets[j], dataToSend, sizeof(dataToSend));
         }
 
         // Collision Player and Player
@@ -936,7 +988,11 @@ void UpdateGameplay()
         }
         if (activeOnline && activeMain)
         {
-            strcat(dataToSend, "0,");
+            const size_t len = strlen(dataToSend);
+            if (len < sizeof(dataToSend))
+            {
+                snprintf(dataToSend + len, sizeof(dataToSend) - len, "0,");
+            }
         }
     }
 
@@ -958,7 +1014,7 @@ void UpdateGameplay()
             camera.target = Vector2Lerp(
                 camera.target,
                 (Vector2){centerPositionX, centerPositionY},
-                GetFrameTime() * (sqrtf(powf(camera.target.x - centerPositionX, 2.0f) + powf(camera.target.y - centerPositionY, 2.0f))) / 100.0f);
+                GetFrameTime() * Vector2Distance(camera.target, (Vector2){centerPositionX, centerPositionY}) / 100.0f);
         }
         else if (playerAlive == 1)
         {
@@ -1020,7 +1076,7 @@ void UpdateGameplay()
     {
         for (int i = 0; i < NUMBER_EIGHT; i++) // Number player
         {
-            if (ColorToInt(players[i].color) == ColorToInt(outsidePlayer->color))
+            if (outsidePlayer && ColorToInt(players[i].color) == ColorToInt(outsidePlayer->color))
             {
                 if ((players[i].p.pos.x >= arenaSizeX ||
                      players[i].p.pos.x + players[i].p.size.x <= 0.0f) ||
@@ -1126,7 +1182,7 @@ void ResetGame()
             }
             GamepadPlayerColor(players[i].gamepadId, players[i].color.r, players[i].color.g, players[i].color.b);
             GamepadPlayerLife(players[i].gamepadId, players[i].life);
-            GamepadPlayerAmmunition(players[i].gamepadId, players[i].life);
+            GamepadPlayerAmmunition(players[i].gamepadId, players[i].ammunition);
             if (defaultTypeItem > -1)
             {
                 InitItemWithTypeItem(i + 1, defaultTypeItem, defaultMaxTimerItem);
@@ -1151,7 +1207,7 @@ void DrawGameplay()
             elapsedTimeOutside = elapsedTimeOutside - 0.01;
         ClearBackground(DarkenColor(int_to_color(map->backgroundcolor), 1.0f - elapsedTimeOutside / 2.0f));
     }
-    DrawCircleGradient(arenaSizeX / 2.0f, arenaSizeY / 2.0f, arenaSizeX + 300.0f, Fade(BLACK, 0.6f), Fade(BLACK, 0.0f));
+    DrawCircleGradient((Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f}, arenaSizeX + 300.0f, Fade(BLACK, 0.6f), Fade(BLACK, 0.0f));
     DrawRectangle(-2, -2, arenaSizeX + 4, arenaSizeY + 4, Fade(GRAY, 0.5f));
     if (activePerf)
     {
@@ -1159,7 +1215,14 @@ void DrawGameplay()
     }
     else
     {
-        render_map(map);
+        if (mapTextureLoaded)
+        {
+            DrawTextureRec(mapTexture.texture, (Rectangle){0.0f, 0.0f, (float)mapTexture.texture.width, (float)-mapTexture.texture.height}, (Vector2){0.0f, 0.0f}, WHITE);
+        }
+        else
+        {
+            render_map(map);
+        }
     }
     DrawGameArena();
 
@@ -1381,6 +1444,7 @@ void GenerateQrCode()
                 TraceLog(LOG_INFO, "Generate QrCode Ok.");
             }
         }
+        free((void *)url);
     }
 }
 

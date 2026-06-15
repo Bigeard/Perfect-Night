@@ -31,6 +31,20 @@ console.info(Config);
 let perf = false;
 let menuAction = 0;
 
+const safeJsonParseScreen = (value, fallback = null) => {
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        console.warn("Invalid JSON payload ignored", error);
+        return fallback;
+    }
+};
+
+const canSendScreenData = (connection) => {
+    const channel = connection?.dataChannel;
+    return Boolean(connection?.open && (!channel || channel.bufferedAmount < 65536));
+};
+
 // Share Screen
 let dataReceive = false;
 let listScreenShareIndex = 0;
@@ -38,7 +52,7 @@ const listScreenShare = new Array(8);
 
 const inputShareScreen = document.getElementById("inputShareScreen");
 const buttonShareScreen = document.getElementById("buttonShareScreen");
-clickShareScreen = () => {
+const clickShareScreen = () => {
     if (peer) {
         peer.disconnect()
         peer = null;
@@ -52,12 +66,13 @@ clickShareScreen = () => {
         init();
     }
 }
+window.clickShareScreen = clickShareScreen;
 
 // Copy link
 const divCopyLink = document.getElementById("divCopyLink");
 const inputCopyLink = document.getElementById("inputCopyLink");
 const buttonCopyLink = document.getElementById("buttonCopyLink");
-clickCopyLink = () => {
+const clickCopyLink = () => {
     inputCopyLink.select();
     inputCopyLink.setSelectionRange(0, 99999);
     if (window.isSecureContext && navigator.clipboard) {
@@ -65,11 +80,10 @@ clickCopyLink = () => {
     } else {
         document.execCommand('copy');
     }
-    buttonCopyLink.innerText = "Successfully copied ✅ !"
+    buttonCopyLink.innerText = "Successfully copied!"
 }
 
-// RayLib
-var Module = { canvas: document.getElementById("canvas") }
+window.clickCopyLink = clickCopyLink;
 
 // PeerJS
 let gamepadUrl = 'n';
@@ -121,7 +135,7 @@ const init = () => {
         }
 
         let gamepad = false;
-        listGamepad.forEach(g => g.connection?.peer === connection.peer ? gamepad = g : 0);
+        listGamepad.forEach(g => g.conn?.peer === connection.peer ? gamepad = g : 0);
 
         if (gamepad) { // If connection exist
             gamepad.conn = connection;
@@ -134,7 +148,7 @@ const init = () => {
         }
         else if (listGamepad.size >= 8) { // check if the maximum size is reached
             connection.on("open", () => {
-                connection.send("Error: To many players");
+                if (canSendScreenData(connection)) connection.send("Error: To many players");
                 setTimeout(() => connection.close(), 500);
             });
             return;
@@ -155,21 +169,30 @@ const init = () => {
         }
 
         const listPlayerConnected = [];
-        listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.connection?.peer }));
+        listGamepad.forEach(g => listPlayerConnected.push({ name: g.name, peerId: g.conn?.peer }));
         console.info("Player connected: ", listPlayerConnected);
     });
 
+    const reconnectPeer = () => {
+        if (!peer || !lastPeerId || peer.destroyed) return;
+        try {
+            peer.id = lastPeerId;
+            peer._lastServerId = lastPeerId;
+            if (peer.disconnected) peer.reconnect();
+        } catch (error) {
+            console.warn("Peer reconnect failed", error);
+        }
+    };
+
     peer.on("disconnected", () => {
         console.info("Connection lost. Please reconnect");
-        peer.id = lastPeerId;
-        peer._lastServerId = lastPeerId;
-        peer.reconnect();
+        reconnectPeer();
         // listGamepad.forEach(g => g.disconnect());
     });
 
     peer.on("close", () => {
         console.info("Connection destroyed. Please refresh");
-        peer.reconnect();
+        reconnectPeer();
         // listGamepad.forEach(g => g.disconnect());
     });
 
@@ -192,12 +215,12 @@ const join = () => {
             type: "screenShare",
         },
         reliable: false,
-        serialization: 'none'
+        serialization: 'raw'
     });
     conn.on("open", () => {
         console.info("Second Connected to", conn.peer, conn);
         menuAction = 6;
-        buttonShareScreen.innerText = "Successfully connected ✅ !"
+        buttonShareScreen.innerText = "Successfully connected!"
 
         inputShareScreen.style.opacity = '0';
         buttonShareScreen.style.opacity = '0';
@@ -209,7 +232,8 @@ const join = () => {
             dataReceive = data;
         }
         else {
-            data = JSON.parse(data);
+            data = safeJsonParseScreen(data);
+            if (!data) return;
             if (data.ma) { // Menu Action
                 menuAction = data.ma;
                 if (menuAction === 4) perf = !perf;

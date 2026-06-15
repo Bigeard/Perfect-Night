@@ -99,7 +99,7 @@ void UpdatePlayer(Player *player)
         const float joystickLeftY = GetJoystickMobileLeftY(player->gamepadId) * 0.02f;
         const float joystickRightX = GetJoystickMobileRightX(player->gamepadId) * 0.02f;
         const float joystickRightY = GetJoystickMobileRightY(player->gamepadId) * 0.02f;
-        const float distance = sqrtf(powf(joystickRightY, 2.0f) + powf(joystickRightX, 2.0f));
+        const float distance = sqrtf(joystickRightY * joystickRightY + joystickRightX * joystickRightX);
 
         // Move Player
         player->p.vel.x = player->speed.x * joystickLeftX;
@@ -210,20 +210,20 @@ void UpdatePlayer(Player *player)
          player->p.pos.y + player->p.size.y <= 0.0f))
     {
 
-        if (lastOutsidePlayer->id != player->id)
+        if (!lastOutsidePlayer || lastOutsidePlayer->id != player->id)
         {
             outsidePlayer = player;
         }
     }
     else
     {
-        if (outsidePlayer->id == player->id)
+        if (outsidePlayer && outsidePlayer->id == player->id)
         {
             outsidePlayer = NULL;
         }
     }
 
-    if (player->life <= 0 && outsidePlayer->id == player->id)
+    if (player->life <= 0 && outsidePlayer && outsidePlayer->id == player->id)
     {
         outsidePlayer = NULL;
     }
@@ -301,12 +301,15 @@ void DrawPlayer(Player player)
         // Draw the progress bar of the charge
         if (player.charge != 2.0f)
         {
+            float chargeAngle = player.radian * (180.0f / PI) + 180.0f;
+            float chargeArc = (player.charge - 2.0f) * 4.0f;
+
             DrawRing(
                 (Vector2){player.p.pos.x + player.p.size.x / 2.0f, player.p.pos.y + player.p.size.y / 2.0f},
                 38.0f,
                 47.0f,
-                player.radian * (180.0f / PI) * -1.0f + 270.0f - (player.charge - 2.0f) * 4.0f - 2.0f,
-                player.radian * (180.0f / PI) * -1.0f + 270.0f + (player.charge - 2.0f) * 4.0f + 2.0f,
+                chargeAngle - chargeArc - 2.0f,
+                chargeAngle + chargeArc + 2.0f,
                 0,
                 Fade(WHITE, 0.6f));
 
@@ -314,8 +317,8 @@ void DrawPlayer(Player player)
                 (Vector2){player.p.pos.x + player.p.size.x / 2.0f, player.p.pos.y + player.p.size.y / 2.0f},
                 40.0f,
                 45.0f,
-                player.radian * (180.0f / PI) * -1.0f + 270.0f - (player.charge - 2.0f) * 4.0f,
-                player.radian * (180.0f / PI) * -1.0f + 270.0f + (player.charge - 2.0f) * 4.0f,
+                chargeAngle - chargeArc,
+                chargeAngle + chargeArc,
                 0,
                 Fade(player.color, 0.8f));
         }
@@ -388,18 +391,24 @@ void DrawStatsPlayer(Player player)
     }
 }
 
-void PlayerValueToData(Player player, char *dataToSend)
+void PlayerValueToData(Player player, char *dataToSend, size_t dataSize)
 {
     if (player.id)
-        strcat(dataToSend, TextFormat("%f,%f,%f,%f,%d,%f,%d,%d,%d,",                  // (9 values)
-                                      player.p.pos.x,                                 // Position player X
-                                      player.p.pos.y,                                 // Position player Y
-                                      player.radian,                                  // Radian player cannon
-                                      player.charge,                                  // Charge of the bullet
-                                      player.item.active ? (int)player.item.type : 0, // Type of the item (if type == 0 item = NULL)
-                                      player.item.timer,                             // Timer item (detect change and for the animation)
-                                      player.life,                                    // Life player
-                                      player.ammunition,                              // Ammunition player
-                                      colorScore[player.id - 1]));                    // Score player
+    {
+        const size_t len = strlen(dataToSend);
+        if (len < dataSize)
+        {
+            snprintf(dataToSend + len, dataSize - len, "%f,%f,%f,%f,%d,%f,%d,%d,%d,", // (9 values)
+                     player.p.pos.x,                                                 // Position player X
+                     player.p.pos.y,                                                 // Position player Y
+                     player.radian,                                                  // Radian player cannon
+                     player.charge,                                                  // Charge of the bullet
+                     player.item.active ? (int)player.item.type : 0,                 // Type of the item (if type == 0 item = NULL)
+                     player.item.timer,                                              // Timer item (detect change and for the animation)
+                     player.life,                                                    // Life player
+                     player.ammunition,                                              // Ammunition player
+                     colorScore[player.id - 1]);                                     // Score player
+        }
+    }
     // TraceLog(LOG_INFO, TextFormat("%s", dataToSend));
 }

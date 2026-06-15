@@ -1,4 +1,5 @@
 #include "../../../lib/raylib/src/raylib.h"
+#include <stdio.h>
 #include <string.h>
 
 #include "bullet.h"
@@ -91,8 +92,14 @@ void DrawBullet(Bullet bullet)
     }
 }
 
-void BulletValueToData(Bullet bullet, char *dataToSend)
+void BulletValueToData(Bullet bullet, char *dataToSend, size_t dataSize)
 {
     if (bullet.playerId && !bullet.inactive)
-        strcat(dataToSend, TextFormat("1,%f,%f,", bullet.p.pos.x, bullet.p.pos.y));
+    {
+        const size_t len = strlen(dataToSend);
+        if (len < dataSize)
+        {
+            snprintf(dataToSend + len, dataSize - len, "1,%f,%f,", bullet.p.pos.x, bullet.p.pos.y);
+        }
+    }
 }

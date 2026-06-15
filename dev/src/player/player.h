@@ -6,6 +6,7 @@ extern "C"
 {
 #endif
 
+#include <stddef.h>
 #include "../physic/physic.h"
 #include "../bullet/bullet.h"
 #include "../item/item.h"
@@ -61,7 +62,7 @@ extern "C"
     void DrawPlayer(Player player);
     void DrawSpawnPlayer(Player player);
     void DrawStatsPlayer(Player player);
-    void PlayerValueToData(Player player, char *DataToSend);
+    void PlayerValueToData(Player player, char *DataToSend, size_t dataSize);
 
     void GamepadPlayerLife(char *p_id, int life);
     void GamepadPlayerAmmunition(char *p_id, int ammunition);

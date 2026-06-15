@@ -1,8 +1,6 @@
 const express = require('express');
 const { ExpressPeerServer } = require('peer');
-
-const { v4: uuidV4 } = require('uuid');
-const realm = require('peer/dist/src/models/realm');
+const { createPeerServerOptions } = require('./peer-id-realm');
 
 const app = express();
 const path = require('path');
@@ -16,23 +14,7 @@ const server = app.listen(PORT, () => {
   console.log('Press Ctrl+C to quit.');
 });
 
-class NewRealm extends realm.Realm {
-  generateClientId() {
-    let size = 4;
-    let clientId = uuidV4().substring(0, size);
-    while (this.getClientById(clientId)) {
-      clientId = uuidV4().substring(0, size);
-      size++;
-    }
-    return clientId;
-  }
-}
-
-realm.Realm = NewRealm;
-
-const peerServer = ExpressPeerServer(server, {
-  path: '/'
-});
+const peerServer = ExpressPeerServer(server, createPeerServerOptions());
 
 app.use('/peer', peerServer);
 

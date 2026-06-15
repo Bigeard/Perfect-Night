@@ -12,7 +12,8 @@
     <meta http-equiv="Permissions-Policy" content="screen-wake-lock">
 
     <link rel="shortcut icon" href="favicon.ico">
-    <!-- <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.js"></script> -->
+    <!-- <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.js"></script> -->
+    <script src="js/config/peer-config.js"></script>
     <script src="js/config/local.js"></script>
     <script src="js/lib/peerjs.min.js"></script>
     <script src="js/lib/filesaver.min.js"> </script>
@@ -125,6 +126,9 @@
     <script async src="js/wake-lock.js"></script>
 
     <canvas id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
+    <script>
+        var Module = { canvas: document.getElementById("canvas") };
+    </script>
 
     <div id="divShareScreen">
         <input type="text" id="inputShareScreen" placeholder="Connecting with another player">

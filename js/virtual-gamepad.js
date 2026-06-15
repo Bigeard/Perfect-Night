@@ -2,6 +2,28 @@
 const listGamepad = new Map([]);
 const disconnectGamepad = [];
 
+const safeJsonParse = (value, fallback = null) => {
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        console.warn("Invalid JSON payload ignored", error);
+        return fallback;
+    }
+};
+
+const canSendPeerData = (conn) => {
+    const channel = conn?.dataChannel;
+    return Boolean(conn?.open && (!channel || channel.bufferedAmount < 65536));
+};
+
+const sendPeerJson = (conn, payload) => {
+    if (canSendPeerData(conn)) {
+        conn.send(JSON.stringify(payload));
+        return true;
+    }
+    return false;
+};
+
 class VirtualGamepad {
     conn;
     id;
@@ -29,13 +51,13 @@ class VirtualGamepad {
         let i = 0;
         while (i < listScreenShareIndex)
         {
-            listScreenShare[i].conn.send(JSON.stringify({
+            sendPeerJson(listScreenShare[i]?.conn, {
                 t: Date.now(), // Time
                 g: {
                     peer: id,
                     id: index,
                 }, // Create Virtual Gamepad
-            }));
+            });
             i++;
         }
         if (conn) {
@@ -56,17 +78,18 @@ class VirtualGamepad {
                 if (this.lastUpdate > t) return; // Out of date
                 this.lastUpdate = t;
 
-                this.axes[0] = parseFloat(data[1]);
-                this.axes[1] = parseFloat(data[2]);
-                this.axes[2] = parseFloat(data[3]);
-                this.axes[3] = parseFloat(data[4]);
+                this.axes[0] = Number.isFinite(parseFloat(data[1])) ? parseFloat(data[1]) : 0;
+                this.axes[1] = Number.isFinite(parseFloat(data[2])) ? parseFloat(data[2]) : 0;
+                this.axes[2] = Number.isFinite(parseFloat(data[3])) ? parseFloat(data[3]) : 0;
+                this.axes[3] = Number.isFinite(parseFloat(data[4])) ? parseFloat(data[4]) : 0;
 
-                if (!perf) this.conn.send(t); // -> Pong
+                if (!perf && canSendPeerData(this.conn)) this.conn.send(t); // -> Pong
                 // Edit
-                if (this.edit) this.conn.send(JSON.stringify(this.checkEdit({ t: data.t })));
+                if (this.edit) sendPeerJson(this.conn, this.checkEdit({ t }));
             }
             else {
-                data = JSON.parse(data);
+                data = safeJsonParse(data);
+                if (!data) return;
                 let dataSend = { t: data.t };
 
                 // See if there have been any edit.
@@ -79,7 +102,7 @@ class VirtualGamepad {
                 else if (data.e) dataSend = this.checkEdit(dataSend);
                 // Game Settings
                 else if (data.s) changeSettings(data.s);
-                if (this.conn) this.conn.send(JSON.stringify(dataSend));
+                sendPeerJson(this.conn, dataSend);
             }
         });
         this.conn.on('disconnect', () => {

@@ -14,11 +14,15 @@ const gameSettings = {
 const changeSettings = (newSettings) => {
     for (let key in gameSettings) {
         const val = parseInt(newSettings[key]);
-        if (typeof val === "number") gameSettings[key] = val;
+        if (Number.isFinite(val)) gameSettings[key] = val;
     }
     gameSettings.edit = true;
     listGamepad.forEach(g => {
         // @TODO change value of the fields
-        if (g.conn) g.conn.send(JSON.stringify(gameSettings));
+        if (typeof sendPeerJson === "function") {
+            sendPeerJson(g.conn, gameSettings);
+        } else if (g.conn?.open) {
+            g.conn.send(JSON.stringify(gameSettings));
+        }
     });
 }
