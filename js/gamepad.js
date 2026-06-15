@@ -297,6 +297,17 @@
             let lastSendTimestamp = 0;
             let lastInputPayload = "";
 
+            const createInputPacket = (t, lx, ly, rx, ry) => {
+                const packet = new ArrayBuffer(24);
+                const view = new DataView(packet);
+                view.setFloat64(0, t, true);
+                view.setFloat32(8, lx, true);
+                view.setFloat32(12, ly, true);
+                view.setFloat32(16, rx, true);
+                view.setFloat32(20, ry, true);
+                return packet;
+            };
+
             const reconnectPeer = (message) => {
                 status.innerText = message;
                 if (!peer || !lastPeerId || peer.destroyed) return;
@@ -467,17 +478,19 @@
                     if (conn?.peer) join(conn.peer);
                 }
                 if (timestamp - lastSendTimestamp >= 1000 / 60 && leftJoystick && rightJoystick && peer.id && canSend(conn)) {
+                    const lx = Number(leftJoystick.frontPosition.x.toFixed(2));
+                    const ly = Number(leftJoystick.frontPosition.y.toFixed(2));
                     if (onShoot) {
                         rx = 2.5;
                         ry = 2.5;
                     } else {
-                        rx = rightJoystick.frontPosition.x.toFixed(2);
-                        ry = rightJoystick.frontPosition.y.toFixed(2);
+                        rx = Number(rightJoystick.frontPosition.x.toFixed(2));
+                        ry = Number(rightJoystick.frontPosition.y.toFixed(2));
                     }
                     // Time, lx, ly, rx, ry
-                    const inputPayload = `${leftJoystick.frontPosition.x.toFixed(2)},${leftJoystick.frontPosition.y.toFixed(2)},${rx},${ry}`;
+                    const inputPayload = `${lx},${ly},${rx},${ry}`;
                     if (inputPayload !== lastInputPayload || onShoot) {
-                        conn.send(`${Date.now()},${inputPayload}`);
+                        conn.send(createInputPacket(Date.now(), lx, ly, rx, ry));
                         lastInputPayload = inputPayload;
                     }
                     lastSendTimestamp = timestamp;

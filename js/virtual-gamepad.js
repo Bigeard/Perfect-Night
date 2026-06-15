@@ -24,6 +24,17 @@ const sendPeerJson = (conn, payload) => {
     return false;
 };
 
+const isBinaryInputPacket = (data) => {
+    if (data instanceof ArrayBuffer) return data.byteLength >= 24;
+    if (ArrayBuffer.isView(data)) return data.byteLength >= 24;
+    return false;
+};
+
+const inputPacketDataView = (data) => {
+    if (data instanceof ArrayBuffer) return new DataView(data);
+    return new DataView(data.buffer, data.byteOffset, data.byteLength);
+};
+
 class VirtualGamepad {
     conn;
     id;
@@ -67,7 +78,22 @@ class VirtualGamepad {
 
     connect() {
         this.conn.on('data', (data) => {
-            if (parseInt(data[0])) {
+            if (isBinaryInputPacket(data)) {
+                const view = inputPacketDataView(data);
+                const t = view.getFloat64(0, true);
+                if (this.lastUpdate > t) return; // Out of date
+                this.lastUpdate = t;
+
+                this.axes[0] = view.getFloat32(8, true);
+                this.axes[1] = view.getFloat32(12, true);
+                this.axes[2] = view.getFloat32(16, true);
+                this.axes[3] = view.getFloat32(20, true);
+
+                if (!perf && canSendPeerData(this.conn)) this.conn.send(t); // -> Pong
+                // Edit
+                if (this.edit) sendPeerJson(this.conn, this.checkEdit({ t }));
+            }
+            else if (parseInt(data[0])) {
                 data = data.split(",");
                 // data 0 = time (int)
                 // data 1 = lx (float)
