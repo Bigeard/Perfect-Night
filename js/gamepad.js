@@ -52,9 +52,12 @@
             }
         };
 
-        const canSend = (connection) => {
+        const CONTROL_BUFFER_LIMIT = 65536;
+        const INPUT_BUFFER_LIMIT = 4096;
+
+        const canSend = (connection, maxBufferedAmount = CONTROL_BUFFER_LIMIT) => {
             const channel = connection?.dataChannel;
-            return Boolean(connection?.open && (!channel || channel.bufferedAmount < 65536));
+            return Boolean(connection?.open && (!channel || channel.bufferedAmount < maxBufferedAmount));
         };
 
         const sendJson = (connection, payload) => {
@@ -477,7 +480,7 @@
                     if (peer?.open) peer.disconnect();
                     if (conn?.peer) join(conn.peer);
                 }
-                if (timestamp - lastSendTimestamp >= 1000 / 60 && leftJoystick && rightJoystick && peer.id && canSend(conn)) {
+                if (timestamp - lastSendTimestamp >= 1000 / 60 && leftJoystick && rightJoystick && peer.id && canSend(conn, INPUT_BUFFER_LIMIT)) {
                     const lx = Number(leftJoystick.frontPosition.x.toFixed(2));
                     const ly = Number(leftJoystick.frontPosition.y.toFixed(2));
                     if (onShoot) {

@@ -141,7 +141,7 @@ const init = () => {
             gamepad.conn = connection;
             gamepad.connect();
         }
-        else if (connection.metadata && connection.metadata.id) { // If gamepad still open
+        else if (connection.metadata && connection.metadata.id != null && listGamepad.has(connection.metadata.id)) { // If gamepad still open
             gamepad = listGamepad.get(connection.metadata.id);
             gamepad.conn = connection;
             gamepad.connect();

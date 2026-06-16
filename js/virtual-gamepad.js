@@ -1,6 +1,8 @@
 // Management of the mobile gamepad
 const listGamepad = new Map([]);
 const disconnectGamepad = [];
+const CONTROL_BUFFER_LIMIT = 65536;
+const INPUT_BUFFER_LIMIT = 4096;
 
 const safeJsonParse = (value, fallback = null) => {
     try {
@@ -11,9 +13,9 @@ const safeJsonParse = (value, fallback = null) => {
     }
 };
 
-const canSendPeerData = (conn) => {
+const canSendPeerData = (conn, maxBufferedAmount = CONTROL_BUFFER_LIMIT) => {
     const channel = conn?.dataChannel;
-    return Boolean(conn?.open && (!channel || channel.bufferedAmount < 65536));
+    return Boolean(conn?.open && (!channel || channel.bufferedAmount < maxBufferedAmount));
 };
 
 const sendPeerJson = (conn, payload) => {
@@ -77,7 +79,11 @@ class VirtualGamepad {
     }
 
     connect() {
-        this.conn.on('data', (data) => {
+        const conn = this.conn;
+
+        conn.on('data', (data) => {
+            if (this.conn !== conn) return;
+
             if (isBinaryInputPacket(data)) {
                 const view = inputPacketDataView(data);
                 const t = view.getFloat64(0, true);
@@ -89,9 +95,9 @@ class VirtualGamepad {
                 this.axes[2] = view.getFloat32(16, true);
                 this.axes[3] = view.getFloat32(20, true);
 
-                if (!perf && canSendPeerData(this.conn)) this.conn.send(t); // -> Pong
+                if (!perf && canSendPeerData(conn, INPUT_BUFFER_LIMIT)) conn.send(t); // -> Pong
                 // Edit
-                if (this.edit) sendPeerJson(this.conn, this.checkEdit({ t }));
+                if (this.edit) sendPeerJson(conn, this.checkEdit({ t }));
             }
             else if (parseInt(data[0])) {
                 data = data.split(",");
@@ -109,9 +115,9 @@ class VirtualGamepad {
                 this.axes[2] = Number.isFinite(parseFloat(data[3])) ? parseFloat(data[3]) : 0;
                 this.axes[3] = Number.isFinite(parseFloat(data[4])) ? parseFloat(data[4]) : 0;
 
-                if (!perf && canSendPeerData(this.conn)) this.conn.send(t); // -> Pong
+                if (!perf && canSendPeerData(conn, INPUT_BUFFER_LIMIT)) conn.send(t); // -> Pong
                 // Edit
-                if (this.edit) sendPeerJson(this.conn, this.checkEdit({ t }));
+                if (this.edit) sendPeerJson(conn, this.checkEdit({ t }));
             }
             else {
                 data = safeJsonParse(data);
@@ -128,14 +134,16 @@ class VirtualGamepad {
                 else if (data.e) dataSend = this.checkEdit(dataSend);
                 // Game Settings
                 else if (data.s) changeSettings(data.s);
-                sendPeerJson(this.conn, dataSend);
+                sendPeerJson(conn, dataSend);
             }
         });
-        this.conn.on('disconnect', () => {
+        conn.on('disconnect', () => {
+            if (this.conn !== conn) return;
             this.status = "Disconnect";
             console.info("Disconnect", this.id, this.name);
         });
-        this.conn.on('close', () => {
+        conn.on('close', () => {
+            if (this.conn !== conn) return;
             this.status = "Close";
             console.info("Close", this.id, this.name);
             this.conn = null;
