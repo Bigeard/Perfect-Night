@@ -105,13 +105,15 @@ const init = () => {
 
         // QrCode
         if (PeerServerId !== "") {
-            gamepadUrl = window.location.origin + "#" + PeerServerId;
+            gamepadUrl = window.location.href;
             inputCopyLink.value = gamepadUrl;
             window.location.hash = PeerServerId;
             console.info(gamepadUrl);
             join();
         } else {
-            gamepadUrl = window.location.href.slice(0, -1) + "#" + peer.id;
+            const url = new URL(window.location.href);
+            url.hash = peer.id;
+            gamepadUrl = url.href;
             inputCopyLink.value = gamepadUrl;
             window.location.hash = peer.id;
             console.info(gamepadUrl);

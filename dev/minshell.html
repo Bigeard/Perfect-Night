@@ -46,7 +46,7 @@
 
         if (PeerServerId !== "") {
             console.log(PeerServerId);
-            if (mobileCheck()) location.replace(window.location.origin + "/gamepad" + PeerServerId);
+            if (mobileCheck()) location.replace(new URL("gamepad/" + PeerServerId, window.location.href));
             PeerServerId = PeerServerId.substring(1);
         }
     </script>
