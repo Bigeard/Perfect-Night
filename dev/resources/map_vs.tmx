@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#212530" nextlayerid="6" nextobjectid="104">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" backgroundcolor="#212530" nextlayerid="6" nextobjectid="104">
  <tileset firstgid="1" source="grass.tsx"/>
  <layer id="1" name="Background" width="32" height="32">
   <data encoding="csv">
@@ -38,49 +38,49 @@
 </data>
  </layer>
  <objectgroup color="#00ffff" id="3" name="Players" class="players">
-  <object id="7" name="Player 1" class="player_1" x="245.677" y="214.117" width="40" height="40">
+  <object id="7" name="Player 1" type="player_1" x="245.677" y="214.117" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff23eb8d"/>
     <property name="playerId" type="int" value="1"/>
    </properties>
   </object>
-  <object id="10" name="Player 2" class="player_2" x="740.298" y="771.734" width="40" height="40">
+  <object id="10" name="Player 2" type="player_2" x="740.298" y="771.734" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1525b"/>
     <property name="playerId" type="int" value="2"/>
    </properties>
   </object>
-  <object id="11" name="Player 3" class="player_3" x="244.55" y="767.756" width="40" height="40">
+  <object id="11" name="Player 3" type="player_3" x="244.55" y="767.756" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff40e6e6"/>
     <property name="playerId" type="int" value="3"/>
    </properties>
   </object>
-  <object id="12" name="Player 4" class="player_4" x="736.399" y="210.657" width="40" height="40">
+  <object id="12" name="Player 4" type="player_4" x="736.399" y="210.657" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff7f66f2"/>
     <property name="playerId" type="int" value="4"/>
    </properties>
   </object>
-  <object id="13" name="Player 5" class="player_5" x="490.981" y="185.704" width="40" height="40">
+  <object id="13" name="Player 5" type="player_5" x="490.981" y="185.704" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#fff1d125"/>
     <property name="playerId" type="int" value="5"/>
    </properties>
   </object>
-  <object id="14" name="Player 6" class="player_6" x="492.108" y="799.17" width="40" height="40">
+  <object id="14" name="Player 6" type="player_6" x="492.108" y="799.17" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ffff822f"/>
     <property name="playerId" type="int" value="6"/>
    </properties>
   </object>
-  <object id="15" name="Player 7" class="player_7" x="181.677" y="490.653" width="40" height="40">
+  <object id="15" name="Player 7" type="player_7" x="181.677" y="490.653" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ffff95e5"/>
     <property name="playerId" type="int" value="7"/>
    </properties>
   </object>
-  <object id="16" name="Player 8" class="player_8" x="802.323" y="489.526" width="40" height="40">
+  <object id="16" name="Player 8" type="player_8" x="802.323" y="489.526" width="40" height="40">
    <properties>
     <property name="color" type="color" value="#ff657eff"/>
     <property name="playerId" type="int" value="8"/>
@@ -88,25 +88,25 @@
   </object>
  </objectgroup>
  <objectgroup color="#23eb8d" id="5" name="Items">
-  <object id="98" name="Random" class="random" x="1149.62" y="922.986" width="64" height="64">
+  <object id="98" name="Random" type="random" x="1149.62" y="922.986" width="64" height="64">
    <properties>
     <property name="delay" type="float" value="10"/>
     <property name="type" type="int" value="0"/>
    </properties>
   </object>
-  <object id="100" name="Random" class="random" x="-185.173" y="924.549" width="64" height="64">
+  <object id="100" name="Random" type="random" x="-185.173" y="924.549" width="64" height="64">
    <properties>
     <property name="delay" type="float" value="10"/>
     <property name="type" type="int" value="0"/>
    </properties>
   </object>
-  <object id="102" name="Random" class="random" x="1141.04" y="28.736" width="64" height="64">
+  <object id="102" name="Random" type="random" x="1141.04" y="28.736" width="64" height="64">
    <properties>
     <property name="delay" type="float" value="10"/>
     <property name="type" type="int" value="0"/>
    </properties>
   </object>
-  <object id="103" name="Random" class="random" x="-193.502" y="35.656" width="64" height="64">
+  <object id="103" name="Random" type="random" x="-193.502" y="35.656" width="64" height="64">
    <properties>
     <property name="delay" type="float" value="10"/>
     <property name="type" type="int" value="0"/>
@@ -116,7 +116,7 @@
  <objectgroup id="4" name="Boxes">
   <object id="62" x="384" y="384" width="256" height="256">
    <properties>
-    <property name="collision" type="bool" value="true"/>
+    <property name="collision" type="bool" value="false"/>
     <property name="displayQrCode" type="bool" value="true"/>
    </properties>
   </object>
