@@ -188,6 +188,7 @@ Texture2D andScanQrTexture;
 bool unloadHomepage = false;
 static RenderTexture2D mapTexture = {0};
 static bool mapTextureLoaded = false;
+static tmx_layer *grassLayer = NULL;
 static Shader backgroundShader = {0};
 static int backgroundShaderTimeLoc = -1;
 static int backgroundShaderResolutionLoc = -1;
@@ -310,6 +311,129 @@ static void LoadStaticMapTexture(void)
     mapTextureLoaded = true;
 }
 
+static bool DynamicGrassBlocked(Vector2 point)
+{
+    for (int i = 0; i < boxesLength; i++)
+    {
+        if (!boxes[i].id || !boxes[i].collision)
+            continue;
+        const Rectangle box = {boxes[i].p.pos.x, boxes[i].p.pos.y, boxes[i].p.size.x, boxes[i].p.size.y};
+        if (CheckCollisionPointRec(point, box))
+            return true;
+    }
+    return false;
+}
+
+static void DrawDynamicGrassTuft(Vector2 base, float bladeLength, unsigned int hash, float windTime)
+{
+    const float influenceRadius = 78.0f;
+    Vector2 bend = {0.0f, 0.0f};
+    float strongestInfluence = 0.0f;
+
+    for (int i = 0; i < NUMBER_EIGHT; i++)
+    {
+        const Player *player = &players[i];
+        if (!player->id || player->life <= 0)
+            continue;
+
+        const Vector2 playerCenter = {
+            player->p.pos.x + player->p.size.x/2.0f,
+            player->p.pos.y + player->p.size.y/2.0f};
+        const float distance = Vector2Distance(base, playerCenter);
+        if (distance >= influenceRadius)
+            continue;
+
+        const float influence = 1.0f - distance/influenceRadius;
+        if (influence <= strongestInfluence)
+            continue;
+        strongestInfluence = influence;
+
+        Vector2 away = Vector2Subtract(base, playerCenter);
+        if (Vector2LengthSqr(away) > 0.0f)
+            away = Vector2Normalize(away);
+        bend = Vector2Add(
+            Vector2Scale(away, 7.0f*influence),
+            Vector2Scale(player->p.vel, 2.2f*influence));
+    }
+    if (Vector2Length(bend) > 12.0f)
+        bend = Vector2Scale(Vector2Normalize(bend), 12.0f);
+
+    const float windPhase = base.x*0.018f + base.y*0.009f + (float)(hash%19u)*0.13f;
+    const float breeze = sinf(windPhase + windTime*1.7f)*2.6f;
+    const float gust = sinf(windPhase*0.37f + windTime*0.55f)*1.8f;
+    const float heightFactor = bladeLength/22.0f;
+    bend.x += (breeze + gust)*heightFactor;
+    bend.y += fabsf(breeze + gust)*0.08f;
+
+    const float naturalLean = ((float)((hash/31u)%9u) - 4.0f)*0.7f;
+    const Vector2 tip = {base.x + naturalLean + bend.x, base.y - bladeLength + bend.y};
+    const unsigned char shade = (unsigned char)((hash/127u)%18u);
+    const Color grassDark = {(unsigned char)(38 + shade), (unsigned char)(63 + shade), (unsigned char)(81 + shade), 230};
+    const Color grassLight = {(unsigned char)(64 + shade), (unsigned char)(96 + shade), (unsigned char)(116 + shade), 240};
+    DrawLineEx(base, tip, 2.2f, grassDark);
+    DrawLineEx((Vector2){base.x - 3.0f, base.y},
+               (Vector2){tip.x - 5.0f + bend.x*0.25f, tip.y + bladeLength*0.35f}, 1.8f, grassLight);
+    DrawLineEx((Vector2){base.x + 3.0f, base.y},
+               (Vector2){tip.x + 6.0f + bend.x*0.25f, tip.y + bladeLength*0.42f}, 1.8f, grassLight);
+}
+
+static bool IsDynamicGrassAtlasTile(unsigned int gid)
+{
+    if (gid == 0 || !map->tiles[gid])
+        return false;
+
+    const tmx_tile *tile = map->tiles[gid];
+    const unsigned int column = tile->ul_x/tile->tileset->tile_width;
+    const unsigned int row = tile->ul_y/tile->tileset->tile_height;
+    return column >= 4u && column <= 7u && row <= 3u;
+}
+
+static void DrawDynamicGrass(Camera2D renderCamera)
+{
+    if (activePerf || !map || !grassLayer || grassLayer->type != L_LAYER)
+        return;
+
+    const int tileWidth = (int)map->tile_width;
+    const int tileHeight = (int)map->tile_height;
+    const float windTime = (float)GetTime();
+    const Vector2 viewTopLeft = GetScreenToWorld2D((Vector2){0.0f, 0.0f}, renderCamera);
+    const Vector2 viewBottomRight = GetScreenToWorld2D(
+        (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()}, renderCamera);
+    int firstTileX = (int)floorf(viewTopLeft.x/(float)tileWidth) - 1;
+    int firstTileY = (int)floorf(viewTopLeft.y/(float)tileHeight) - 1;
+    int lastTileX = (int)ceilf(viewBottomRight.x/(float)tileWidth) + 1;
+    int lastTileY = (int)ceilf(viewBottomRight.y/(float)tileHeight) + 1;
+
+    if (firstTileX < 0) firstTileX = 0;
+    if (firstTileY < 0) firstTileY = 0;
+    if (lastTileX >= (int)map->width) lastTileX = (int)map->width - 1;
+    if (lastTileY >= (int)map->height) lastTileY = (int)map->height - 1;
+
+    for (int tileY = firstTileY; tileY <= lastTileY; tileY++)
+    {
+        for (int tileX = firstTileX; tileX <= lastTileX; tileX++)
+        {
+            const unsigned int gid = grassLayer->content.gids[tileY*(int)map->width + tileX] & TMX_FLIP_BITS_REMOVAL;
+            if (!IsDynamicGrassAtlasTile(gid))
+                continue;
+
+            const unsigned int tileHash = (unsigned int)tileX*73856093u ^ (unsigned int)tileY*19349663u;
+            const int tuftCount = 1 + (int)(tileHash%3u);
+            for (int tuft = 0; tuft < tuftCount; tuft++)
+            {
+                const unsigned int hash = tileHash ^ ((unsigned int)tuft + 1u)*2654435761u;
+                const Vector2 base = {
+                    tileX*(float)tileWidth + 4.0f + (float)(hash%25u),
+                    tileY*(float)tileHeight + 21.0f + (float)((hash/29u)%9u)};
+                if (DynamicGrassBlocked(base))
+                    continue;
+                const float bladeLength = 18.0f + (float)((hash/113u)%10u);
+                DrawDynamicGrassTuft(base, bladeLength, hash, windTime);
+            }
+        }
+    }
+}
+
 void InitGameplay()
 {
     backgroundShader = LoadShader(NULL, "resources/shaders/cineshader_background.fs");
@@ -378,6 +502,7 @@ void InitMap()
     }
     arenaSizeX = map->tile_width * map->width;
     arenaSizeY = map->tile_height * map->height;
+    grassLayer = tmx_find_layer_by_name(map, "Background");
     tmx_init_object(map->ly_head, players, boxes, loots);
     LoadStaticMapTexture();
 }
@@ -1258,6 +1383,7 @@ void DrawGameplay()
             render_map(map);
         }
     }
+    DrawDynamicGrass(renderCamera);
     DrawGameArena();
 
     // Draw Boxes
