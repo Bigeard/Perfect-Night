@@ -27,6 +27,7 @@
 PROJECT_NAME       ?= index
 RAYLIB_VERSION     ?= 6.0
 RAYLIB_PATH        ?= ../lib/raylib
+LIBXML2_PATH       ?= ../lib/libxml2
 
 # Define compiler path on Windows
 COMPILER_PATH      ?= C:/raylib/w64devkit/bin
@@ -270,7 +271,7 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     endif
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
-    INCLUDE_PATHS += -I../lib/libxml2/include -I../lib/libxml2/build-wasm
+    INCLUDE_PATHS += -I$(LIBXML2_PATH)/include -I$(LIBXML2_PATH)
 endif
 
 # Define library paths containing required libs.
@@ -344,7 +345,7 @@ ifeq ($(PLATFORM),PLATFORM_RPI)
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # Libraries for web (HTML5) compiling
-    LDLIBS = $(RAYLIB_RELEASE_PATH)/libraylib.web.a ../lib/libxml2/build-wasm/libxml2.a
+    LDLIBS = $(RAYLIB_RELEASE_PATH)/libraylib.web.a $(LIBXML2_PATH)/.libs/libxml2.a
 endif
 
 # Define a recursive wildcard function
@@ -437,4 +438,3 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
 	del *.o *.html *.js
 endif
 	@echo Cleaning done
-

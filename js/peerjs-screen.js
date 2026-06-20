@@ -134,15 +134,11 @@ const init = () => {
             return;
         }
 
-        let gamepad = false;
-        listGamepad.forEach(g => g.conn?.peer === connection.peer ? gamepad = g : 0);
+        const gamepadId = connection.metadata?.id || connection.peer;
+        let gamepad = listGamepad.get(gamepadId);
 
         if (gamepad) { // If connection exist
-            gamepad.conn = connection;
-            gamepad.connect();
-        }
-        else if (connection.metadata && connection.metadata.id != null && listGamepad.has(connection.metadata.id)) { // If gamepad still open
-            gamepad = listGamepad.get(connection.metadata.id);
+            if (gamepad.conn && gamepad.conn !== connection) gamepad.conn.close();
             gamepad.conn = connection;
             gamepad.connect();
         }
@@ -162,7 +158,7 @@ const init = () => {
             }
             gamepad = new VirtualGamepad(
                 connection,
-                connection.peer,
+                gamepadId,
                 listGamepad.size
             );
             listGamepad.set(gamepad.id, gamepad);

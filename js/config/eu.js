@@ -1,7 +1,8 @@
 //// ONLINE EU
 
 const Config = createPerfectNightPeerConfig({
-    host: "perfect-night-374900.oa.r.appspot.com",
+    host: "0.peerjs.com",
+    path: "/",
     iceServers: [
         {
             urls: [

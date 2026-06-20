@@ -9,8 +9,9 @@ app.enable('trust proxy');
 app.use('/', express.static(path.join(__dirname, '../')))
 
 const PORT = process.env.PORT || 9000;
-const server = app.listen(PORT, () => {
-  console.log(`App listening on port: ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+const server = app.listen(PORT, HOST, () => {
+  console.log(`App listening on http://${HOST}:${PORT}`);
   console.log('Press Ctrl+C to quit.');
 });
 

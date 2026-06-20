@@ -6,6 +6,8 @@ static void GameMainLoop(void);
 
 int main(void)
 {
+    // Supersample raylib's generated geometry (lines, rectangles, circles, etc.).
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(1920, 1080, "Perfect Night");
     // InitAudioDevice();
     InitGameplay();

@@ -298,7 +298,14 @@
 
             let lastPing = 0;
             let lastSendTimestamp = 0;
+            let lastKeepaliveTimestamp = 0;
             let lastInputPayload = "";
+            let reconnectTimer = null;
+            let connectionTimer = null;
+
+            const RECONNECT_DELAY = 1000;
+            const CONNECTION_TIMEOUT = 15000;
+            const PING_TIMEOUT = 5000;
 
             const createInputPacket = (t, lx, ly, rx, ry) => {
                 const packet = new ArrayBuffer(24);
@@ -311,18 +318,40 @@
                 return packet;
             };
 
-            const reconnectPeer = (message) => {
+            const scheduleReconnect = (message) => {
                 status.innerText = message;
-                if (!peer || !lastPeerId || peer.destroyed) return;
-                try {
-                    peer.id = lastPeerId;
-                    peer._lastServerId = lastPeerId;
-                    if (peer.disconnected) {
-                        peer.reconnect();
+                clearTimeout(reconnectTimer);
+                reconnectTimer = setTimeout(() => {
+                    if (!navigator.onLine) {
+                        scheduleReconnect("Waiting for network...");
+                        return;
                     }
-                } catch (error) {
-                    console.warn("Peer reconnect failed", error);
-                }
+
+                    try {
+                        if (!peer || peer.destroyed) {
+                            init();
+                        } else if (peer.disconnected) {
+                            peer.id = lastPeerId;
+                            peer._lastServerId = lastPeerId;
+                            peer.reconnect();
+                        } else if (peer.open) {
+                            join(PeerServerId);
+                        } else {
+                            scheduleReconnect("Reconnecting...");
+                        }
+                    } catch (error) {
+                        console.warn("Peer reconnect failed", error);
+                        scheduleReconnect("Reconnecting...");
+                    }
+                }, RECONNECT_DELAY);
+            };
+
+            const replaceConnection = (connection, message) => {
+                if (conn !== connection) return;
+                conn = null;
+                clearTimeout(connectionTimer);
+                connection.close();
+                scheduleReconnect(message);
             };
 
             const init = () => {
@@ -344,6 +373,7 @@
                     }
                     // @DEV
                     if (!PeerPlayerId) {
+                        PeerPlayerId = NewPeerPlayerId;
                         // Store connection player
                         safeLocalStorageSet("peerConnection", JSON.stringify({
                             PeerServerId,
@@ -367,39 +397,59 @@
                 });
 
                 peer.on("disconnected", () => {
-                    reconnectPeer("Connection lost. Please reconnect (disconnected)");
-                });
-
-                peer.on("disconnect", () => {
-                    reconnectPeer("Connection lost. Please reconnect (disconnect)");
+                    scheduleReconnect("Connection lost. Reconnecting...");
                 });
 
                 peer.on("close", () => {
-                    reconnectPeer("Connection lost. Please reconnect (close)");
+                    scheduleReconnect("Connection lost. Reconnecting...");
                 });
 
                 peer.on("error", (err) => {
                     console.error(err);
+                    if (err?.type === "unavailable-id" || err?.type === "invalid-id") {
+                        peer.destroy();
+                    }
+                    if (conn?.open) return;
+                    if (conn) replaceConnection(conn, "Connection error. Reconnecting...");
+                    else scheduleReconnect("Connection error. Reconnecting...");
                 });
             };
 
             const join = (PeerServerId) => {
-                if (conn) {
-                    conn.close();
+                if (!peer?.open) {
+                    scheduleReconnect("Waiting for connection server...");
+                    return;
                 }
-                conn = peer.connect(PeerServerId, {
+
+                // An existing connection or negotiation owns the retry timeout.
+                if (conn) return;
+
+                clearTimeout(connectionTimer);
+                const connection = peer.connect(PeerServerId, {
                     metadata: {
                         id: PeerPlayerId,
                     },
                     reliable: false,
                     serialization: 'raw'
                 });
-                conn.on("open", () => {
+                conn = connection;
+                connection.on("open", () => {
+                    if (conn !== connection) return;
+                    clearTimeout(reconnectTimer);
+                    clearTimeout(connectionTimer);
+                    lastPing = Date.now();
+                    lastKeepaliveTimestamp = 0;
+                    lastInputPayload = "";
                     status.innerText = "Connected";
-                    sendJson(conn, { e: 1 }) // Get last edit
-                    console.info("Connected to ", conn.peer)
+                    sendJson(connection, { e: 1 }) // Get last edit
+                    console.info("Connected to ", connection.peer)
                 });
-                conn.on("data", (data) => {
+                connectionTimer = setTimeout(() => {
+                    if (conn !== connection || connection.open) return;
+                    replaceConnection(connection, "Negotiation timed out. Reconnecting...");
+                }, CONNECTION_TIMEOUT);
+                connection.on("data", (data) => {
+                    if (conn !== connection) return;
                     if (parseInt(data)) {
                         //// Ping / Latency Test
                         // if (data) {
@@ -452,14 +502,16 @@
                         }
                     }
                 });
-                conn.on("disconnected", () => {
-                    reconnectPeer("Connection disconnected (conn.on(disconnected))");
+                connection.on("close", () => {
+                    if (conn !== connection) return;
+                    conn = null;
+                    clearTimeout(connectionTimer);
+                    scheduleReconnect("Connection closed. Reconnecting...");
                 });
-                conn.on("disconnect", () => {
-                    reconnectPeer("Connection disconnect (conn.on(disconnect))");
-                });
-                conn.on("close", () => {
-                    reconnectPeer("Connection closed (conn.on(close))");
+                connection.on("error", (error) => {
+                    if (conn !== connection) return;
+                    console.warn("Data connection error", error);
+                    replaceConnection(connection, "Connection error. Reconnecting...");
                 });
             };
 
@@ -475,10 +527,9 @@
             let ry = 0;
 
             const loop = (timestamp) => {
-                if (lastPing != 0 && Date.now() - lastPing > 3000) {
+                if (lastPing != 0 && Date.now() - lastPing > PING_TIMEOUT) {
                     lastPing = 0;
-                    if (peer?.open) peer.disconnect();
-                    if (conn?.peer) join(conn.peer);
+                    if (conn) replaceConnection(conn, "Connection timed out. Reconnecting...");
                 }
                 if (timestamp - lastSendTimestamp >= 1000 / 60 && leftJoystick && rightJoystick && peer.id && canSend(conn, INPUT_BUFFER_LIMIT)) {
                     const lx = Number(leftJoystick.frontPosition.x.toFixed(2));
@@ -492,9 +543,10 @@
                     }
                     // Time, lx, ly, rx, ry
                     const inputPayload = `${lx},${ly},${rx},${ry}`;
-                    if (inputPayload !== lastInputPayload || onShoot) {
+                    if (inputPayload !== lastInputPayload || onShoot || timestamp - lastKeepaliveTimestamp >= 1000) {
                         conn.send(createInputPacket(Date.now(), lx, ly, rx, ry));
                         lastInputPayload = inputPayload;
+                        lastKeepaliveTimestamp = timestamp;
                     }
                     lastSendTimestamp = timestamp;
                 }

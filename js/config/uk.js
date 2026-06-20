@@ -1,7 +1,8 @@
 //// ONLINE UK
 
 const Config = createPerfectNightPeerConfig({
-    host: "perfect-night.aventu.re",
+    host: "0.peerjs.com",
+    path: "/",
     iceServers: [
         {
             urls: [

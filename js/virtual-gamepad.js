@@ -140,11 +140,13 @@ class VirtualGamepad {
         conn.on('disconnect', () => {
             if (this.conn !== conn) return;
             this.status = "Disconnect";
+            this.axes = [0, 0, 0, 0];
             console.info("Disconnect", this.id, this.name);
         });
         conn.on('close', () => {
             if (this.conn !== conn) return;
             this.status = "Close";
+            this.axes = [0, 0, 0, 0];
             console.info("Close", this.id, this.name);
             this.conn = null;
             // disconnectGamepad.push(this.id)

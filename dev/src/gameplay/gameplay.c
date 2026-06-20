@@ -143,6 +143,25 @@ static Camera2D camera = {0};
 float centerPositionX = 0;
 float centerPositionY = 0;
 static bool pauseGame = false;
+static const float CAMERA_WIDER_VIEW_FACTOR = 1.1f;
+
+// Keep simulation movement smooth while aligning the rendered world to the
+// physical pixel grid. This prevents fractional camera movement from making
+// primitive edges shimmer between adjacent pixels.
+static Camera2D GetRenderCamera(void)
+{
+    Camera2D renderCamera = camera;
+
+    renderCamera.offset.x = roundf(renderCamera.offset.x);
+    renderCamera.offset.y = roundf(renderCamera.offset.y);
+    if (renderCamera.zoom > 0.0f)
+    {
+        renderCamera.target.x = roundf(renderCamera.target.x * renderCamera.zoom) / renderCamera.zoom;
+        renderCamera.target.y = roundf(renderCamera.target.y * renderCamera.zoom) / renderCamera.zoom;
+    }
+
+    return renderCamera;
+}
 
 double startTime = 0.0;
 double elapsedTime = 0.0;
@@ -199,6 +218,33 @@ bool otherColorAlive = false;
 
 Player players[NUMBER_EIGHT] = {{}, {}, {}, {}, {}, {}, {}, {}};
 int numberPlayer = 0;
+
+static void UpdateCameraTarget(int aliveCount, int aliveId, float centerX, float centerY)
+{
+    camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+
+    if (lastPlayer < 2)
+    {
+        camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
+    }
+    else if (aliveCount >= 2)
+    {
+        const Vector2 aliveCenter = {centerX / aliveCount, centerY / aliveCount};
+        camera.target = Vector2Lerp(
+            camera.target,
+            aliveCenter,
+            GetFrameTime() * Vector2Distance(camera.target, aliveCenter) / 100.0f);
+    }
+    else if (aliveCount == 1)
+    {
+        camera.target = (Vector2){
+            players[aliveId].p.pos.x + players[aliveId].p.size.x / 2.0f,
+            players[aliveId].p.pos.y + players[aliveId].p.size.y / 2.0f - 220.0f};
+    }
+    // When everyone is dead, keep the last meaningful target. Dead players can
+    // be moved to their spawn points during round cleanup and must not pull the
+    // camera away from the place where the round ended.
+}
 
 Player *outsidePlayer;
 Player *lastOutsidePlayer;
@@ -356,11 +402,13 @@ void UpdateGameplay()
     playerAliveId = 0;
     otherColorAlive = false;
 
-    if (GetScreenWidth() < (arenaSizeX + 60.0f) * (camera.zoom / 1.0001f) || GetScreenHeight() < (arenaSizeY + 60.0f) * (camera.zoom / 1.0001f))
+    const float cameraArenaWidth = (arenaSizeX + 60.0f) * CAMERA_WIDER_VIEW_FACTOR;
+    const float cameraArenaHeight = (arenaSizeY + 60.0f) * CAMERA_WIDER_VIEW_FACTOR;
+    if (GetScreenWidth() < cameraArenaWidth * camera.zoom || GetScreenHeight() < cameraArenaHeight * camera.zoom)
     {
         camera.zoom -= 0.001f;
     }
-    if (GetScreenWidth() > (arenaSizeX + 120.0f) || GetScreenHeight() > (arenaSizeY + 120.0f))
+    else if (GetScreenWidth() > (cameraArenaWidth + 60.0f) * camera.zoom && GetScreenHeight() > (cameraArenaHeight + 60.0f) * camera.zoom)
     {
         camera.zoom += 0.001f;
     }
@@ -807,36 +855,7 @@ void UpdateGameplay()
             }
             data = token + 1; // move the pointer to the next token
         }
-        // Camera Management
-        camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
-        if (lastPlayer >= 2)
-        {
-            if (playerAlive >= 2)
-            {
-                centerPositionX = centerPositionX / playerAlive;
-                centerPositionY = centerPositionY / playerAlive;
-                camera.target = Vector2Lerp(
-                    camera.target,
-                    (Vector2){centerPositionX, centerPositionY},
-                    GetFrameTime() * Vector2Distance(camera.target, (Vector2){centerPositionX, centerPositionY}) / 100.0f);
-            }
-            else if (playerAlive == 1)
-            {
-                centerPositionX = (players[playerAliveId].p.pos.x + players[playerAliveId].p.size.x) / 2.0f;
-                centerPositionY = (players[playerAliveId].p.pos.y + players[playerAliveId].p.size.y) / 2.0f - 220.0f;
-                camera.target = (Vector2){centerPositionX, centerPositionY};
-            }
-            else
-            {
-                centerPositionX = arenaSizeX / 2;
-                centerPositionY = arenaSizeY / 2;
-                camera.target = (Vector2){centerPositionX, centerPositionY};
-            }
-        }
-        else
-        {
-            camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
-        }
+        UpdateCameraTarget(playerAlive, playerAliveId, centerPositionX, centerPositionY);
 
         if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
         {
@@ -1003,31 +1022,10 @@ void UpdateGameplay()
         SendData(dataToSend);
     }
 
-    // Camera Management
-    camera.offset = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+    UpdateCameraTarget(playerAlive, playerAliveId, centerPositionX, centerPositionY);
+
     if (lastPlayer >= 2)
     {
-        if (playerAlive >= 2)
-        {
-            centerPositionX = centerPositionX / playerAlive;
-            centerPositionY = centerPositionY / playerAlive;
-            camera.target = Vector2Lerp(
-                camera.target,
-                (Vector2){centerPositionX, centerPositionY},
-                GetFrameTime() * Vector2Distance(camera.target, (Vector2){centerPositionX, centerPositionY}) / 100.0f);
-        }
-        else if (playerAlive == 1)
-        {
-            centerPositionX = (players[playerAliveId].p.pos.x + players[playerAliveId].p.size.x) / 2.0f;
-            centerPositionY = (players[playerAliveId].p.pos.y + players[playerAliveId].p.size.y) / 2.0f - 220.0f;
-            camera.target = (Vector2){centerPositionX, centerPositionY};
-        }
-        else
-        {
-            centerPositionX = arenaSizeX / 2;
-            centerPositionY = arenaSizeY / 2;
-            camera.target = (Vector2){centerPositionX, centerPositionY};
-        }
         // float newZoom = 1.0f - ((centerDistance - (arenaSizeX - 300)) / centerDistance);
         // if (fabs(newZoom) >= 1.1f || fabs(newZoom) <= 0.8f)
         // {
@@ -1035,11 +1033,6 @@ void UpdateGameplay()
         // }
         // camera.zoom = Lerp(camera.zoom, newZoom - camera.zoom, GetFrameTime() * 10);
     }
-    else
-    {
-        camera.target = (Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f};
-    }
-
     // Outside logic
     if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
     {
@@ -1194,8 +1187,10 @@ void ResetGame()
 
 void DrawGameplay()
 {
+    const Camera2D renderCamera = GetRenderCamera();
+
     // DRAW GAME
-    BeginMode2D(camera); // DRAW 1
+    BeginMode2D(renderCamera); // DRAW 1
 
     if (outsidePlayer)
     {
@@ -1294,7 +1289,7 @@ void DrawGameplay()
 
     if (numberPlayer == 0 || startTime != 0.0 || pauseGame)
     {
-        BeginMode2D(camera); // DRAW 3
+        BeginMode2D(renderCamera); // DRAW 3
 
         // Draw Wins
         if (startTime != 0.0)
