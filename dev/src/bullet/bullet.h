@@ -10,6 +10,8 @@ extern "C"
 #include "../../../lib/raylib/src/raylib.h"
 #include "../physic/physic.h"
 
+#define BULLET_TRAIL_LENGTH 10
+
     typedef struct Bullet
     {
         int playerId;
@@ -26,6 +28,9 @@ extern "C"
         float explosionRadius;
         double explosionTime;
         Vector2 explosionPosition;
+        Vector2 trail[BULLET_TRAIL_LENGTH];
+        int trailCount;
+        int trailIndex;
     } Bullet;
 
     void InitBullet(void);

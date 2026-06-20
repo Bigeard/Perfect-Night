@@ -18,7 +18,8 @@ extern "C"
 #define GAMEPAD 2
 #define MOBILE 3
 
-#define MAX_BULLET 8
+#define MAX_BULLET 14
+#define MOVEMENT_PARTICLE_COUNT 24
 #define DELAY_AMMUNITION 3.0f
 #define DELAY_INVINCIBLE 140
 
@@ -54,12 +55,19 @@ extern "C"
         int KEY[7];     // Key you can press to move or do an action
         // Animation
         Particle shootParticle[20];
+        Particle movementParticles[MOVEMENT_PARTICLE_COUNT];
+        int movementParticleCursor;
+        float movementParticleCooldown;
+        Vector2 movementParticleLastPosition;
+        bool movementParticlePositionReady;
     } Player;
 
     void InitPlayer(void);
     void UpdatePlayer(Player *player);
     void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player, Rectangle recPlayer);
     void DrawPlayer(Player player);
+    void UpdatePlayerMovementParticles(Player *player, bool emit);
+    void DrawPlayerMovementParticles(const Player *player);
     void DrawSpawnPlayer(Player player);
     void DrawStatsPlayer(Player player);
     void PlayerValueToData(Player player, char *DataToSend, size_t dataSize);

@@ -235,6 +235,72 @@ void UpdatePlayer(Player *player)
     }
 }
 
+void UpdatePlayerMovementParticles(Player *player, bool emit)
+{
+    const float delta = GetFrameTime();
+    for (int i = 0; i < MOVEMENT_PARTICLE_COUNT; i++)
+    {
+        Particle *particle = &player->movementParticles[i];
+        if (particle->timer <= 0.0f)
+            continue;
+        particle->p.pos = Vector2Add(particle->p.pos, particle->p.vel);
+        particle->p.vel = Vector2Scale(particle->p.vel, 0.94f);
+        particle->timer -= 1.0f;
+    }
+
+    const Vector2 center = {
+        player->p.pos.x + player->p.size.x/2.0f,
+        player->p.pos.y + player->p.size.y/2.0f};
+    if (!player->movementParticlePositionReady)
+    {
+        player->movementParticleLastPosition = center;
+        player->movementParticlePositionReady = true;
+        return;
+    }
+
+    const Vector2 movement = Vector2Subtract(center, player->movementParticleLastPosition);
+    player->movementParticleLastPosition = center;
+    player->movementParticleCooldown -= delta;
+    const float movementLength = Vector2Length(movement);
+    if (!emit || player->life <= 0 || movementLength < 0.25f || movementLength > 80.0f || player->movementParticleCooldown > 0.0f)
+        return;
+
+    const Vector2 direction = Vector2Normalize(movement);
+    const Vector2 origin = Vector2Subtract(center, Vector2Scale(direction, 18.0f));
+    const Color particleColor = LerpColor((Color){72, 106, 126, 255}, player->color, 0.35f);
+    for (int i = 0; i < 2; i++)
+    {
+        Particle *particle = &player->movementParticles[player->movementParticleCursor];
+        player->movementParticleCursor = (player->movementParticleCursor + 1)%MOVEMENT_PARTICLE_COUNT;
+        particle->p.pos = (Vector2){
+            origin.x + (float)GetRandomValue(-7, 7),
+            origin.y + (float)GetRandomValue(-7, 7)};
+        particle->p.vel = Vector2Add(
+            Vector2Scale(movement, -0.12f),
+            (Vector2){(float)GetRandomValue(-5, 5)*0.08f, (float)GetRandomValue(-5, 5)*0.08f});
+        const float size = (float)GetRandomValue(25, 50)/10.0f;
+        particle->p.size = (Vector2){size, size};
+        particle->color = particleColor;
+        particle->initTimer = 45.0f;
+        particle->timer = particle->initTimer;
+    }
+    player->movementParticleCooldown = 0.045f;
+}
+
+void DrawPlayerMovementParticles(const Player *player)
+{
+    for (int i = 0; i < MOVEMENT_PARTICLE_COUNT; i++)
+    {
+        const Particle *particle = &player->movementParticles[i];
+        if (particle->timer <= 0.0f)
+            continue;
+        DrawCircleV(
+            particle->p.pos,
+            particle->p.size.x,
+            Fade(particle->color, particle->timer/particle->initTimer));
+    }
+}
+
 void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player, Rectangle recPlayer)
 {
     if (bullet->inactive)

@@ -287,8 +287,10 @@ Texture2D BonusSpeedTexture;
 Texture2D LaserTexture;
 Texture2D NothingTexture;
 
+#define GAME_STATE_BUFFER_SIZE 8192
+
 int lengthDataToSend = 0;
-char dataToSend[2048];
+char dataToSend[GAME_STATE_BUFFER_SIZE];
 
 static void LoadStaticMapTexture(void)
 {
@@ -926,6 +928,7 @@ void UpdateGameplay()
                     {
                         UpdateParticles(players[player_index].shootParticle, 20);
                     }
+                    UpdatePlayerMovementParticles(&players[player_index], !activePerf);
 
                     end_of_type = true;
                 }
@@ -1035,7 +1038,7 @@ void UpdateGameplay()
     {
         double newTime = GetTime();
         lengthDataToSend = sizeof(newTime);
-        memset(dataToSend, 0, 2048);
+        memset(dataToSend, 0, sizeof dataToSend);
         snprintf(dataToSend, sizeof(dataToSend), "%f,%d,%d,%d,%d,%d,", newTime, idMap, loots[0].active, loots[1].active, loots[2].active, loots[3].active);
     }
 
@@ -1047,6 +1050,7 @@ void UpdateGameplay()
             continue;
 
         UpdatePlayer(&players[i]);
+        UpdatePlayerMovementParticles(&players[i], !activePerf);
         if (activeOnline && activeMain)
         {
             PlayerValueToData(players[i], dataToSend, sizeof(dataToSend));
@@ -1311,6 +1315,10 @@ void ResetGame()
             players[i].invincible = DELAY_INVINCIBLE;
             players[i].charge = 0.0f;
             players[i].item.active = false;
+            memset(players[i].movementParticles, 0, sizeof players[i].movementParticles);
+            players[i].movementParticleCursor = 0;
+            players[i].movementParticleCooldown = 0.0f;
+            players[i].movementParticlePositionReady = false;
             players[i].speed.x = 3.05f;
             players[i].speed.y = 3.05f;
             for (int j = 0; j < MAX_BULLET; j++)
@@ -1404,6 +1412,7 @@ void DrawGameplay()
                 continue;
             DrawBullet(players[i].bullets[j]);
         }
+        DrawPlayerMovementParticles(&players[i]);
         DrawPlayer(players[i]);
         if (players[i].shootParticle[0].timer != 0)
         {

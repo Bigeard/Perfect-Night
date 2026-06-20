@@ -25,6 +25,20 @@ void UpdateBullet(Bullet *bullet)
     bullet->p.pos.x += bullet->p.vel.x;
     bullet->p.pos.y += bullet->p.vel.y;
 
+    if (activePerf)
+    {
+        bullet->trailCount = 0;
+    }
+    else if (bullet->distanceLaser <= 0.0f)
+    {
+        bullet->trail[bullet->trailIndex] = (Vector2){
+            bullet->p.pos.x + bullet->p.size.x,
+            bullet->p.pos.y + bullet->p.size.y};
+        bullet->trailIndex = (bullet->trailIndex + 1)%BULLET_TRAIL_LENGTH;
+        if (bullet->trailCount < BULLET_TRAIL_LENGTH)
+            bullet->trailCount++;
+    }
+
     if (bullet->p.vel.x < 1.0f && bullet->p.vel.y < 1.0f &&
         bullet->p.vel.x > -1.0f && bullet->p.vel.y > -1.0f)
     {
@@ -107,6 +121,23 @@ void DrawBullet(Bullet bullet)
 {
     float centerBulletX = bullet.p.pos.x + bullet.p.size.x;
     float centerBulletY = bullet.p.pos.y + bullet.p.size.y;
+
+    if (!activePerf && !bullet.inactive && bullet.distanceLaser <= 0.0f && bullet.trailCount > 1)
+    {
+        const int first = (bullet.trailIndex - bullet.trailCount + BULLET_TRAIL_LENGTH)%BULLET_TRAIL_LENGTH;
+        Vector2 previous = bullet.trail[first];
+        for (int i = 1; i < bullet.trailCount; i++)
+        {
+            const Vector2 current = bullet.trail[(first + i)%BULLET_TRAIL_LENGTH];
+            const float strength = (float)(i + 1)/(float)bullet.trailCount;
+            DrawLineEx(
+                previous,
+                current,
+                fmaxf(1.0f, bullet.p.size.x*0.85f*strength),
+                Fade(DarkenColor(bullet.COLOR, 0.65f), 0.5f*strength));
+            previous = current;
+        }
+    }
 
     if (!bullet.inactive)
     {
