@@ -944,6 +944,10 @@ void UpdateGameplay()
                 const Rectangle envBox = {boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y};
                 CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
             }
+            if (players[i].bullets[j].p.collision[0] && players[i].bullets[j].explosionRadius > 0.0f)
+            {
+                ExplodeBullet(&players[i].bullets[j]);
+            }
             // Stops the ball if it hits the wall when it is created
             if (players[i].bullets[j].isNew && players[i].bullets[j].p.collision[0])
             {

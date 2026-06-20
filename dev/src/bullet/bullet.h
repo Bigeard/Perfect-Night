@@ -23,11 +23,15 @@ extern "C"
         Vector2 startPos;
         float distanceLaser; // I couldn't find anything better :/
         Color COLOR;
+        float explosionRadius;
+        double explosionTime;
+        Vector2 explosionPosition;
     } Bullet;
 
     void InitBullet(void);
     void UpdateBullet(Bullet *bullet);
     void BulletBounce(Bullet *bullet);
+    void ExplodeBullet(Bullet *bullet);
     void DrawBullet(Bullet bullet);
     void BulletValueToData(Bullet bullet, char *DataToSend, size_t dataSize);
 

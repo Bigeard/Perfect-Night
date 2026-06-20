@@ -245,6 +245,11 @@ void CollisionBulletPlayer(bool bulletCollision, Bullet *bullet, Player *player,
     {
         if (bulletCollision)
         {
+            if (bullet->explosionRadius > 0.0f)
+            {
+                ExplodeBullet(bullet);
+                return;
+            }
             player->life--;
             player->invincible = DELAY_INVINCIBLE;
             GamepadPlayerLife(player->gamepadId, player->life);

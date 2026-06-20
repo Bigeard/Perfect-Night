@@ -14,23 +14,41 @@ Item InitItemRocket(int player_id, float maxTimer)
         defaultMaxTimer = maxTimer;
 
     return (Item){
-        player_id,
-        ROCKET,
-        true,
-        GetTime(),
-        defaultMaxTimer,
-        false,
-        false,
-        ShootItemRocket,
-        UpdateItemRocket,
-        DrawItemRocket,
-        {1}};
+        .player_id = player_id,
+        .type = ROCKET,
+        .active = true,
+        .timer = GetTime(),
+        .maxTimer = defaultMaxTimer,
+        .defaultShoot = false,
+        .defaultDisplay = false,
+        .ShootItem = ShootItemRocket,
+        .UpdateItem = UpdateItemRocket,
+        .DrawItem = DrawItemRocket,
+        .rocket = {.sizeExplosion = 140}};
 }
 
 void ShootItemRocket(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y)
 {
-    // Player *player = &players[item->player_id-1];
-    // @TODO
+    if (!item->active)
+        return;
+
+    Player *player = &players[item->player_id - 1];
+    player->bullets[player->lastBullet] = (Bullet){
+        .playerId = player->id,
+        .p = (Physic){
+            {player->p.pos.x + 20.0f + calcPosRadianX*24.0f - 7.0f,
+             player->p.pos.y + 20.0f + calcPosRadianY*24.0f - 7.0f},
+            {7.0f, 7.0f},
+            {cosf(player->lastRadian)*player->charge + delta_x*2.0f,
+             sinf(player->lastRadian)*player->charge + delta_y*2.0f},
+            {false, false, false, false, false}},
+        .speed = {player->charge + delta_x*2.0f, player->charge + delta_y*2.0f},
+        .radian = player->lastRadian,
+        .isNew = true,
+        .startPos = {player->p.pos.x + player->p.size.x/2.0f,
+                     player->p.pos.y + player->p.size.y/2.0f},
+        .COLOR = player->color,
+        .explosionRadius = (float)item->rocket.sizeExplosion};
 }
 
 void UpdateItemRocket(Item *item)
@@ -44,6 +62,8 @@ void UpdateItemRocket(Item *item)
 
 void DrawItemRocket(Item *item)
 {
+    if (!item->active)
+        return;
     Player player = players[item->player_id - 1];
 
     // Init Color
@@ -58,40 +78,47 @@ void DrawItemRocket(Item *item)
         whiteColor = Fade(WHITE, 0.5);
     }
 
-    // Draw BLACK 1 Cannon
-    // @TODO
+    // Draw the oversized explosive launcher.
+    DrawRectanglePro((Rectangle){player.p.pos.x + 20.0f, player.p.pos.y + 20.0f, 42.0f, 20.0f}, (Vector2){0.0f, 10.0f}, player.radian*(180.0f/PI), BLACK);
 
     // Draw Border of the Tank
     DrawTextureEx(playerBorderTexture, (Vector2){player.p.pos.x, player.p.pos.y}, 0, 1, whiteColor);
 
-    // Draw WHITE 2 and COLOR 3 Cannon
-    // @TODO
+    DrawRectanglePro((Rectangle){player.p.pos.x + 20.0f, player.p.pos.y + 20.0f, 39.0f, 16.0f}, (Vector2){0.0f, 8.0f}, player.radian*(180.0f/PI), WHITE);
+    DrawRectanglePro((Rectangle){player.p.pos.x + 20.0f, player.p.pos.y + 20.0f, 34.0f, 10.0f}, (Vector2){0.0f, 5.0f}, player.radian*(180.0f/PI), color);
 
     // Draw Body / Template of the tank
     DrawTextureEx(playerBodyTexture, (Vector2){player.p.pos.x + 3, player.p.pos.y + 3}, 0, 1, color);
     DrawTexturePro(playerTemplatesTextures[player.id], (Rectangle){0, 0, 32, 32}, (Rectangle){player.p.pos.x + 20, player.p.pos.y + 20, 32, 32}, (Vector2){16, 16}, player.radian * (180 / PI) + 90, WHITE);
 
-    for (int a = 0; a < maxAmmunition; a++)
+    const float elapsedTime = (float)(GetTime() - item->timer);
+    if (elapsedTime <= 4.0f)
     {
-        if (a >= player.ammunition)
-            break;
-        int ammunitionDisplay = player.ammunition;
-        // if (player.ammunition != maxAmmunition) ammunitionDisplay++;
-        // float calcRadian = player.radian+PI+(a*0.7 + 0.7/2 - (ammunitionDisplay * 0.7 / 2));
-        float calcRadian = player.radian + PI + (a * 0.7 + 0.7 / 2 - (ammunitionDisplay * 0.7 / 2));
-        float loadColor = 1;
-        // if (a >= player.ammunition) {
-        //     loadColor = (DELAY_AMMUNITION - player.ammunitionLoad) / DELAY_AMMUNITION;
-        // }
-        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cosf(calcRadian);
-        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sinf(calcRadian);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, Fade(BLACK, loadColor + 0.3));
-        DrawCircle(ammunitionPosX, ammunitionPosY, 6.5, WHITE);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 5, ReverseColor(player.color, loadColor));
-        // if (a >= player.ammunition) break;
+        const Vector2 iconCenter = {player.p.pos.x + player.p.size.x/2.0f, player.p.pos.y - 20.0f};
+        const float alpha = 1.0f - elapsedTime/4.0f;
+        DrawCircle(iconCenter.x, iconCenter.y, 14.0f, Fade(BLACK, alpha));
+        DrawCircle(iconCenter.x, iconCenter.y, 11.0f, Fade(WHITE, alpha));
+        DrawCircle(iconCenter.x, iconCenter.y, 8.0f, Fade(player.color, alpha));
     }
 
-    // Draw the progress bar of the charge
-    DrawRectangleRec((Rectangle){player.p.pos.x - 17 + 19, player.p.pos.y - 50 + 39, (player.charge - 2) * 2.7, 6}, Fade(WHITE, 0.4));
-    DrawRectangleRec((Rectangle){player.p.pos.x - 17 + 20, player.p.pos.y - 50 + 40, (player.charge - 2) * 2.6, 4}, Fade(player.color, 0.8));
+    for (int a = 0; a < player.ammunition; a++)
+    {
+        const float calcRadian = player.radian + PI + ((float)a*0.7f + 0.35f - ((float)player.ammunition*0.35f));
+        const float ammunitionPosX = (player.p.pos.x + player.p.size.x/2.0f) + 25.0f*cosf(calcRadian);
+        const float ammunitionPosY = (player.p.pos.y + player.p.size.x/2.0f) + 25.0f*sinf(calcRadian);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3f, BLACK);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 6.5f, WHITE);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 3.0f, DarkenColor(player.color, 0.7f));
+    }
+
+    // Use the same circular charge display as the standard bouncing bullet.
+    if (player.charge != 2.0f)
+    {
+        const float chargeAngle = player.radian*(180.0f/PI) + 180.0f;
+        const float chargeArc = (player.charge - 2.0f)*4.0f;
+        const Vector2 center = {player.p.pos.x + player.p.size.x/2.0f, player.p.pos.y + player.p.size.y/2.0f};
+
+        DrawRing(center, 38.0f, 47.0f, chargeAngle - chargeArc - 2.0f, chargeAngle + chargeArc + 2.0f, 0, Fade(WHITE, 0.6f));
+        DrawRing(center, 40.0f, 45.0f, chargeAngle - chargeArc, chargeAngle + chargeArc, 0, Fade(player.color, 0.8f));
+    }
 }

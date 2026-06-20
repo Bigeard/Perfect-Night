@@ -118,33 +118,22 @@ void DrawItemMultiShoot(Item *item)
 
     for (int a = 0; a < player.ammunition; a++)
     {
-        float calcRadian = player.radian + PI + (a * 0.7 + 0.7 / 2 - (player.ammunition * 0.7 / 2));
-        float ammunitionPosX = (player.p.pos.x + player.p.size.x / 2.0f) + 25 * cosf(calcRadian);
-        float ammunitionPosY = (player.p.pos.y + player.p.size.x / 2.0f) + 25 * sinf(calcRadian);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3, BLACK);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 6.5, WHITE);
-        DrawCircle(ammunitionPosX, ammunitionPosY, 5, DarkenColor(player.color, 0.7));
+        const float calcRadian = player.radian + PI + ((float)a*0.7f + 0.35f - ((float)player.ammunition*0.35f));
+        const float ammunitionPosX = (player.p.pos.x + player.p.size.x/2.0f) + 25.0f*cosf(calcRadian);
+        const float ammunitionPosY = (player.p.pos.y + player.p.size.x/2.0f) + 25.0f*sinf(calcRadian);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 7.3f, BLACK);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 6.5f, WHITE);
+        DrawCircle(ammunitionPosX, ammunitionPosY, 3.0f, DarkenColor(player.color, 0.7f));
     }
 
     // Draw the progress bar of the charge
-    if (player.charge != 2)
+    if (player.charge != 2.0f)
     {
-        DrawRing(
-            (Vector2){player.p.pos.x + player.p.size.x / 2, player.p.pos.y + player.p.size.y / 2},
-            38.0f,
-            47.0f,
-            player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4 - 2,
-            player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4 + 2,
-            0,
-            Fade(WHITE, 0.6));
+        const float chargeAngle = player.radian*(180.0f/PI) + 180.0f;
+        const float chargeArc = (player.charge - 2.0f)*4.0f;
+        const Vector2 center = {player.p.pos.x + player.p.size.x/2.0f, player.p.pos.y + player.p.size.y/2.0f};
 
-        DrawRing(
-            (Vector2){player.p.pos.x + player.p.size.x / 2, player.p.pos.y + player.p.size.y / 2},
-            40.0f,
-            45.0f,
-            player.radian * (180 / PI) * -1 + 270 - (player.charge - 2) * 4,
-            player.radian * (180 / PI) * -1 + 270 + (player.charge - 2) * 4,
-            0,
-            Fade(player.color, 0.8));
+        DrawRing(center, 38.0f, 47.0f, chargeAngle - chargeArc - 2.0f, chargeAngle + chargeArc + 2.0f, 0, Fade(WHITE, 0.6f));
+        DrawRing(center, 40.0f, 45.0f, chargeAngle - chargeArc, chargeAngle + chargeArc, 0, Fade(player.color, 0.8f));
     }
 }

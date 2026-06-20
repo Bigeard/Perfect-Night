@@ -1,9 +1,12 @@
 #include "../../../lib/raylib/src/raylib.h"
+#include "../../../lib/raylib/src/raymath.h"
 #include <stdio.h>
 #include <string.h>
 
 #include "bullet.h"
 #include "../gameplay/gameplay.h"
+#include "../player/player.h"
+#include "../particle/particle.h"
 #include "../tool/tool.h"
 
 void InitBullet(void) {}
@@ -63,6 +66,43 @@ void BulletBounce(Bullet *bullet)
     }
 }
 
+void ExplodeBullet(Bullet *bullet)
+{
+    if (bullet->explosionRadius <= 0.0f || bullet->explosionTime > 0.0)
+        return;
+
+    bullet->inactive = true;
+    bullet->p.vel = (Vector2){0.0f, 0.0f};
+    bullet->explosionTime = GetTime();
+    bullet->explosionPosition = (Vector2){
+        bullet->p.pos.x + bullet->p.size.x,
+        bullet->p.pos.y + bullet->p.size.y};
+
+    for (int i = 0; i < NUMBER_EIGHT; i++)
+    {
+        Player *player = &players[i];
+        if (!player->id || player->life <= 0 || player->invincible != 0)
+            continue;
+        if (ColorToInt(player->color) == ColorToInt(bullet->COLOR))
+            continue;
+
+        const Vector2 playerCenter = {
+            player->p.pos.x + player->p.size.x/2.0f,
+            player->p.pos.y + player->p.size.y/2.0f};
+        if (Vector2Distance(playerCenter, bullet->explosionPosition) > bullet->explosionRadius)
+            continue;
+
+        player->life--;
+        player->invincible = DELAY_INVINCIBLE;
+        GamepadPlayerLife(player->gamepadId, player->life);
+
+        Vector2 blastDirection = Vector2Subtract(playerCenter, bullet->explosionPosition);
+        if (Vector2LengthSqr(blastDirection) > 0.0f)
+            blastDirection = Vector2Scale(Vector2Normalize(blastDirection), 8.0f);
+        InitParticles(playerCenter, blastDirection, 0.1f, player->color, 120.0f, player->shootParticle, 20);
+    }
+}
+
 void DrawBullet(Bullet bullet)
 {
     float centerBulletX = bullet.p.pos.x + bullet.p.size.x;
@@ -73,6 +113,20 @@ void DrawBullet(Bullet bullet)
         DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x * 1.46f, BLACK);
         DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x * 1.3f, WHITE);
         DrawCircle(centerBulletX, centerBulletY, bullet.p.size.x, DarkenColor(bullet.COLOR, 0.9f));
+    }
+
+    if (bullet.explosionTime > 0.0)
+    {
+        const float elapsed = (float)(GetTime() - bullet.explosionTime);
+        const float duration = 0.4f;
+        if (elapsed < duration)
+        {
+            const float progress = elapsed/duration;
+            const float radius = bullet.explosionRadius*progress;
+            const float alpha = 1.0f - progress;
+            DrawCircleGradient(bullet.explosionPosition, radius, Fade(WHITE, alpha*0.7f), Fade(bullet.COLOR, 0.0f));
+            DrawRing(bullet.explosionPosition, fmaxf(0.0f, radius - 7.0f), radius, 0.0f, 360.0f, 48, Fade(bullet.COLOR, alpha));
+        }
     }
 
     // *** DEV INFO ***
