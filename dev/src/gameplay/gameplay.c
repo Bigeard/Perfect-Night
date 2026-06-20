@@ -188,6 +188,10 @@ Texture2D andScanQrTexture;
 bool unloadHomepage = false;
 static RenderTexture2D mapTexture = {0};
 static bool mapTextureLoaded = false;
+static Shader backgroundShader = {0};
+static int backgroundShaderTimeLoc = -1;
+static int backgroundShaderResolutionLoc = -1;
+static bool backgroundShaderReady = false;
 
 // Player
 int lastPlayer = 0;
@@ -308,6 +312,17 @@ static void LoadStaticMapTexture(void)
 
 void InitGameplay()
 {
+    backgroundShader = LoadShader(NULL, "resources/shaders/cineshader_background.fs");
+    backgroundShaderTimeLoc = GetShaderLocation(backgroundShader, "iTime");
+    backgroundShaderResolutionLoc = GetShaderLocation(backgroundShader, "iResolution");
+    backgroundShaderReady = IsShaderValid(backgroundShader) &&
+                            backgroundShaderTimeLoc >= 0 &&
+                            backgroundShaderResolutionLoc >= 0;
+    if (!backgroundShaderReady)
+    {
+        TraceLog(LOG_ERROR, "Required CineShader background failed to load");
+    }
+
     // Home Screen
     // Resize Image for reduce the size of the game
     Image titlePerfectNightImage = LoadImage("resources/title_perfect_night.png");
@@ -1201,6 +1216,26 @@ void DrawGameplay()
         if (elapsedTimeOutside > 0)
             elapsedTimeOutside = elapsedTimeOutside - 0.01;
         ClearBackground(DarkenColor(int_to_color(map->backgroundcolor), 1.0f - elapsedTimeOutside / 2.0f));
+    }
+    if (backgroundShaderReady && !activePerf)
+    {
+        const float shaderTime = (float)GetTime();
+        const float shaderResolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
+        const Vector2 viewportTopLeft = GetScreenToWorld2D((Vector2){0.0f, 0.0f}, renderCamera);
+        const Vector2 viewportBottomRight = GetScreenToWorld2D(
+            (Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()},
+            renderCamera);
+        const Rectangle viewport = {
+            viewportTopLeft.x,
+            viewportTopLeft.y,
+            viewportBottomRight.x - viewportTopLeft.x,
+            viewportBottomRight.y - viewportTopLeft.y};
+
+        SetShaderValue(backgroundShader, backgroundShaderTimeLoc, &shaderTime, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(backgroundShader, backgroundShaderResolutionLoc, shaderResolution, SHADER_UNIFORM_VEC2);
+        BeginShaderMode(backgroundShader);
+        DrawRectangleRec(viewport, WHITE);
+        EndShaderMode();
     }
     DrawCircleGradient((Vector2){arenaSizeX / 2.0f, arenaSizeY / 2.0f}, arenaSizeX + 300.0f, Fade(BLACK, 0.6f), Fade(BLACK, 0.0f));
     DrawRectangle(-2, -2, arenaSizeX + 4, arenaSizeY + 4, Fade(GRAY, 0.5f));

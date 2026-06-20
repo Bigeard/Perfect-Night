@@ -28,7 +28,6 @@ window.addEventListener('locationchange', () => {
 });
 
 console.info(Config);
-let perf = false;
 let menuAction = 0;
 
 const safeJsonParseScreen = (value, fallback = null) => {
@@ -234,7 +233,6 @@ const join = () => {
             if (!data) return;
             if (data.ma) { // Menu Action
                 menuAction = data.ma;
-                if (menuAction === 4) perf = !perf;
             }
             // Game Settings
             else if (data.s) changeSettings(data.s);

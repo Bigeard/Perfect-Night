@@ -95,7 +95,7 @@ class VirtualGamepad {
                 this.axes[2] = view.getFloat32(16, true);
                 this.axes[3] = view.getFloat32(20, true);
 
-                if (!perf && canSendPeerData(conn, INPUT_BUFFER_LIMIT)) conn.send(t); // -> Pong
+                if (canSendPeerData(conn, INPUT_BUFFER_LIMIT)) conn.send(t); // -> Pong
                 // Edit
                 if (this.edit) sendPeerJson(conn, this.checkEdit({ t }));
             }
@@ -115,7 +115,7 @@ class VirtualGamepad {
                 this.axes[2] = Number.isFinite(parseFloat(data[3])) ? parseFloat(data[3]) : 0;
                 this.axes[3] = Number.isFinite(parseFloat(data[4])) ? parseFloat(data[4]) : 0;
 
-                if (!perf && canSendPeerData(conn, INPUT_BUFFER_LIMIT)) conn.send(t); // -> Pong
+                if (canSendPeerData(conn, INPUT_BUFFER_LIMIT)) conn.send(t); // -> Pong
                 // Edit
                 if (this.edit) sendPeerJson(conn, this.checkEdit({ t }));
             }
@@ -128,7 +128,6 @@ class VirtualGamepad {
                 // Or if the customer needs to have the latest edit.
                 if (data.ma) { // Menu Action
                     menuAction = data.ma;
-                    if (menuAction === 4) perf = !perf;
                 }
                 // Edit
                 else if (data.e) dataSend = this.checkEdit(dataSend);
