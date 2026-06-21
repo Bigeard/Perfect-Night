@@ -14,7 +14,7 @@ void InitItemWithTypeItem(int player_id, enum TypeItem type, float maxTimer)
     }
     if (type == RANDOM)
     {
-        type = GetRandomValue(1, 6); // Include the Explosion weapon
+        type = GetRandomValue(1, 7); // Include the rocket and sword weapons
         if (activeDev)
         {
             type = LASER; // @DEV

@@ -10,7 +10,8 @@ extern "C"
 
     typedef struct Sword
     {
-        int delayKill;
+        double lastSwingTime;
+        float swingRadian;
     } Sword;
 
 #ifdef __cplusplus
