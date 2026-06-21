@@ -62,6 +62,7 @@ extern "C"
     void SwitchMap();
     void UpdateGameplay();
     void ResetGame();
+    int GetTeamColorIndex(Color color);
     void DrawGameplay();
     void DrawGameArena();
     void GenerateQrCode();

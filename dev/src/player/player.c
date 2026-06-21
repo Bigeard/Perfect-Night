@@ -472,6 +472,8 @@ void PlayerValueToData(Player player, char *dataToSend, size_t dataSize)
 {
     if (player.id)
     {
+        const int teamIndex = GetTeamColorIndex(player.color);
+        const int teamScore = teamIndex >= 0 ? colorScore[teamIndex] : -1;
         const size_t len = strlen(dataToSend);
         if (len < dataSize)
         {
@@ -484,7 +486,7 @@ void PlayerValueToData(Player player, char *dataToSend, size_t dataSize)
                      player.item.timer,                                              // Timer item (detect change and for the animation)
                      player.life,                                                    // Life player
                      player.ammunition,                                              // Ammunition player
-                     colorScore[player.id - 1]);                                     // Score player
+                     teamScore);                                                     // Score for the player's team colour
         }
     }
     // TraceLog(LOG_INFO, TextFormat("%s", dataToSend));

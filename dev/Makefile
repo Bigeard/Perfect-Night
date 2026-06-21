@@ -377,6 +377,7 @@ OBJS ?= main.c \
         src/item/items/nothing/nothing.c \
         src/ray_collisions/ray_collisions.c \
         src/particle/particle.c \
+        src/score/score.c \
         src/tool/tool.c
 
 # TMX LIB

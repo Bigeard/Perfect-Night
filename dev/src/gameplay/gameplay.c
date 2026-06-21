@@ -13,6 +13,7 @@
 #include "../loot/loot.h"
 #include "../item/item.h"
 #include "../particle/particle.h"
+#include "../score/score.h"
 #include "../tool/tool.h"
 
 #include "../../../tmx/src/tmx.h"
@@ -218,11 +219,75 @@ int bestScore = 0;
 int numberActiveColor = 0;
 int playerAlive = 0;
 int playerAliveId = 0;
-Color colorAlive;
-bool otherColorAlive = false;
+static bool roundResultActive = false;
+static bool roundIsDraw = false;
+static int roundWinningTeam = SCORE_NO_TEAM;
 
 Player players[NUMBER_EIGHT] = {{}, {}, {}, {}, {}, {}, {}, {}};
 int numberPlayer = 0;
+
+int GetTeamColorIndex(Color color)
+{
+    for (int i = 0; i < NUMBER_EIGHT; i++)
+    {
+        if (ColorToInt(themeColor[i]) == ColorToInt(color)) return i;
+    }
+    return SCORE_NO_TEAM;
+}
+
+static void UpdateScoreFont(int teamIndex)
+{
+    if (teamIndex < 0 || teamIndex >= NUMBER_EIGHT) return;
+    BoxesScoreFontSize[teamIndex] = CalculateFontSizeWithMaxSize(
+        TextFormat("%d", colorScore[teamIndex]), BoxesScoreSize[teamIndex], 40);
+}
+
+static void ActivateTeamColor(Color color)
+{
+    const int teamIndex = GetTeamColorIndex(color);
+    if (ScoreActivateTeam(colorScore, teamIndex)) UpdateScoreFont(teamIndex);
+    numberActiveColor = ScoreCountActive(colorScore);
+}
+
+static void RebuildActiveTeamScores(bool resetScores)
+{
+    if (resetScores) ScoreResetAll(colorScore);
+    for (int i = 0; i < NUMBER_EIGHT; i++)
+    {
+        if (playerSpace[i] && players[i].id) ActivateTeamColor(players[i].color);
+    }
+    numberActiveColor = ScoreCountActive(colorScore);
+    bestScore = ScoreBest(colorScore);
+}
+
+static void StopAllBullets(void)
+{
+    for (int i = 0; i < NUMBER_EIGHT; i++)
+    {
+        if (!playerSpace[i]) continue;
+        for (int j = 0; j < MAX_BULLET; j++) players[i].bullets[j].inactive = true;
+    }
+}
+
+static void BeginRoundResult(int winningTeam, bool awardScore)
+{
+    if (roundResultActive) return;
+    StopAllBullets();
+    roundWinningTeam = winningTeam;
+    roundIsDraw = winningTeam == SCORE_NO_TEAM;
+    if (!roundIsDraw)
+    {
+        if (awardScore)
+        {
+            ScoreAwardTeam(colorScore, winningTeam, maxScore, &bestScore);
+            winnerMap = bestScore >= maxScore;
+            UpdateScoreFont(winningTeam);
+        }
+    }
+    startTime = GetTime();
+    elapsedTime = 0.0;
+    roundResultActive = true;
+}
 
 static void UpdateCameraTarget(int aliveCount, int aliveId, float centerX, float centerY)
 {
@@ -517,32 +582,20 @@ void SwitchMap()
     memset(loots, 0, sizeof loots);
     map = NULL;
     InitMap();
-    numberActiveColor = 0;
-    for (int i = 0; i < lastPlayer; i++)
-    {
-        for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
-        {
-            if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
-            {
-                numberActiveColor++;
-                colorScore[c] = 0;
-                BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
-            }
-        }
-    }
+    RebuildActiveTeamScores(true);
     camera.zoom = 1.0f;
     ResetGame();
 }
 
 void UpdateGameplay()
 {
+    bool aliveTeams[NUMBER_EIGHT] = {false};
     centerPositionX = 0;
     centerPositionY = 0;
     // float centerDistance = 0.0f;
 
     playerAlive = 0;
     playerAliveId = 0;
-    otherColorAlive = false;
 
     const float cameraArenaWidth = (arenaSizeX + 60.0f) * CAMERA_WIDER_VIEW_FACTOR;
     const float cameraArenaHeight = (arenaSizeY + 60.0f) * CAMERA_WIDER_VIEW_FACTOR;
@@ -573,11 +626,9 @@ void UpdateGameplay()
             switch (menuAction)
             {
             case 1: // Restart Game
-                for (size_t i = 0; i < NUMBER_EIGHT; i++)
-                {
-                    if (colorScore[i] != -1)
-                        colorScore[i] = 0;
-                }
+                ScoreClearActive(colorScore);
+                bestScore = 0;
+                winnerMap = false;
                 ResetGame();
                 break;
             case 2: // Change Map
@@ -614,6 +665,8 @@ void UpdateGameplay()
             activeLoot = (bool)settings[5];
             free(settings);
             ResetGame();
+            bestScore = ScoreBest(colorScore);
+            winnerMap = bestScore >= maxScore;
             // @TODO displayed settings have been changed
         }
     }
@@ -680,19 +733,7 @@ void UpdateGameplay()
                 }
 
                 ResetGame();
-                for (int c = 0; c < sizeof(themeColor) / sizeof(themeColor[0]); c++)
-                {
-                    if (ColorToInt(themeColor[c]) == ColorToInt(players[i].color))
-                    {
-                        if (colorScore[c] < 0)
-                        {
-                            numberActiveColor++;
-                            colorScore[c] = 0;
-                            BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
-                        }
-                        break;
-                    }
-                }
+                ActivateTeamColor(players[i].color);
                 i = NUMBER_EIGHT;
                 lastPlayer++;
             }
@@ -722,11 +763,9 @@ void UpdateGameplay()
     // Press R to reset
     if (IsKeyPressed(KEY_R))
     {
-        for (int i = 0; i < NUMBER_EIGHT; i++)
-        {
-            colorScore[i] = -1;
-        };
+        RebuildActiveTeamScores(true);
         bestScore = 0;
+        winnerMap = false;
         ResetGame();
     }
 
@@ -859,14 +898,14 @@ void UpdateGameplay()
                 else if (player_part == 9) // Score player
                 {                          // End Init Player !
                     const int player_score = atoi(data);
-                    if (colorScore[player_index] != player_score)
+                    const int teamIndex = GetTeamColorIndex(players[player_index].color);
+                    if (ScoreActivateTeam(colorScore, teamIndex)) numberActiveColor = ScoreCountActive(colorScore);
+                    if (teamIndex >= 0 && colorScore[teamIndex] != player_score)
                     {
-                        colorScore[player_index] = player_score;
-                        startTime = GetTime();
-                        if (colorScore[player_index] >= bestScore)
-                            bestScore = colorScore[player_index];
-                        if (colorScore[player_index] >= maxScore)
-                            winnerMap = true;
+                        colorScore[teamIndex] = player_score;
+                        UpdateScoreFont(teamIndex);
+                        bestScore = ScoreBest(colorScore);
+                        winnerMap = bestScore >= maxScore;
                     }
 
                     // ...
@@ -887,11 +926,7 @@ void UpdateGameplay()
                     {
                         playerAlive++;
                         playerAliveId = player_index;
-                        if (ColorToInt(players[player_index].color) != ColorToInt(colorAlive))
-                        {
-                            otherColorAlive = true;
-                        }
-                        colorAlive = players[player_index].color;
+                        if (teamIndex >= 0) aliveTeams[teamIndex] = true;
                     }
                     if (players[player_index].life >= 1)
                     {
@@ -999,6 +1034,11 @@ void UpdateGameplay()
             data = token + 1; // move the pointer to the next token
         }
         UpdateCameraTarget(playerAlive, playerAliveId, centerPositionX, centerPositionY);
+        const int remoteAliveTeam = ScoreResolveAliveTeam(aliveTeams);
+        if (!roundResultActive && ScoreRoundHasResult(numberActiveColor, remoteAliveTeam))
+        {
+            BeginRoundResult(remoteAliveTeam, false);
+        }
 
         if ((outsidePlayer && !lastOutsidePlayer) || (outsidePlayer && lastOutsidePlayer && outsidePlayer->id != lastOutsidePlayer->id))
         {
@@ -1021,7 +1061,7 @@ void UpdateGameplay()
             startTimeOutside = 0.0;
         }
 
-        if (startTime != 0.0)
+        if (roundResultActive)
         {
             elapsedTime = GetTime() - startTime;
             if (elapsedTime > 3.0)
@@ -1142,11 +1182,8 @@ void UpdateGameplay()
             // Detect if one team win
             playerAlive++;
             playerAliveId = i;
-            if (ColorToInt(players[i].color) != ColorToInt(colorAlive))
-            {
-                otherColorAlive = true;
-            }
-            colorAlive = players[i].color;
+            const int teamIndex = GetTeamColorIndex(players[i].color);
+            if (teamIndex >= 0) aliveTeams[teamIndex] = true;
 
             // Position the camera to the center
             centerPositionX += players[i].p.pos.x + players[i].p.size.x / 2.0f;
@@ -1245,39 +1282,14 @@ void UpdateGameplay()
         startTimeOutside = 0.0;
     }
 
-    // WIN Logic
-    if ((!otherColorAlive && lastPlayer > 1) || playerAlive == 0)
+    // End the round only when zero or one unique team remains alive.
+    const int aliveTeam = ScoreResolveAliveTeam(aliveTeams);
+    if (!roundResultActive && ScoreRoundHasResult(numberActiveColor, aliveTeam))
     {
-        if (startTime == 0.0 && numberPlayer > 1)
-        {
-            for (int i = 0; i < NUMBER_EIGHT; i++)
-            {
-                if (playerSpace[i])
-                {
-                    for (int j = 0; j < MAX_BULLET; j++)
-                    {
-                        players[i].bullets[j].inactive = true;
-                    }
-                }
-            }
-            for (int c = 0; c < NUMBER_EIGHT; c++)
-            {
-                if (ColorToInt(themeColor[c]) == ColorToInt(players[playerAliveId].color))
-                {
-                    if (colorScore[c] > -1)
-                    {
-                        colorScore[c]++;
-                        BoxesScoreFontSize[c] = CalculateFontSizeWithMaxSize(TextFormat("%d", colorScore[c]), BoxesScoreSize[c], 40);
-                        if (colorScore[c] >= bestScore)
-                            bestScore = colorScore[c];
-                        if (colorScore[c] >= maxScore)
-                            winnerMap = true;
-                    }
-                    break;
-                }
-            }
-            startTime = GetTime();
-        }
+        BeginRoundResult(aliveTeam, true);
+    }
+    if (roundResultActive)
+    {
         elapsedTime = GetTime() - startTime;
         if (elapsedTime > 3.0)
         {
@@ -1335,6 +1347,11 @@ void ResetGame()
         }
     }
     startTime = 0.0;
+    elapsedTime = 0.0;
+    roundResultActive = false;
+    roundIsDraw = false;
+    roundWinningTeam = SCORE_NO_TEAM;
+    winnerMap = false;
 }
 
 void DrawGameplay()
@@ -1430,11 +1447,11 @@ void DrawGameplay()
     EndMode2D();
 
     // DRAW STAT LOG INFO MENU SCREEN
-    if (numberPlayer == 0 || startTime != 0.0 || pauseGame || activeDev)
+    if (numberPlayer == 0 || roundResultActive || pauseGame || activeDev)
     {
         BeginDrawing(); // DRAW 2
 
-        if (numberPlayer == 0 || startTime != 0.0 || pauseGame) // Background for title / win
+        if (numberPlayer == 0 || roundResultActive || pauseGame) // Background for title / win
         {
             DrawRectangle(0.0f, 0.0f, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.4f));
         }
@@ -1461,42 +1478,15 @@ void DrawGameplay()
         EndDrawing();
     }
 
-    if (numberPlayer == 0 || startTime != 0.0 || pauseGame)
+    if (numberPlayer == 0 || roundResultActive || pauseGame)
     {
         BeginMode2D(renderCamera); // DRAW 3
 
         // Draw Wins
-        if (startTime != 0.0)
+        if (roundResultActive)
         {
-            Color background = Fade(BLACKGROUND, 0.9);
-            if (maxScore <= bestScore)
-                background = Fade(GOLD, 0.1);
-            DrawRectangle(camera.target.x - arenaSizeX, camera.target.y - 10, arenaSizeX * 2, 110, background);
-            if (maxScore <= bestScore + 1)
-            {
-                DrawRectangleLinesEx((Rectangle){camera.target.x - arenaSizeX, camera.target.y - 10, arenaSizeX * 2, 110}, 2.5f, Fade(GOLD, 0.3f));
-            }
-            for (int i = 0; i < numberActiveColor; i++)
-            {
-                if (colorScore[i] > -1)
-                {
-                    const char *textScore = TextFormat("%d", colorScore[i]);
-                    int textScoreSize = MeasureText(textScore, 100);
-                    int centerIfOdd = 160;
-                    if (numberActiveColor % 2)
-                    {
-                        centerIfOdd = 320;
-                    }
-                    DrawText(
-                        textScore,
-                        (int)camera.target.x + (320 - 10 * (numberActiveColor - 2)) - (320 - 20 * (numberActiveColor - 2)) * (i - numberActiveColor / 2) * -1 - centerIfOdd - textScoreSize / 2,
-                        (int)camera.target.y, 100, themeColor[i]);
-                }
-            }
-            DrawCircle(camera.target.x, camera.target.y - 300.0f, 50.0f, BLACK);
-            DrawCircle(camera.target.x, camera.target.y - 300.0f, 48.0f, WHITE);
-            DrawCircle(camera.target.x, camera.target.y - 300.0f, 40.0f, colorAlive);
-            DrawText("WINS THIS GAME", (int)(camera.target.x - 50.0f * 7.0f), (int)(camera.target.y - 200.0f), 80, colorAlive);
+            ScoreDrawResult(camera.target, arenaSizeX, BLACKGROUND, colorScore, themeColor,
+                            maxScore, bestScore, roundIsDraw, roundWinningTeam);
         }
         // Draw Pause
         else if (pauseGame)
