@@ -14,11 +14,7 @@ void InitItemWithTypeItem(int player_id, enum TypeItem type, float maxTimer)
     }
     if (type == RANDOM)
     {
-        type = GetRandomValue(1, 7); // Include the rocket and sword weapons
-        if (activeDev)
-        {
-            type = LASER; // @DEV
-        }
+        type = GetRandomValue(1, 8);
     }
     switch (type)
     {
@@ -37,17 +33,17 @@ void InitItemWithTypeItem(int player_id, enum TypeItem type, float maxTimer)
     case MULTI_SHOOT:
         player->item = InitItemMultiShoot(player->id, maxTimer);
         break;
-    // @TODO
-    // https://github.com/users/Bigeard/projects/1?pane=issue&itemId=20908475
     case ROCKET:
         player->item = InitItemRocket(player->id, maxTimer);
         break;
-    // @TODO
     case SWORD:
         player->item = InitItemSword(player->id, maxTimer);
         break;
     case NOTHING:
         player->item = InitItemNothing(player->id, maxTimer);
+        break;
+    case WALL:
+        player->item = InitItemWall(player->id, maxTimer);
         break;
     case RANDOM:
         break;

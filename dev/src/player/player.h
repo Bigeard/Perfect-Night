@@ -20,7 +20,7 @@ extern "C"
 
 #define MAX_BULLET 14
 #define MOVEMENT_PARTICLE_COUNT 24
-#define DELAY_AMMUNITION 3.0f
+#define DELAY_AMMUNITION 5.0f
 #define DELAY_INVINCIBLE 140
 
     extern Texture2D playerBorderTexture;
@@ -60,6 +60,7 @@ extern "C"
         float movementParticleCooldown;
         Vector2 movementParticleLastPosition;
         bool movementParticlePositionReady;
+        Wall wall;
     } Player;
 
     void InitPlayer(void);

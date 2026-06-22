@@ -122,8 +122,9 @@
                         <option value="4">Laser</option>
                         <option value="5">Multi Shoot</option>
                         <option value="6">Explosion</option>
-                        <option value="7">Sword / Proximity</option>
+                        <option value="7">Sword</option>
                         <option value="8">Nothing</option>
+                        <option value="9">Wall</option>
                     </select>
                 </div>
                 <div class="field">
@@ -164,46 +165,52 @@
                     <input type='hidden' value='0' name='activeLoot'>
                     <input checked type="checkbox" value="1" name="activeLoot" id="activeLoot">
                 </div>
-                <div class="field">
-                    <b>-- @TODO In progress ^^ --</b><br>
-                    <label for="randomPosLoot">Random position of the loots: </label>
-                    <input disabled type="checkbox" name="randomPosLoot" id="randomPosLoot">
-                </div>
-                <!-- Change the logic to only use integer. The higher the number, the greater the chance of getting the item. -->
                 <div class="field selectItem">
-                    <b>-- @TODO --</b>
                     <span>Select Items for the game: </span>
                     <div>
                         <label for="selectItemBonusAmmunition">- Bonus Ammunition: </label>
-                        <input disabled type="checkbox" name="selectItemBonusAmmunition" id="selectItemBonusAmmunition">
+                        <input type="hidden" value="0" name="selectItemBonusAmmunition">
+                        <input checked type="checkbox" value="1" name="selectItemBonusAmmunition" id="selectItemBonusAmmunition">
                     </div>
                     <div>
                         <label for="selectItemBonusLife">- Bonus Life: </label>
-                        <input disabled type="checkbox" name="selectItemBonusLife" id="selectItemBonusLife">
+                        <input type="hidden" value="0" name="selectItemBonusLife">
+                        <input checked type="checkbox" value="1" name="selectItemBonusLife" id="selectItemBonusLife">
                     </div>
                     <div>
-                        <label for="selectItemBonusSpeed">- Bonus Life: </label>
-                        <input disabled type="checkbox" name="selectItemBonusSpeed" id="selectItemBonusSpeed">
+                        <label for="selectItemBonusSpeed">- Bonus Speed: </label>
+                        <input type="hidden" value="0" name="selectItemBonusSpeed">
+                        <input checked type="checkbox" value="1" name="selectItemBonusSpeed" id="selectItemBonusSpeed">
                     </div>
                     <div>
                         <label for="selectItemLaser">- Laser: </label>
-                        <input disabled type="checkbox" name="selectItemLaser" id="selectItemLaser">
+                        <input type="hidden" value="0" name="selectItemLaser">
+                        <input checked type="checkbox" value="1" name="selectItemLaser" id="selectItemLaser">
                     </div>
                     <div>
                         <label for="selectItemMultiShoot">- Multi Shoot: </label>
-                        <input disabled type="checkbox" name="selectItemMultiShoot" id="selectItemMultiShoot">
-                    </div>
-                    <div>
-                        <label for="selectItemNothing">- Nothing: </label>
-                        <input disabled type="checkbox" name="selectItemNothing" id="selectItemNothing">
+                        <input type="hidden" value="0" name="selectItemMultiShoot">
+                        <input checked type="checkbox" value="1" name="selectItemMultiShoot" id="selectItemMultiShoot">
                     </div>
                     <div>
                         <label for="selectItemRocket">- Rocket: </label>
-                        <input disabled type="checkbox" name="selectItemRocket" id="selectItemRocket">
+                        <input type="hidden" value="0" name="selectItemRocket">
+                        <input checked type="checkbox" value="1" name="selectItemRocket" id="selectItemRocket">
                     </div>
                     <div>
                         <label for="selectItemSword">- Sword: </label>
-                        <input disabled type="checkbox" name="selectItemSword" id="selectItemSword">
+                        <input type="hidden" value="0" name="selectItemSword">
+                        <input checked type="checkbox" value="1" name="selectItemSword" id="selectItemSword">
+                    </div>
+                    <div>
+                        <label for="selectItemNothing">- Nothing: </label>
+                        <input type="hidden" value="0" name="selectItemNothing">
+                        <input checked type="checkbox" value="1" name="selectItemNothing" id="selectItemNothing">
+                    </div>
+                    <div>
+                        <label for="selectItemWall">- Wall: </label>
+                        <input type="hidden" value="0" name="selectItemWall">
+                        <input checked type="checkbox" value="1" name="selectItemWall" id="selectItemWall">
                     </div>
                 </div>
             </div>

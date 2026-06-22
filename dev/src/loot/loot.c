@@ -28,7 +28,20 @@ void UpdateLoot(Loot *loot, Player *player)
     if (itemCollision)
     {
         enum TypeItem type = loot->type;
-        InitItemWithTypeItem(player->id, type, -1);
+        if (type == RANDOM)
+        {
+            int availableTypes[9];
+            int availableCount = 0;
+            for (int itemType = BONUS_AMMUNITION; itemType <= WALL; itemType++)
+            {
+                if (enabledLootItems[itemType])
+                    availableTypes[availableCount++] = itemType;
+            }
+            if (availableCount > 0)
+                type = availableTypes[GetRandomValue(0, availableCount - 1)];
+        }
+        if (type != RANDOM && type >= BONUS_AMMUNITION && type <= WALL && enabledLootItems[type])
+            InitItemWithTypeItem(player->id, type, -1);
         loot->active = false;
         if (loot->delay >= 0)
         {

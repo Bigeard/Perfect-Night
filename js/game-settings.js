@@ -5,10 +5,15 @@ const gameSettings = {
     defaultTypeItem: -1, // 0 = random / -1 = default item (none)
     defaultMaxTimerItem: -1, // 0 = no limit / -1 = default max timer
     activeLoot: 1,
-    // @TODO
-    // randomPosLoot: 0,
-    // defaultItem: 0,
-    // selectItem: [0, 1, 2, 3, 4, 5, 6]
+    selectItemBonusAmmunition: 1,
+    selectItemBonusLife: 1,
+    selectItemBonusSpeed: 1,
+    selectItemLaser: 1,
+    selectItemMultiShoot: 1,
+    selectItemRocket: 1,
+    selectItemSword: 1,
+    selectItemNothing: 1,
+    selectItemWall: 1,
 }
 
 const changeSettings = (newSettings) => {
@@ -18,7 +23,6 @@ const changeSettings = (newSettings) => {
     }
     gameSettings.edit = true;
     listGamepad.forEach(g => {
-        // @TODO change value of the fields
         if (typeof sendPeerJson === "function") {
             sendPeerJson(g.conn, gameSettings);
         } else if (g.conn?.open) {

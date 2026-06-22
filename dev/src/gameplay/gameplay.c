@@ -75,6 +75,15 @@ EM_JS(int *, GetAllSettings, (), {
         gameSettings.defaultTypeItem,
         gameSettings.defaultMaxTimerItem,
         gameSettings.activeLoot,
+        gameSettings.selectItemBonusAmmunition,
+        gameSettings.selectItemBonusLife,
+        gameSettings.selectItemBonusSpeed,
+        gameSettings.selectItemLaser,
+        gameSettings.selectItemMultiShoot,
+        gameSettings.selectItemRocket,
+        gameSettings.selectItemSword,
+        gameSettings.selectItemNothing,
+        gameSettings.selectItemWall,
     ];
     const arrayPointer = Module._malloc(values.length * 4);
     values.forEach(function(v, i) {
@@ -175,6 +184,7 @@ bool activeMain = false;
 int maxScore = 3;
 int maxAmmunition = 4;
 bool activeLoot = true;
+bool enabledLootItems[10] = {false, true, true, true, true, true, true, true, true, true};
 float defaultTypeItem = -1;     // 0 = random / -1 = default item (none)
 float defaultMaxTimerItem = -1; // 0 = no limit / -1 = default max timer
 
@@ -269,10 +279,17 @@ static void StopAllBullets(void)
     }
 }
 
+static void RemoveAllWalls(void)
+{
+    for (int i = 0; i < NUMBER_EIGHT; i++)
+        players[i].wall.active = false;
+}
+
 static void BeginRoundResult(int winningTeam, bool awardScore)
 {
     if (roundResultActive) return;
     StopAllBullets();
+    RemoveAllWalls();
     roundWinningTeam = winningTeam;
     roundIsDraw = winningTeam == SCORE_NO_TEAM;
     if (!roundIsDraw)
@@ -663,6 +680,15 @@ void UpdateGameplay()
             defaultTypeItem = (float)settings[3];
             defaultMaxTimerItem = (float)settings[4];
             activeLoot = (bool)settings[5];
+            enabledLootItems[BONUS_AMMUNITION] = (bool)settings[6];
+            enabledLootItems[BONUS_LIFE] = (bool)settings[7];
+            enabledLootItems[BONUS_SPEED] = (bool)settings[8];
+            enabledLootItems[LASER] = (bool)settings[9];
+            enabledLootItems[MULTI_SHOOT] = (bool)settings[10];
+            enabledLootItems[ROCKET] = (bool)settings[11];
+            enabledLootItems[SWORD] = (bool)settings[12];
+            enabledLootItems[NOTHING] = (bool)settings[13];
+            enabledLootItems[WALL] = (bool)settings[14];
             free(settings);
             ResetGame();
             bestScore = ScoreBest(colorScore);
@@ -695,7 +721,7 @@ void UpdateGameplay()
                     {3.05f, 3.05f},                           // speed: Speed of the tank
                     // Bullet
                     0.0f, // charge: Charge delay
-                    true, // canShoot: Can Shoot
+                    false, // canShoot: Input release latch
                     0.0f, // timeShoot: Time Shoot
                     0.0f, // radian: Radian : Determine the position of the cannon
                     0.0f, // lastRadian: Last Radian : Determine the position of the cannon
@@ -813,6 +839,7 @@ void UpdateGameplay()
         int end_of_type = true;
 
         float bullet_pos_x = 0.0f;
+        float bullet_pos_y = 0.0f;
 
         char *data = GetData();
         char *dataStart = data;
@@ -843,7 +870,7 @@ void UpdateGameplay()
                 loots[loot_index].active = atoi(data);
                 loot_index++;
             }
-            else if (player_part <= 9) // Loop 9 times for the player
+            else if (player_part <= 14) // Loop 14 times for the player
             {
                 // Start Init Player !
                 if (player_part == 1) // Postion player X
@@ -907,6 +934,28 @@ void UpdateGameplay()
                         bestScore = ScoreBest(colorScore);
                         winnerMap = bestScore >= maxScore;
                     }
+
+                }
+                else if (player_part == 10)
+                {
+                    players[player_index].wall.active = atoi(data);
+                }
+                else if (player_part == 11)
+                {
+                    players[player_index].wall.start.x = atof(data);
+                }
+                else if (player_part == 12)
+                {
+                    players[player_index].wall.start.y = atof(data);
+                }
+                else if (player_part == 13)
+                {
+                    players[player_index].wall.end.x = atof(data);
+                }
+                else if (player_part == 14)
+                {
+                    players[player_index].wall.end.y = atof(data);
+                    const int teamIndex = GetTeamColorIndex(players[player_index].color);
 
                     // ...
                     // Other player stuff
@@ -998,12 +1047,22 @@ void UpdateGameplay()
                             bullet_pos_x = atof(data);
                             type_loop++;
                         }
+                        else if (type_loop == 2)
+                        {
+                            bullet_pos_y = atof(data);
+                            type_loop++;
+                        }
                         else
                         {
+                            const int bullet_owner = atoi(data);
+                            const int owner_index = bullet_owner - 1;
+                            const Color bullet_color = owner_index >= 0 && owner_index < NUMBER_EIGHT
+                                ? players[owner_index].color
+                                : players[player_index].color;
                             players[player_index].bullets[type_index] = (Bullet){
-                                players[player_index].id,
+                                bullet_owner,
                                 (Physic){
-                                    {bullet_pos_x, atof(data)},
+                                    {bullet_pos_x, bullet_pos_y},
                                     {5.0f, 5.0f},
                                     {0.0f, 0.0f},
                                     {false, false, false, false, false}},
@@ -1018,7 +1077,7 @@ void UpdateGameplay()
                                     players[player_index].p.pos.y + players[player_index].p.size.y / 2,
                                 },
                                 0.0f,
-                                players[player_index].color};
+                                bullet_color};
                             type_index++;
                             type_loop = 1;
                             end_of_type = true;
@@ -1090,6 +1149,8 @@ void UpdateGameplay()
             continue;
 
         UpdatePlayer(&players[i]);
+        for (int w = 0; w < NUMBER_EIGHT; w++)
+            ResolvePlayerWallCollision(&players[i], &players[w]);
         UpdatePlayerMovementParticles(&players[i], !activePerf);
         if (activeOnline && activeMain)
         {
@@ -1103,6 +1164,12 @@ void UpdateGameplay()
                 continue;
 
             UpdateBullet(&players[i].bullets[j]);
+
+            for (int w = 0; w < NUMBER_EIGHT; w++)
+            {
+                if (ReflectBulletFromWall(&players[i].bullets[j], &players[w]))
+                    break;
+            }
 
             const Rectangle newBulletRec = {players[i].bullets[j].p.pos.x + 2.0f, players[i].bullets[j].p.pos.y + 2.0f, players[i].bullets[j].p.size.x * 2.0f - 5.0f, players[i].bullets[j].p.size.y * 2.0f - 5.0f};
             // Collision Bullet and Box
@@ -1326,7 +1393,9 @@ void ResetGame()
             players[i].ammunition = maxAmmunition;
             players[i].invincible = DELAY_INVINCIBLE;
             players[i].charge = 0.0f;
+            players[i].canShoot = false;
             players[i].item.active = false;
+            players[i].wall.active = false;
             memset(players[i].movementParticles, 0, sizeof players[i].movementParticles);
             players[i].movementParticleCursor = 0;
             players[i].movementParticleCooldown = 0.0f;
@@ -1423,6 +1492,7 @@ void DrawGameplay()
         if (!players[i].id)
             continue;
         DrawSpawnPlayer(players[i]);
+        DrawPlayerWall(&players[i]);
         for (int j = 0; j < MAX_BULLET; j++)
         {
             if (!players[i].bullets[j].playerId)

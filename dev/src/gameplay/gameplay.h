@@ -33,6 +33,7 @@ extern "C"
     // Settings
     extern int maxScore;
     extern int maxAmmunition;
+    extern bool enabledLootItems[10];
 
     extern int BoxesScoreFontSize[NUMBER_EIGHT];
     extern Vector2 BoxesScoreSize[NUMBER_EIGHT];

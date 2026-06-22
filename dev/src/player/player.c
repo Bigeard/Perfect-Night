@@ -140,7 +140,7 @@ void UpdatePlayer(Player *player)
         }
         else
         {
-            if (player->charge > 2.0f)
+            if (player->charge > 2.0f && player->ammunition > 0)
             {
                 // Loop bullet (Allow the ball to be replaced one after the other)
                 player->lastBullet += 1;
@@ -477,7 +477,7 @@ void PlayerValueToData(Player player, char *dataToSend, size_t dataSize)
         const size_t len = strlen(dataToSend);
         if (len < dataSize)
         {
-            snprintf(dataToSend + len, dataSize - len, "%f,%f,%f,%f,%d,%f,%d,%d,%d,", // (9 values)
+            snprintf(dataToSend + len, dataSize - len, "%f,%f,%f,%f,%d,%f,%d,%d,%d,%d,%f,%f,%f,%f,", // (14 values)
                      player.p.pos.x,                                                 // Position player X
                      player.p.pos.y,                                                 // Position player Y
                      player.radian,                                                  // Radian player cannon
@@ -486,7 +486,12 @@ void PlayerValueToData(Player player, char *dataToSend, size_t dataSize)
                      player.item.timer,                                              // Timer item (detect change and for the animation)
                      player.life,                                                    // Life player
                      player.ammunition,                                              // Ammunition player
-                     teamScore);                                                     // Score for the player's team colour
+                     teamScore,                                                     // Score for the player's team colour
+                     player.wall.active,
+                     player.wall.start.x,
+                     player.wall.start.y,
+                     player.wall.end.x,
+                     player.wall.end.y);
         }
     }
     // TraceLog(LOG_INFO, TextFormat("%s", dataToSend));

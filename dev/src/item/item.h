@@ -16,6 +16,7 @@ extern "C"
 #include "items/multi_shoot/multi_shoot.h"
 #include "items/rocket/rocket.h"
 #include "items/sword/sword.h"
+#include "items/wall/wall.h"
 
 #define FLT_MAX 3.402823466e+38F /* max float value */
 
@@ -29,7 +30,8 @@ extern "C"
         MULTI_SHOOT = 5,
         ROCKET = 6,
         SWORD = 7,
-        NOTHING = 8
+        NOTHING = 8,
+        WALL = 9
     };
 
     typedef struct Item
@@ -98,6 +100,11 @@ extern "C"
     void ShootItemSword(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y);
     void UpdateItemSword(Item *item);
     void DrawItemSword(Item *item);
+
+    Item InitItemWall(int player_id, float maxTimer);
+    void ShootItemWall(Item *item, float calcPosRadianX, float calcPosRadianY, float delta_x, float delta_y);
+    void UpdateItemWall(Item *item);
+    void DrawItemWall(Item *item);
 
 #ifdef __cplusplus
 }

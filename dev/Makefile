@@ -374,6 +374,7 @@ OBJS ?= main.c \
         src/item/items/multi_shoot/multi_shoot.c \
         src/item/items/rocket/rocket.c \
         src/item/items/sword/sword.c \
+        src/item/items/wall/wall.c \
         src/item/items/nothing/nothing.c \
         src/ray_collisions/ray_collisions.c \
         src/particle/particle.c \

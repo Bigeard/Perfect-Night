@@ -466,6 +466,14 @@
                         data = safeJsonParse(data);
                         // console.info("Peer:", data);
                         if (data != null && (typeof data === "object" || typeof data === "function")) {
+                            if (data.maxScore != null) {
+                                Object.entries(data).forEach(([key, value]) => {
+                                    const input = document.getElementById(key);
+                                    if (!input) return;
+                                    if (input.type === "checkbox") input.checked = Boolean(parseInt(value));
+                                    else input.value = value;
+                                });
+                            }
                             if (data.color != null) {
                                 buttonShoot.style.backgroundColor = data.color;
 
