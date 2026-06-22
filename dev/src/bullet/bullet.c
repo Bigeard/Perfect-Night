@@ -9,7 +9,158 @@
 #include "../particle/particle.h"
 #include "../tool/tool.h"
 
+#define MAX_BULLET_IMPACTS 64
+#define BULLET_IMPACT_DURATION 0.58f
+#define BULLET_IMPACT_LENGTH 80.0f
+#define BULLET_IMPACT_SEGMENTS 28
+#define BULLET_IMPACT_EXPAND_END 0.38f
+
+typedef struct BulletImpact
+{
+    Vector2 start;
+    Vector2 end;
+    Vector2 contact;
+    Color color;
+    double createdAt;
+    bool active;
+} BulletImpact;
+
+static BulletImpact bulletImpacts[MAX_BULLET_IMPACTS] = {0};
+static int nextBulletImpact = 0;
+
 void InitBullet(void) {}
+
+void AddBulletLineImpact(Vector2 wallStart, Vector2 wallEnd, Vector2 contact, Color color)
+{
+    Vector2 direction = Vector2Subtract(wallEnd, wallStart);
+    const float wallLength = Vector2Length(direction);
+    if (wallLength <= 0.0f)
+        return;
+
+    direction = Vector2Scale(direction, 1.0f/wallLength);
+    const float contactDistance = Clamp(
+        Vector2DotProduct(Vector2Subtract(contact, wallStart), direction),
+        0.0f,
+        wallLength);
+    const float halfLength = BULLET_IMPACT_LENGTH/2.0f;
+    const float startDistance = Clamp(contactDistance - halfLength, 0.0f, wallLength);
+    const float endDistance = Clamp(contactDistance + halfLength, 0.0f, wallLength);
+
+    bulletImpacts[nextBulletImpact] = (BulletImpact){
+        .start = Vector2Add(wallStart, Vector2Scale(direction, startDistance)),
+        .end = Vector2Add(wallStart, Vector2Scale(direction, endDistance)),
+        .contact = Vector2Add(wallStart, Vector2Scale(direction, contactDistance)),
+        .color = color,
+        .createdAt = GetTime(),
+        .active = true};
+    nextBulletImpact = (nextBulletImpact + 1)%MAX_BULLET_IMPACTS;
+}
+
+void AddBulletBoxImpact(const Bullet *bullet, Rectangle wall)
+{
+    const Vector2 center = {
+        bullet->p.pos.x + bullet->p.size.x,
+        bullet->p.pos.y + bullet->p.size.y};
+
+    if (bullet->p.collision[1])
+    {
+        AddBulletLineImpact(
+            (Vector2){wall.x, wall.y},
+            (Vector2){wall.x + wall.width, wall.y},
+            center,
+            bullet->COLOR);
+    }
+    else if (bullet->p.collision[2])
+    {
+        AddBulletLineImpact(
+            (Vector2){wall.x, wall.y + wall.height},
+            (Vector2){wall.x + wall.width, wall.y + wall.height},
+            center,
+            bullet->COLOR);
+    }
+
+    if (bullet->p.collision[3])
+    {
+        AddBulletLineImpact(
+            (Vector2){wall.x, wall.y},
+            (Vector2){wall.x, wall.y + wall.height},
+            center,
+            bullet->COLOR);
+    }
+    else if (bullet->p.collision[4])
+    {
+        AddBulletLineImpact(
+            (Vector2){wall.x + wall.width, wall.y},
+            (Vector2){wall.x + wall.width, wall.y + wall.height},
+            center,
+            bullet->COLOR);
+    }
+}
+
+void DrawBulletImpacts(void)
+{
+    const double now = GetTime();
+    for (int i = 0; i < MAX_BULLET_IMPACTS; i++)
+    {
+        if (!bulletImpacts[i].active)
+            continue;
+
+        const float elapsed = (float)(now - bulletImpacts[i].createdAt);
+        if (elapsed >= BULLET_IMPACT_DURATION)
+        {
+            bulletImpacts[i].active = false;
+            continue;
+        }
+
+        const float progress = elapsed/BULLET_IMPACT_DURATION;
+        const Vector2 line = Vector2Subtract(bulletImpacts[i].end, bulletImpacts[i].start);
+        const float lineLengthSquared = Vector2LengthSqr(line);
+        if (lineLengthSquared <= 0.0f)
+            continue;
+
+        const float contactProgress = Clamp(
+            Vector2DotProduct(Vector2Subtract(bulletImpacts[i].contact, bulletImpacts[i].start), line)/lineLengthSquared,
+            0.0f,
+            1.0f);
+
+        for (int segment = 0; segment < BULLET_IMPACT_SEGMENTS; segment++)
+        {
+            const float t0 = (float)segment/(float)BULLET_IMPACT_SEGMENTS;
+            const float t1 = (float)(segment + 1)/(float)BULLET_IMPACT_SEGMENTS;
+            const float midpoint = (t0 + t1)/2.0f;
+            float signedDistance;
+            if (midpoint < contactProgress)
+                signedDistance = -(contactProgress - midpoint)/fmaxf(contactProgress, 0.0001f);
+            else
+                signedDistance = (midpoint - contactProgress)/fmaxf(1.0f - contactProgress, 0.0001f);
+
+            const float distance = fabsf(signedDistance);
+            float alpha = 0.0f;
+            if (progress < BULLET_IMPACT_EXPAND_END)
+            {
+                float expansion = progress/BULLET_IMPACT_EXPAND_END;
+                expansion = expansion*expansion*(3.0f - 2.0f*expansion);
+                if (distance < expansion)
+                    alpha = 1.0f - distance/expansion;
+            }
+            else
+            {
+                const float dissipate = (progress - BULLET_IMPACT_EXPAND_END)/(1.0f - BULLET_IMPACT_EXPAND_END);
+                const float front = dissipate;
+                const float width = 0.30f - dissipate*0.18f;
+                alpha = fmaxf(0.0f, 1.0f - fabsf(distance - front)/width)*(1.0f - dissipate);
+            }
+
+            if (alpha <= 0.0f)
+                continue;
+
+            const Vector2 segmentStart = Vector2Add(bulletImpacts[i].start, Vector2Scale(line, t0));
+            const Vector2 segmentEnd = Vector2Add(bulletImpacts[i].start, Vector2Scale(line, t1));
+            DrawLineEx(segmentStart, segmentEnd, 10.0f, Fade(bulletImpacts[i].color, alpha*0.22f));
+            DrawLineEx(segmentStart, segmentEnd, 4.0f, Fade(bulletImpacts[i].color, alpha));
+        }
+    }
+}
 
 void UpdateBullet(Bullet *bullet)
 {

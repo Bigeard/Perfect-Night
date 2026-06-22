@@ -38,6 +38,9 @@ extern "C"
     void BulletBounce(Bullet *bullet);
     void ExplodeBullet(Bullet *bullet);
     void DrawBullet(Bullet bullet);
+    void AddBulletBoxImpact(const Bullet *bullet, Rectangle wall);
+    void AddBulletLineImpact(Vector2 wallStart, Vector2 wallEnd, Vector2 contact, Color color);
+    void DrawBulletImpacts(void);
     void BulletValueToData(Bullet bullet, char *DataToSend, size_t dataSize);
 
 #ifdef __cplusplus

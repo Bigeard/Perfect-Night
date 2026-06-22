@@ -1178,7 +1178,8 @@ void UpdateGameplay()
                 if (!boxes[b].id || !boxes[b].collision)
                     continue;
                 const Rectangle envBox = {boxes[b].p.pos.x, boxes[b].p.pos.y, boxes[b].p.size.x, boxes[b].p.size.y};
-                CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox);
+                if (CollisionPhysic(&players[i].bullets[j].p, newBulletRec, envBox))
+                    AddBulletBoxImpact(&players[i].bullets[j], envBox);
             }
             if (players[i].bullets[j].p.collision[0] && players[i].bullets[j].explosionRadius > 0.0f)
             {
@@ -1485,6 +1486,7 @@ void DrawGameplay()
     {
         DrawBox(boxes[i]);
     }
+    DrawBulletImpacts();
 
     // Draw Players / Bullets
     for (int i = 0; i < NUMBER_EIGHT; i++)

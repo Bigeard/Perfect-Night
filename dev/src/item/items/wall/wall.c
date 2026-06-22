@@ -96,8 +96,20 @@ bool ReflectBulletFromWall(Bullet *bullet, const Player *owner)
         return false;
 
     Vector2 wallDirection = Vector2Subtract(owner->wall.end, owner->wall.start);
-    if (Vector2LengthSqr(wallDirection) <= 0.0f)
+    const float wallLengthSquared = Vector2LengthSqr(wallDirection);
+    if (wallLengthSquared <= 0.0f)
         return false;
+
+    if (!crossed)
+    {
+        const float progress = Clamp(
+            Vector2DotProduct(Vector2Subtract(center, owner->wall.start), wallDirection)/wallLengthSquared,
+            0.0f,
+            1.0f);
+        collisionPoint = Vector2Add(owner->wall.start, Vector2Scale(wallDirection, progress));
+    }
+    AddBulletLineImpact(owner->wall.start, owner->wall.end, collisionPoint, bullet->COLOR);
+
     wallDirection = Vector2Normalize(wallDirection);
     Vector2 normal = {-wallDirection.y, wallDirection.x};
     if (Vector2DotProduct(bullet->p.vel, normal) > 0.0f)
